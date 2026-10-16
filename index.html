@@ -241,6 +241,40 @@ details.grp summary span.c{font-size:13px;color:var(--ink-soft)}
 .add{border:1.5px dashed var(--ink-soft);background:transparent;border-radius:12px;padding:8px 12px;font-weight:700;color:var(--ink-soft)}
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 22px;align-items:flex-end}
 
+/* Diagnóstico */
+.riskgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;margin-bottom:16px}
+.risk{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.risk .top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0}
+.risk h3{font-size:18px}
+.risk .idx{font-family:'Bricolage Grotesque',sans-serif;font-size:44px;font-weight:800;line-height:1}
+.risk .idx small{font-size:16px;color:var(--ink-soft);font-weight:600}
+.lvl{font-size:12px;font-weight:800;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.lvl.l0{background:var(--ok-bg);color:var(--ok)} .lvl.l1{background:var(--est-bg);color:var(--est)}
+.lvl.l2{background:var(--warn-bg);color:var(--warn)} .lvl.l3{background:var(--bad);color:var(--card)}
+.risk .meter i{background:var(--ink-soft)}
+.risk.r2 .meter i{background:var(--warn)} .risk.r3 .meter i{background:var(--bad)} .risk.r0 .meter i{background:var(--ok)}
+.drivers{list-style:none;margin:0;padding:0;font-size:13px;display:flex;flex-direction:column;gap:3px}
+.drivers li{display:flex;justify-content:space-between;gap:8px;color:var(--ink-soft);font-weight:600}
+.drivers li b{color:var(--ink);font-weight:700;text-align:right}
+.alerts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.alerts li{border-radius:12px;padding:10px 12px;font-weight:600;font-size:15px;line-height:1.35}
+.alerts li.crit{background:var(--bad);color:var(--card)}
+.alerts li.high{background:var(--warn-bg);color:var(--warn)}
+.alerts li.info{background:var(--est-bg);color:var(--est)}
+.hours{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+@media (max-width:620px){.hours{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.checks{display:flex;gap:6px 14px;flex-wrap:wrap;font-weight:600;font-size:15px}
+.checks label{display:flex;gap:6px;align-items:center}
+.checks input{width:auto}
+.planweek{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-top:12px}
+@media (max-width:1000px){.planweek{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.planweek{grid-template-columns:1fr}}
+.planweek .col .block{padding:8px 10px}
+.planweek .items{font-size:14px}
+.tips{margin:10px 0 0;padding-left:20px;color:var(--ink-soft);font-size:15px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
 /* Conta e sincronização */
 .dot{width:10px;height:10px;border-radius:50%;background:var(--off-bd);flex:none}
 .dot.ok{background:var(--ok)} .dot.busy{background:var(--est)} .dot.err{background:var(--warn)}
@@ -298,6 +332,7 @@ details.grp summary span.c{font-size:13px;color:var(--ink-soft)}
     <button class="tab" data-view="conteudo">Conteúdo ENEM</button>
     <button class="tab" data-view="redacao">Redação</button>
     <button class="tab" data-view="progresso">Progresso</button>
+    <button class="tab" data-view="diagnostico">Diagnóstico</button>
     <button class="tab" data-view="editar">Editar rotina</button>
     <span class="sp"></span>
     <button class="icon-btn" id="syncBtn" data-view-go="conta"><span class="dot" id="syncDot"></span><span id="syncTxt">Conta</span></button>
@@ -653,6 +688,8 @@ function renderHoje(){
   if(s.total&&s.done===s.total)h+='<div class="allgood">Dia concluído. Bom trabalho!</div>';
   h+='<div class="list">'+(blocks.length?blocks.map(function(b){return blockHTML(b,d,{full:true})}).join(''):'<p class="empty">Nada planejado para hoje. Adicione blocos em Editar rotina.</p>')+'</div>';
   h+='</section><aside class="stack">';
+  var AL=computeAlerts().filter(function(a){return a.lv!=='info'});
+  if(AL.length)h+='<div class="panel"><h3>Alertas</h3>'+alertsHTML(AL.slice(0,2))+'<button class="link" data-act="go" data-v="diagnostico" style="margin-top:8px">Ver diagnóstico completo</button></div>';
   h+=reviewsPanel();
   h+='<div class="panel"><h3>Anotações do dia</h3><label class="sr" for="note">Anotações de hoje</label><textarea id="note" data-date="'+tk()+'" placeholder="O que estudou, dúvidas para revisar, cargas do treino...">'+esc(notes[tk()]||'')+'</textarea></div>';
   var tm=addDays(d,1),ti=dayIdx(tm);
@@ -881,6 +918,191 @@ function renderEditar(){
 /* =========================================================
    RENDER
    ========================================================= */
+/* =========================================================
+   ÍNDICE DE RISCO (algoritmo próprio, sem API)
+   Para cada área do ENEM combina, de 0 a 1 (maior = mais risco):
+   - Cobertura (35%): domínio dos tópicos; "cai muito" pesa 2x
+   - Desempenho (30%): acertos do último simulado / média das redações
+   - Negligência (20%): fatia dos blocos de estudo concluídos nos
+     últimos 14 dias, comparada com a fatia esperada (1/5 por área)
+   - Revisões atrasadas (15%)
+   Componentes sem dados ficam de fora e os pesos são redistribuídos.
+   ========================================================= */
+var AREA_OF_SUBJECT={mat:'mat',fis:'nat',qui:'nat',bio:'nat',nat:'nat',ling:'ling',ing:'ling',hum:'hum',red:'red',rep:'red',redsim:'red'};
+var RISK_AREAS=['mat','nat','ling','hum','red'];
+var SIM_FIELD={mat:'mt',nat:'cn',ling:'lc',hum:'ch'};
+var LEVELS=['Baixo','Médio','Alto','Crítico'];
+function levelOf(i){return i>=80?3:i>=60?2:i>=35?1:0}
+function parseDur(s){
+  s=String(s||'').toLowerCase().replace(',','.');var h=0,m;
+  if((m=s.match(/(\d+(?:\.\d+)?)\s*h/)))h+=+m[1];
+  if((m=s.match(/h\s*(\d{1,2})\b/)))h+=+m[1]/60;
+  else if((m=s.match(/(\d+)\s*min/)))h+=+m[1]/60;
+  return h;
+}
+function studyActivity(days){
+  var act={},total=0,start=addDays(today(),-(days-1));
+  RISK_AREAS.forEach(function(a){act[a]=0});
+  for(var i=0;i<days;i++){
+    var d=addDays(start,i);
+    routine[dayIdx(d)].forEach(function(b){
+      var a=AREA_OF_SUBJECT[b.subject];
+      if(b.type==='estudo'&&a&&isDone(d,b.id)){act[a]++;total++}
+    });
+  }
+  return {act:act,total:total};
+}
+function lastSim(field){
+  var s=sims.filter(function(x){return x[field]!=null&&x[field]!==''}).sort(function(a,b){return a.date<b.date?1:-1});
+  return s.length?s[0]:null;
+}
+function computeRisk(){
+  var A=studyActivity(14),k=tk(),due={};
+  dueReviews().forEach(function(id){due[id]=1});
+  var since14=dkey(addDays(today(),-13));
+  return RISK_AREAS.map(function(a){
+    var area=areaById(a),list=TOPIC_LIST.filter(function(t){return t.area===a});
+    var W=[0,.4,.7,1],ws=0,wd=0,studied=0,hotPending=[],overdue=0;
+    list.forEach(function(t){var s=tstate(t.id).s,w=t.hot?2:1;ws+=w;wd+=w*W[s];if(s>=1)studied++;if(t.hot&&s===0)hotPending.push(t.nome);if(due[t.id])overdue++});
+    var comp={},why={};
+    comp.cov=1-wd/ws;why.cov=studied+'/'+list.length+' tópicos estudados'+(hotPending.length?' · '+hotPending.length+' que caem muito pendentes':'');
+    if(a==='red'){
+      var es=essays.slice().sort(function(x,y){return x.date<y.date?1:-1});
+      if(es.length){var last3=es.slice(0,3),avg=Math.round(last3.reduce(function(s,e){return s+essayTotal(e)},0)/last3.length);comp.perf=1-avg/1000;why.perf='média '+avg+' nas últimas redações'}
+      var recent=es.some(function(e){return e.date>=since14});
+      comp.neg=recent?(A.total>=3?Math.max(0,Math.min(1,1-(A.act[a]/A.total)/.2)):0):1;
+      why.neg=recent?'redação em dia nas últimas 2 semanas':'nenhuma redação registrada nas últimas 2 semanas';
+    }else{
+      var sm=lastSim(SIM_FIELD[a]);
+      if(sm){comp.perf=1-sm[SIM_FIELD[a]]/45;why.perf=sm[SIM_FIELD[a]]+'/45 no último simulado'}
+      if(A.total>=3){comp.neg=Math.max(0,Math.min(1,1-(A.act[a]/A.total)/.2));why.neg=A.act[a]+' de '+A.total+' blocos de estudo nas últimas 2 semanas'}
+    }
+    comp.rev=Math.min(1,overdue/5);why.rev=overdue+' revis'+(overdue===1?'ão atrasada':'ões atrasadas');
+    var WT={cov:.35,perf:.30,neg:.20,rev:.15},sum=0,wsum=0,top=null,topv=-1;
+    Object.keys(WT).forEach(function(c){if(comp[c]==null)return;sum+=WT[c]*comp[c];wsum+=WT[c];if(WT[c]*comp[c]>topv){topv=WT[c]*comp[c];top=c}});
+    var idx=Math.round(100*sum/wsum);
+    return {id:a,nome:area.nome,cor:area.cor,idx:idx,lvl:levelOf(idx),comp:comp,why:why,top:top,hotPending:hotPending,overdue:overdue,studied:studied,total:list.length,act:A.act[a],actTotal:A.total};
+  });
+}
+function computeAlerts(R){
+  R=R||computeRisk();var out=[],A=studyActivity(14);
+  R.slice().sort(function(a,b){return b.idx-a.idx}).forEach(function(r){
+    if(r.lvl>=2)out.push({lv:r.lvl===3?'crit':'high',t:r.nome+': risco '+LEVELS[r.lvl].toLowerCase()+' ('+r.idx+'). Principal motivo: '+r.why[r.top]+'.'});
+  });
+  if(A.total>=5){
+    var sh=RISK_AREAS.map(function(a){return {a:a,p:A.act[a]/A.total}}).sort(function(x,y){return y.p-x.p});
+    var hi=sh[0],lo=sh[sh.length-1];
+    if(hi.p>=.4&&lo.p<=.08)out.push({lv:'high',t:'Desequilíbrio: nas últimas 2 semanas, '+Math.round(hi.p*100)+'% dos seus blocos de estudo foram de '+areaById(hi.a).nome+' e só '+Math.round(lo.p*100)+'% de '+areaById(lo.a).nome+'.'});
+  }
+  var hot=[];R.forEach(function(r){hot=hot.concat(r.hotPending)});
+  if(hot.length)out.push({lv:'info',t:'Tópicos que caem muito e você ainda não estudou: '+hot.slice(0,4).join(', ')+(hot.length>4?' e mais '+(hot.length-4):'')+'.'});
+  var od=dueReviews().length;if(od>=5)out.push({lv:'high',t:od+' revisões acumuladas. Sem revisar, o conteúdo estudado se perde.'});
+  if(exam){
+    var days=daysBetween(today(),pk(exam));
+    if(days>0){
+      var cut=dkey(addDays(today(),-27)),remaining=0,recent=0;
+      TOPIC_LIST.forEach(function(t){if(t.area==='tec')return;var s=topics[t.id];if(!s)remaining++;else if(s.at&&s.at>=cut)recent++});
+      var pace=recent/4,weeks=days/7;
+      if(remaining>0){
+        if(pace===0)out.push({lv:'high',t:'Nenhum tópico novo nas últimas 4 semanas. Faltam '+remaining+' tópicos e '+Math.floor(weeks)+' semanas até a prova: '+Math.ceil(remaining/Math.max(weeks,1))+' por semana.'});
+        else if(remaining/pace>weeks)out.push({lv:days<45?'crit':'high',t:'No ritmo atual ('+pace.toFixed(1).replace('.',',')+' tópicos por semana) você levaria '+Math.ceil(remaining/pace)+' semanas para ver os '+remaining+' tópicos restantes, mas faltam '+Math.floor(weeks)+'. Meta: '+Math.ceil(remaining/Math.max(weeks,1))+' tópicos por semana.'});
+      }
+    }
+  }
+  if(!sims.length&&!essays.length)out.push({lv:'info',t:'Registre simulados e redações para o índice considerar seu desempenho, não só o conteúdo estudado.'});
+  return out;
+}
+function alertsHTML(list){return '<ul class="alerts">'+list.map(function(a){return '<li class="'+a.lv+'">'+esc(a.t)+'</li>'}).join('')+'</ul>'}
+
+/* =========================================================
+   TELA: DIAGNÓSTICO + GERADOR DE PLANO COM IA
+   ========================================================= */
+var aiPlan=null,aiBusy=false,aiErr='';
+function defaultHours(){return routine.map(function(day){var h=0;day.forEach(function(b){if(b.type==='estudo')h+=parseDur(b.time)});return Math.round(h*2)/2})}
+function renderDiagnostico(){
+  var R=computeRisk(),AL=computeAlerts(R);
+  var h='<p class="hint">O índice vai de 0 a 100 e mostra onde você está mais exposta para o ENEM, combinando conteúdo estudado, desempenho nos simulados e redações, constância das últimas 2 semanas e revisões atrasadas. É um indicador para priorizar, não uma previsão de nota.</p>';
+  h+='<div class="riskgrid">';
+  R.forEach(function(r){
+    h+='<div class="risk r'+r.lvl+'"><div class="top"><h3>'+esc(r.nome)+'</h3><span class="lvl l'+r.lvl+'">'+LEVELS[r.lvl]+'</span></div>';
+    h+='<div class="idx">'+r.idx+'<small> /100</small></div><div class="meter"><i style="width:'+r.idx+'%"></i></div><ul class="drivers">';
+    [['cov','Cobertura'],['perf','Desempenho'],['neg','Constância'],['rev','Revisões']].forEach(function(c){
+      h+='<li><span>'+c[1]+'</span><b>'+(r.comp[c[0]]==null?'sem dados':esc(r.why[c[0]]))+'</b></li>';
+    });
+    h+='</ul></div>';
+  });
+  h+='</div><div class="two"><div class="panel"><h3>Alertas</h3>'+(AL.length?alertsHTML(AL):'<p class="empty">Nenhum alerta agora. Continue no ritmo.</p>')+'</div>';
+  // Gerador com IA
+  var hrs=defaultHours(),focus=R.filter(function(r){return r.lvl>=2}).map(function(r){return r.id});
+  h+='<div class="panel"><h3>Gerar plano de estudos com IA</h3><p class="hint">A IA monta uma semana nova a partir do seu diagnóstico e das horas que você tem. Você vê o plano antes e decide se aplica.</p>';
+  h+='<form class="form" id="aiForm"><div><span class="f" style="margin-bottom:6px;display:block">Horas de estudo por dia</span><div class="hours">';
+  SHORT.forEach(function(d,i){h+='<label class="f">'+d+'<input type="number" name="h'+i+'" min="0" max="12" step="0.5" value="'+hrs[i]+'"></label>'});
+  h+='</div></div><div><span class="f" style="margin-bottom:6px;display:block">Priorizar</span><div class="checks">';
+  R.forEach(function(r){h+='<label><input type="checkbox" name="foco" value="'+r.id+'"'+(focus.indexOf(r.id)>=0?' checked':'')+'>'+esc(r.nome)+'</label>'});
+  h+='</div></div><div class="checks"><label><input type="checkbox" name="treinos" checked>Manter meus treinos como estão</label></div>';
+  h+='<label class="f">Observações (opcional)<textarea name="obs" maxlength="400" style="min-height:70px" placeholder="Ex.: quinta à noite tenho curso; prefiro matemática de manhã"></textarea></label>';
+  h+='<div class="row" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="submit"'+(aiBusy?' disabled':'')+'>'+(aiBusy?'<span class="spin"></span>Gerando plano...':'Gerar plano de estudos com IA')+'</button>';
+  if(load('routine.prev',null))h+='<button class="btn ghost" type="button" data-act="ai-undo">Desfazer último plano aplicado</button>';
+  h+='</div></form>';
+  if(aiErr)h+='<div class="msg err">'+esc(aiErr)+'</div>';
+  h+='</div></div>';
+  if(aiPlan){
+    h+='<div class="panel" style="margin-top:16px"><h3>Plano sugerido</h3><p style="margin:0">'+esc(aiPlan.resumo||'')+'</p><div class="planweek">';
+    for(var i=0;i<7;i++){
+      var day=(aiPlan.week[i]||[]),tot=0;day.forEach(function(b){if(b.type==='estudo')tot+=parseDur(b.time)});
+      h+='<div class="col"><div class="colhead"><h3>'+SHORT[i]+'</h3><span>'+(tot?String(tot).replace('.',',')+'h':'')+'</span></div>';
+      h+=day.map(function(b){return '<div class="block '+b.type+'"><div class="body"><div class="kind">'+TYPES[b.type]+(b.time?'<span class="time">'+esc(b.time)+'</span>':'')+'</div><ul class="items"><li>'+esc(b.items.join(', '))+'</li></ul></div></div>'}).join('')||'<p class="empty">Livre</p>';
+      h+='</div>';
+    }
+    h+='</div>';
+    if(aiPlan.dicas&&aiPlan.dicas.length)h+='<ul class="tips">'+aiPlan.dicas.map(function(d){return '<li>'+esc(d)+'</li>'}).join('')+'</ul>';
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" data-act="ai-apply">Aplicar à minha rotina</button><button class="btn ghost" data-act="ai-discard">Descartar</button></div>';
+    h+='<p class="hint" style="margin:10px 0 0">Ao aplicar, a rotina atual fica guardada e você pode desfazer. Marcações, tópicos e notas não mudam.</p></div>';
+  }
+  return h;
+}
+function routineSummary(){
+  return routine.map(function(day,i){return SHORT[i]+': '+day.map(function(b){return b.type+':'+b.items.join(', ')+(b.time?' ('+b.time+')':'')+(b.subject?' ['+b.subject+']':'')}).join(' | ')});
+}
+async function generatePlan(f){
+  aiErr='';
+  if(!sb||!user){aiErr='Entre na sua conta (botão no menu) para usar o gerador com IA.';render();return}
+  var fd=new FormData(f),R=computeRisk();
+  var payload={
+    horas:[0,1,2,3,4,5,6].map(function(i){return +fd.get('h'+i)||0}),
+    foco:fd.getAll('foco'),
+    preservarTreinos:!!fd.get('treinos'),
+    observacoes:String(fd.get('obs')||'').slice(0,400),
+    diasParaProva:exam?daysBetween(today(),pk(exam)):null,
+    areas:R.map(function(r){return {area:r.id,nome:r.nome,indice:r.idx,nivel:LEVELS[r.lvl],motivo:r.why[r.top],cobertura:r.studied+'/'+r.total}}),
+    topicosQuentesPendentes:R.reduce(function(a,r){return a.concat(r.hotPending)},[]).slice(0,15),
+    treinos:routine.map(function(day){return day.filter(function(b){return b.type!=='estudo'}).map(function(b){return b.type+': '+b.items.join(', ')})}),
+    rotinaAtual:routineSummary()
+  };
+  aiBusy=true;render();
+  try{
+    var s=(await sb.auth.getSession()).data.session;
+    if(!s)throw new Error('Sua sessão expirou. Entre de novo na sua conta.');
+    var r=await fetch('/api/plano',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.access_token},body:JSON.stringify(payload)});
+    var data=await r.json().catch(function(){return {}});
+    if(!r.ok)throw new Error(data.erro||(r.status===404?'A função /api/plano não foi encontrada. Confira se a pasta api foi enviada ao GitHub.':'Erro '+r.status+' ao gerar o plano.'));
+    var week=[[],[],[],[],[],[],[]];
+    (data.dias||[]).forEach(function(d){
+      if(d.dia<0||d.dia>6)return;
+      d.blocos.forEach(function(b){week[d.dia].push(B(uid(),TYPES[b.tipo]?b.tipo:'estudo',[b.titulo],b.duracao,SUBJECTS[b.materia]?b.materia:''))});
+    });
+    if(payload.preservarTreinos){
+      week=week.map(function(day,i){
+        var keep=routine[i].filter(function(b){return b.type!=='estudo'}).map(function(b){var c=clone(b);c.id=uid();return c});
+        var st=day.filter(function(b){return b.type==='estudo'});
+        return st.slice(0,1).concat(keep,st.slice(1));
+      });
+    }
+    aiPlan={resumo:data.resumo,dicas:data.dicas||[],week:week};
+  }catch(e){aiErr=(e&&e.message)||'Não foi possível gerar o plano.'}
+  aiBusy=false;render();
+}
+
 function renderStats(){
   var mon=mondayOf(new Date()),ws=rangeScore(mon,dayIdx(today())+1),s=dayScore(today()),due=dueReviews().length;
   var h='<div class="stat"><b>'+s.done+'/'+s.total+'</b><span>hoje</span></div>'+
@@ -893,7 +1115,7 @@ function renderStats(){
 }
 function render(){
   document.querySelectorAll('.tab').forEach(function(t){if(t.dataset.view===view)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current')});
-  var V={hoje:renderHoje,semana:renderSemana,conteudo:renderConteudo,redacao:renderRedacao,progresso:renderProgresso,editar:renderEditar,conta:renderConta};
+  var V={hoje:renderHoje,semana:renderSemana,conteudo:renderConteudo,redacao:renderRedacao,progresso:renderProgresso,editar:renderEditar,conta:renderConta,diagnostico:renderDiagnostico};
   document.getElementById('main').innerHTML=(V[view]||renderHoje)();
   renderStats();
   if(view==='conta')document.getElementById('syncBtn').setAttribute('aria-current','page');else document.getElementById('syncBtn').removeAttribute('aria-current');
@@ -938,6 +1160,15 @@ main.addEventListener('click',function(e){
   else if(a==='up'&&i>0){var r=routine[day];r.splice(i-1,0,r.splice(i,1)[0]);saveRoutine();render()}
   else if(a==='down'&&i<routine[day].length-1){var r2=routine[day];r2.splice(i+1,0,r2.splice(i,1)[0]);saveRoutine();render()}
   else if(a==='restore'){if(!confirm('Voltar para a rotina original? Marcações, tópicos e anotações continuam.'))return;routine=clone(DEFAULT);saveRoutine();render();toast('Rotina original restaurada')}
+  else if(a==='ai-apply'){
+    if(!aiPlan||!confirm('Substituir sua rotina pelo plano sugerido? Você pode desfazer depois.'))return;
+    rawSave('routine.prev',routine);routine=aiPlan.week;aiPlan=null;saveRoutine();render();toast('Plano aplicado à sua rotina');
+  }
+  else if(a==='ai-discard'){aiPlan=null;render()}
+  else if(a==='ai-undo'){
+    var prev=load('routine.prev',null);if(!prev||!confirm('Voltar para a rotina de antes do último plano?'))return;
+    routine=prev;try{localStorage.removeItem(PREFIX+'routine.prev')}catch(err){}saveRoutine();render();toast('Rotina anterior restaurada');
+  }
   else if(a==='export')exportData();
   else if(a==='import')document.getElementById('importFile').click();
 });
@@ -960,6 +1191,7 @@ main.addEventListener('change',function(e){
 });
 main.addEventListener('submit',function(e){
   e.preventDefault();var f=e.target,fd=new FormData(f);
+  if(f.id==='aiForm'){if(!aiBusy)generatePlan(f);return}
   if(f.id==='essayForm'){
     essays.push({id:uid(),date:fd.get('date'),tema:String(fd.get('tema')).trim(),c:[0,1,2,3,4].map(function(i){return +fd.get('c'+i)})});
     save('essays',essays);render();toast('Redação salva');
