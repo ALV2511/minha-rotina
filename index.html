@@ -176,6 +176,29 @@ details.grp summary span.c{font-size:13px;color:var(--ink-soft)}
 .st.s3{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)} .st.s3 i{border-color:var(--ok);background:var(--ok)}
 .legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--ink-soft);font-weight:600}
 
+.trailnav{margin-bottom:12px}
+@media (max-width:560px){.trailnav{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}.trailnav .chip{white-space:nowrap}}
+.chip small{font-weight:600;opacity:.75}
+.chips .lbl{font-size:13px;font-weight:700;color:var(--ink-soft);align-self:center;margin-right:2px}
+.matgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px}
+.matcard{display:flex;flex-direction:column;gap:8px}
+.matcard h3{font-size:20px;margin:0}
+.matcard .btn{align-self:flex-start;margin-top:auto}
+.nextline{margin:0;font-weight:700;font-size:15px;line-height:1.3}
+.nextline span{display:block;font-size:12px;color:var(--ink-soft);font-weight:700}
+.trail .desc{margin:4px 0 8px;color:var(--ink-soft);font-weight:500}
+.stage{border-top:1.5px solid var(--line);padding-top:10px;margin-top:12px}
+.stage-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px}
+.stage-h h3{font-size:18px;margin:0}
+.stage-h span{font-size:13px;font-weight:800;color:var(--ink-soft)}
+.trail .topic{padding:6px 8px;margin:0 -8px;border-radius:10px}
+.trail .topic.next{background:color-mix(in srgb,var(--mark) 45%,transparent)}
+.num{flex:none;width:26px;text-align:right;font-weight:800;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.topic .nm small{display:block;font-size:12px;font-weight:600;color:var(--ink-soft)}
+.topic .nm small.here{color:var(--ink);font-weight:800}
+.low{font-size:12px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:0 8px;white-space:nowrap}
+@media (max-width:560px){.trail .topic{flex-wrap:wrap}.trail .topic .nm{flex-basis:calc(100% - 150px)}}
+
 /* Redação */
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
 @media (max-width:900px){.two{grid-template-columns:1fr}}
@@ -329,7 +352,7 @@ details.grp summary span.c{font-size:13px;color:var(--ink-soft)}
   <nav class="nav" aria-label="Seções">
     <button class="tab" data-view="hoje">Hoje</button>
     <button class="tab" data-view="semana">Semana</button>
-    <button class="tab" data-view="conteudo">Conteúdo ENEM</button>
+    <button class="tab" data-view="conteudo">Trilha ENEM</button>
     <button class="tab" data-view="redacao">Redação</button>
     <button class="tab" data-view="progresso">Progresso</button>
     <button class="tab" data-view="diagnostico">Diagnóstico</button>
@@ -360,83 +383,205 @@ details.grp summary span.c{font-size:13px;color:var(--ink-soft)}
 <input type="file" id="importFile" accept="application/json" class="sr" tabindex="-1" aria-hidden="true">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
 <script>
 (function(){
 'use strict';
 
 /* =========================================================
    CONFIGURAÇÃO DO SUPABASE
-   Cole aqui os dois valores do seu projeto
-   (Supabase > Project Settings > API):
-   - SUPABASE_URL: o "Project URL"
-   - SUPABASE_KEY: a chave "anon public" (ou "publishable")
-   NUNCA cole a chave "service_role" / "secret".
-   Deixando vazio, o site funciona só neste aparelho.
+   Os dados do seu projeto ficam no arquivo config.js, ao lado
+   deste. Assim você pode atualizar o index.html sem perdê-los.
+   Sem o config.js, o site funciona só neste aparelho.
    ========================================================= */
-var SUPABASE_URL='https://wvyiobkxffmqpsyqismz.supabase.co';
-var SUPABASE_KEY='sb_publishable_tyaedbxuxJy5SdpEkgjavA_DmK_mNK9';
+var CFG=window.ROTINA_CONFIG||{};
+var SUPABASE_URL=String(CFG.supabaseUrl||'').trim();
+var SUPABASE_KEY=String(CFG.supabaseKey||'').trim();
 
 /* =========================================================
-   CONTEÚDO DO ENEM
-   [nome] ou [nome, true] -> true = "cai muito"
+   TRILHA DO ENEM
+   Área > matéria > etapa > tópico, na ordem em que vale estudar
+   (do pré-requisito para o que depende dele).
+   Tópico: [id, nome, incidência]  incidência 3 = cai muito,
+   2 = cai às vezes (padrão), 1 = cai pouco.
+   Os ids são fixos: não mude, eles guardam o seu progresso.
    ========================================================= */
 var SYLLABUS=[
- {id:'mat',nome:'Matemática',cor:'--a-mat',desc:'A matéria de ouro para a TRI: passar de 800 aqui puxa sua nota para o topo.',grupos:[
-  {nome:'Matemática básica',t:[['Razão e proporção'],['Regra de três simples e composta'],['Porcentagem'],['Juros simples e compostos'],['Escalas numéricas'],['Estatística básica: média, mediana, moda e desvio padrão']]},
-  {nome:'Aritmética e álgebra',t:[['Função afim',true],['Função quadrática',true],['Função exponencial',true],['Função logarítmica',true],['Progressão aritmética (P.A.)'],['Progressão geométrica (P.G.)']]},
-  {nome:'Geometria',t:[['Geometria plana: áreas de polígonos'],['Geometria plana: circunferência'],['Semelhança de triângulos'],['Geometria espacial: prismas e cilindros'],['Geometria espacial: cones e esferas'],['Geometria analítica: equação da reta'],['Geometria analítica: equação da circunferência']]},
-  {nome:'Probabilidade e análise combinatória',t:[['Princípio fundamental da contagem'],['Permutações'],['Combinações'],['Probabilidade condicional'],['Eventos independentes']]}
+ {id:'mat',nome:'Matemática',cor:'--a-mat',materias:[
+  {id:'mat',nome:'Matemática',desc:'A matéria de ouro para a TRI. Comece pela base de contas e pela matemática do cotidiano, que é a mais cobrada.',mods:[
+   {nome:'Fundamentos',t:[['mat-oper','Operações com inteiros, frações e decimais',3],['mat-pot','Potenciação e radiciação'],['mat-notcient','Notação científica e ordem de grandeza'],['mat-mmc','Múltiplos, divisores, MMC e MDC'],['mat-unid','Unidades de medida e conversões',3],['mat-alg','Expressões algébricas e produtos notáveis'],['mat-eq1','Equações e inequações do 1º grau'],['mat-eq2','Equações do 2º grau'],['mat-sist','Sistemas de equações']]},
+   {nome:'Matemática do cotidiano',t:[['mat-razao','Razão e proporção',3],['mat-grand','Grandezas diretamente e inversamente proporcionais',3],['mat-regra3','Regra de três simples e composta',3],['mat-escalas','Escalas',3],['mat-porcent','Porcentagem',3],['mat-juros','Juros simples e compostos']]},
+   {nome:'Estatística',t:[['mat-graf','Leitura de gráficos e tabelas',3],['mat-media','Média, mediana e moda',3],['mat-desvio','Variância e desvio padrão']]},
+   {nome:'Funções',t:[['mat-func','Conceito de função e leitura de gráficos',3],['mat-afim','Função afim',3],['mat-quad','Função quadrática',3],['mat-expo','Função exponencial'],['mat-log','Logaritmos e função logarítmica'],['mat-trigf','Funções trigonométricas e fenômenos periódicos',1],['mat-pa','Progressão aritmética (P.A.)'],['mat-pg','Progressão geométrica (P.G.)']]},
+   {nome:'Geometria plana',t:[['mat-angulos','Ângulos, paralelismo e polígonos'],['mat-triang','Triângulos: congruência e semelhança',3],['mat-pitag','Teorema de Pitágoras e relações métricas'],['mat-trigtr','Trigonometria no triângulo retângulo'],['mat-areas','Áreas de figuras planas',3],['mat-circ','Circunferência e círculo']]},
+   {nome:'Geometria espacial',t:[['mat-vistas','Vistas, projeções e planificações',3],['mat-prisma','Prismas e cilindros: área e volume',3],['mat-cone','Pirâmides e cones'],['mat-esfera','Esfera']]},
+   {nome:'Geometria analítica',t:[['mat-cart','Plano cartesiano e distância entre pontos'],['mat-reta','Equação da reta',1],['mat-eqcirc','Equação da circunferência',1]]},
+   {nome:'Contagem e probabilidade',t:[['mat-pfc','Princípio fundamental da contagem',3],['mat-comb','Permutação, arranjo e combinação'],['mat-prob','Probabilidade',3],['mat-probcond','Probabilidade condicional e eventos independentes']]},
+   {nome:'Complementos',t:[['mat-matriz','Matrizes e determinantes',1],['mat-logica','Raciocínio lógico e problemas']]}
+  ]}
  ]},
- {id:'nat',nome:'Ciências da Natureza',cor:'--a-nat',desc:'Física, Química e Biologia cobram aplicação prática do cotidiano e sustentabilidade.',grupos:[
-  {nome:'Física',t:[['Cinemática: MRU e MRUV'],['Cinemática: lançamentos'],['Dinâmica: Leis de Newton'],['Dinâmica: atrito, tração e força centrípeta'],['Eletrodinâmica: Leis de Ohm e circuitos elétricos',true],['Eletrodinâmica: potência e consumo de energia',true],['Termologia: calorimetria e trocas de calor'],['Termodinâmica'],['Ondulatória: interferência e efeito Doppler'],['Óptica: reflexão e refração']]},
-  {nome:'Química',t:[['Estequiometria: cálculos de massa e mol'],['Soluções e concentração'],['pH'],['Termoquímica'],['Cinética química'],['Funções orgânicas: álcool, cetona, ácido e outras'],['Isomeria'],['Eletroquímica: pilhas'],['Eletrólise e oxirredução']]},
-  {nome:'Biologia',t:[['Ecologia: cadeias alimentares e fluxo de energia'],['Ecologia: desequilíbrios ambientais e poluição'],['Genética: DNA, RNA e biologia molecular'],['Genética: Leis de Mendel'],['Biotecnologia'],['Fisiologia: sistema circulatório'],['Fisiologia: sistema nervoso'],['Fisiologia: sistema hormonal'],['Fisiologia: sistema digestório'],['Evolução: Darwin e Lamarck'],['Citologia: organelas celulares']]}
+ {id:'nat',nome:'Ciências da Natureza',cor:'--a-nat',materias:[
+  {id:'fis',nome:'Física',desc:'Mais conceitual que de fórmula: o ENEM cobra Física aplicada a aparelhos, energia e consumo do dia a dia.',mods:[
+   {nome:'Fundamentos',t:[['fis-grand','Grandezas, unidades e análise dimensional'],['fis-vet','Vetores',1]]},
+   {nome:'Cinemática',t:[['fis-mru','Velocidade média e movimento uniforme (MRU)',3],['fis-mruv','Movimento uniformemente variado (MRUV)'],['fis-lanc','Queda livre e lançamentos',1],['fis-mcu','Movimento circular e transmissão por polias']]},
+   {nome:'Dinâmica',t:[['fis-newton','Leis de Newton',3],['fis-atrito','Atrito, tração, plano inclinado e força centrípeta'],['fis-grav','Gravitação universal',1]]},
+   {nome:'Energia',t:[['fis-trab','Trabalho e potência'],['fis-energ','Energia mecânica e conservação',3],['fis-impulso','Impulso e quantidade de movimento'],['fis-maq','Máquinas simples e alavancas']]},
+   {nome:'Hidrostática',t:[['fis-press','Pressão, densidade e Teorema de Stevin'],['fis-empuxo','Empuxo e Princípio de Pascal']]},
+   {nome:'Termologia',t:[['fis-temp','Temperatura e escalas termométricas'],['fis-calor','Calorimetria e trocas de calor',3],['fis-estados','Mudanças de estado físico'],['fis-dilat','Dilatação térmica',1],['fis-transm','Propagação de calor: condução, convecção e irradiação',3],['fis-gases','Gases e termodinâmica'],['fis-maqterm','Máquinas térmicas e rendimento']]},
+   {nome:'Ondulatória e óptica',t:[['fis-ondas','Características das ondas'],['fis-som','Som e acústica'],['fis-fenond','Fenômenos ondulatórios: reflexão, refração, difração e interferência',3],['fis-doppler','Efeito Doppler',1],['fis-espectro','Espectro eletromagnético e radiações'],['fis-espelhos','Óptica geométrica: luz, sombra e espelhos'],['fis-lentes','Lentes, olho humano e defeitos da visão']]},
+   {nome:'Eletricidade e magnetismo',t:[['fis-eletrost','Carga elétrica e eletrostática',1],['fis-ohm','Corrente, tensão, resistência e Leis de Ohm',3],['fis-circ','Circuitos e associação de resistores',3],['fis-pot','Potência elétrica e consumo de energia',3],['fis-magnet','Magnetismo e indução eletromagnética'],['fis-usinas','Geração de energia elétrica e usinas',3]]}
+  ]},
+  {id:'qui',nome:'Química',desc:'Da estrutura da matéria às reações. Cálculos, soluções, orgânica e química ambiental concentram as questões.',mods:[
+   {nome:'Matéria e átomo',t:[['qui-materia','Matéria, substâncias e misturas'],['qui-separ','Separação de misturas',3],['qui-atom','Modelos atômicos'],['qui-tabela','Tabela periódica e propriedades periódicas']]},
+   {nome:'Ligações e interações',t:[['qui-lig','Ligações químicas'],['qui-geom','Geometria molecular e polaridade'],['qui-intermol','Forças intermoleculares e solubilidade',3]]},
+   {nome:'Química inorgânica',t:[['qui-funcinorg','Ácidos, bases, sais e óxidos'],['qui-reacinorg','Reações inorgânicas e balanceamento']]},
+   {nome:'Cálculos químicos',t:[['qui-mol','Mol, massa molar e constante de Avogadro'],['qui-esteq','Estequiometria',3],['qui-gases','Estudo dos gases',1]]},
+   {nome:'Físico-química',t:[['qui-solu','Soluções e concentração',3],['qui-colig','Propriedades coligativas',1],['qui-termo','Termoquímica'],['qui-cinet','Cinética química'],['qui-equil','Equilíbrio químico'],['qui-ph','pH, pOH e indicadores',3],['qui-redox','Oxirredução'],['qui-pilhas','Pilhas e baterias',3],['qui-eletrolise','Eletrólise'],['qui-radio','Radioatividade']]},
+   {nome:'Química orgânica',t:[['qui-cadeias','Cadeias carbônicas'],['qui-funcoes','Funções orgânicas',3],['qui-isom','Isomeria'],['qui-reacorg','Reações orgânicas'],['qui-polim','Polímeros e plásticos']]},
+   {nome:'Química ambiental',t:[['qui-amb','Chuva ácida, efeito estufa, camada de ozônio e tratamento de água',3]]}
+  ]},
+  {id:'bio',nome:'Biologia',desc:'Ecologia e meio ambiente lideram as questões, seguidas de genética, saúde e fisiologia humana.',mods:[
+   {nome:'Célula',t:[['bio-bioq','Bioquímica: água, sais, carboidratos, lipídios e proteínas'],['bio-cito','Citologia: membrana e organelas'],['bio-metab','Respiração celular, fermentação e fotossíntese',3],['bio-divisao','Divisão celular: mitose e meiose']]},
+   {nome:'Genética',t:[['bio-dna','DNA, RNA e síntese de proteínas',3],['bio-mendel','Leis de Mendel',3],['bio-heredo','Heredogramas, grupos sanguíneos e herança ligada ao sexo'],['bio-biotec','Biotecnologia e engenharia genética',3]]},
+   {nome:'Evolução',t:[['bio-teorias','Teorias evolutivas: Lamarck, Darwin e teoria sintética'],['bio-especiacao','Seleção natural, especiação e evidências da evolução']]},
+   {nome:'Seres vivos e saúde',t:[['bio-virus','Vírus e doenças virais',3],['bio-microrg','Bactérias, protozoários e fungos'],['bio-parasit','Doenças, parasitoses e saneamento básico',3],['bio-botanica','Botânica: grupos vegetais e fisiologia das plantas'],['bio-zoo','Zoologia: invertebrados e vertebrados',1]]},
+   {nome:'Corpo humano',t:[['bio-dig','Sistemas digestório e respiratório'],['bio-circ','Sistemas circulatório e excretor'],['bio-nerv','Sistemas nervoso e endócrino'],['bio-imuno','Imunologia e vacinas',3],['bio-reprod','Reprodução humana e métodos contraceptivos']]},
+   {nome:'Ecologia',t:[['bio-cadeias','Cadeias alimentares e fluxo de energia',3],['bio-ciclos','Ciclos biogeoquímicos',3],['bio-relacoes','Relações ecológicas'],['bio-popul','Populações e sucessão ecológica'],['bio-biomas','Biomas brasileiros'],['bio-impactos','Impactos ambientais e sustentabilidade',3]]}
+  ]}
  ]},
- {id:'ling',nome:'Linguagens',cor:'--a-ling',desc:'Foco total em interpretação de texto, variação linguística e gramática aplicada.',grupos:[
-  {nome:'Interpretação e análise de texto',t:[['Funções da linguagem'],['Figuras de linguagem: metáfora, metonímia e ironia'],['Coesão e coerência: conectivos, pronomes e progressão temática'],['Gêneros textuais: crônica, artigo de opinião, propaganda e cartaz'],['Variação linguística']]},
-  {nome:'Literatura brasileira',t:[['Romantismo'],['Realismo e Naturalismo (Machado de Assis)'],['Vanguardas europeias: futurismo, cubismo e surrealismo'],['Modernismo, 1ª fase (Oswald de Andrade)'],['Modernismo, 2ª fase (Drummond)'],['Modernismo, 3ª fase (Clarice Lispector)']]},
-  {nome:'Educação Física, Artes e língua estrangeira',t:[['Impacto das mídias e tecnologias na comunicação'],['Manifestações corporais'],['Língua estrangeira: interpretação, skimming e scanning']]}
+ {id:'ling',nome:'Linguagens',cor:'--a-ling',materias:[
+  {id:'port',nome:'Língua Portuguesa',desc:'Interpretação acima de tudo. A gramática aparece aplicada ao sentido do texto, não decorada.',mods:[
+   {nome:'Leitura',t:[['port-leitura','Estratégias de leitura e inferência',3],['port-generos','Gêneros textuais',3],['port-tipos','Tipos textuais']]},
+   {nome:'Linguagem e sentido',t:[['port-funcoes','Funções da linguagem',3],['port-figuras','Figuras de linguagem'],['port-variacao','Variação linguística',3],['port-intertext','Intertextualidade'],['port-tic','Tecnologias da comunicação e mídias digitais',3]]},
+   {nome:'Gramática aplicada',t:[['port-coesao','Coesão e conectivos',3],['port-coerencia','Coerência e progressão textual'],['port-classes','Classes de palavras no contexto',1],['port-pontuacao','Pontuação e efeitos de sentido'],['port-norma','Concordância, regência e crase',1]]}
+  ]},
+  {id:'lit',nome:'Literatura',desc:'Em ordem cronológica, porque cada escola reage à anterior. O ENEM cobra mais o Modernismo e a leitura do texto literário.',mods:[
+   {nome:'Literatura colonial e século XIX',t:[['lit-quinh','Quinhentismo e Barroco',1],['lit-arcad','Arcadismo',1],['lit-rom','Romantismo'],['lit-real','Realismo e Naturalismo (Machado de Assis)'],['lit-parnas','Parnasianismo e Simbolismo',1]]},
+   {nome:'Século XX e hoje',t:[['lit-premod','Pré-Modernismo'],['lit-vang','Vanguardas europeias'],['lit-mod1','Semana de 22 e 1ª fase modernista',3],['lit-mod2','2ª fase modernista: Drummond e romance de 30',3],['lit-mod3','3ª fase: Clarice Lispector, Guimarães Rosa e João Cabral'],['lit-contemp','Literatura contemporânea e periférica']]}
+  ]},
+  {id:'ing',nome:'Inglês',desc:'São 5 questões de interpretação. Estratégia de leitura vale mais que gramática.',mods:[
+   {nome:'Leitura em inglês',t:[['ing-skim','Skimming e scanning',3],['ing-cognatos','Cognatos e falsos cognatos'],['ing-contexto','Inferência de vocabulário pelo contexto',3],['ing-generos','Gêneros: charges, tirinhas, poemas, letras de música e notícias'],['ing-conect','Conectivos e marcadores do discurso']]}
+  ]},
+  {id:'art',nome:'Artes e Educação Física',desc:'Questões curtas e frequentes, quase sempre resolvidas com leitura atenta do texto e da imagem.',mods:[
+   {nome:'Artes',t:[['art-classica','Arte clássica, medieval e Renascimento',1],['art-moderna','Arte moderna e vanguardas'],['art-brasil','Arte brasileira: Modernismo e Tropicália'],['art-contemp','Arte contemporânea, performance e intervenção urbana',3],['art-musica','Música, dança e teatro'],['art-patrim','Patrimônio cultural e cultura popular']]},
+   {nome:'Educação Física',t:[['edf-praticas','Práticas corporais: esporte, dança, luta e ginástica'],['edf-saude','Corpo, saúde e padrões de beleza',3],['edf-midia','Esporte, mídia e inclusão']]}
+  ]}
  ]},
- {id:'hum',nome:'Ciências Humanas',cor:'--a-hum',desc:'História, Geografia, Filosofia e Sociologia cobram criticidade, contexto histórico e geopolítica.',grupos:[
-  {nome:'História',t:[['Brasil Colônia e escravidão'],['República Velha'],['Era Vargas'],['Ditadura Militar'],['Idade Média'],['Revolução Industrial'],['Imperialismo'],['1ª Guerra Mundial'],['2ª Guerra Mundial'],['Guerra Fria']]},
-  {nome:'Geografia',t:[['Climatologia'],['Relevo e hidrografia'],['Biomas brasileiros'],['Globalização e geopolítica mundial'],['Urbanização'],['Demografia'],['Industrialização']]},
-  {nome:'Filosofia e Sociologia',t:[['Filosofia antiga: Sócrates, Platão e Aristóteles'],['Contratualismo: Hobbes, Locke e Rousseau'],['Kant'],['Sociologia clássica: Marx, Weber e Durkheim'],['Cidadania e movimentos sociais'],['Desigualdade e cultura de massa']]}
+ {id:'hum',nome:'Ciências Humanas',cor:'--a-hum',materias:[
+  {id:'hist',nome:'História',desc:'Em ordem cronológica, intercalando mundo e Brasil. O Brasil República é o período mais cobrado.',mods:[
+   {nome:'Antiguidade e Idade Média',t:[['hist-grecia','Grécia e Roma: cidadania, democracia e república'],['hist-feudal','Feudalismo e Igreja medieval']]},
+   {nome:'Idade Moderna',t:[['hist-renasc','Renascimento e Reformas religiosas'],['hist-absol','Absolutismo e mercantilismo',1],['hist-naveg','Grandes navegações e conquista da América']]},
+   {nome:'Brasil Colônia',t:[['hist-colonia','Colonização, economia açucareira e mineração'],['hist-indig','Povos indígenas e colonização',3],['hist-escrav','Escravidão e resistência: quilombos',3]]},
+   {nome:'Era das revoluções',t:[['hist-ilum','Iluminismo'],['hist-revind','Revolução Inglesa e Revolução Industrial',3],['hist-revfr','Revolução Francesa'],['hist-indamer','Independências na América',1]]},
+   {nome:'Brasil Império',t:[['hist-indbr','Independência e Primeiro Reinado'],['hist-regencia','Período Regencial e revoltas',1],['hist-2reinado','Segundo Reinado, imigração e abolição']]},
+   {nome:'Século XX no mundo',t:[['hist-imper','Imperialismo e 1ª Guerra Mundial'],['hist-revrussa','Revolução Russa e crise de 1929'],['hist-2gm','Totalitarismos e 2ª Guerra Mundial'],['hist-gfria','Guerra Fria'],['hist-descol','Descolonização da África e da Ásia']]},
+   {nome:'Brasil República',t:[['hist-repvelha','República Velha: coronelismo e revoltas',3],['hist-vargas','Era Vargas',3],['hist-populismo','República Populista (1946 a 1964)'],['hist-ditadura','Ditadura Militar',3],['hist-redemo','Redemocratização e Constituição de 1988',3]]}
+  ]},
+  {id:'geo',nome:'Geografia',desc:'Comece pela cartografia, que é ferramenta para o resto. Meio ambiente, urbano e agrário são os temas mais cobrados.',mods:[
+   {nome:'Cartografia',t:[['geo-cart','Escalas, coordenadas e fusos horários',3],['geo-mapas','Projeções cartográficas e leitura de mapas']]},
+   {nome:'Natureza',t:[['geo-relevo','Estrutura geológica e relevo'],['geo-solos','Solos, erosão e desertificação'],['geo-clima','Climatologia',3],['geo-hidro','Hidrografia e recursos hídricos',3],['geo-biomas','Biomas e domínios morfoclimáticos brasileiros',3]]},
+   {nome:'Meio ambiente',t:[['geo-amb','Questões ambientais e conferências internacionais',3],['geo-energia','Fontes de energia e matriz energética',3]]},
+   {nome:'População',t:[['geo-demo','Demografia e transição demográfica'],['geo-migra','Migrações']]},
+   {nome:'Espaço urbano e rural',t:[['geo-urb','Urbanização e problemas urbanos',3],['geo-agrario','Espaço agrário, agronegócio e conflitos no campo',3],['geo-ind','Industrialização brasileira']]},
+   {nome:'Mundo',t:[['geo-global','Globalização e blocos econômicos',3],['geo-geopol','Geopolítica e conflitos atuais']]}
+  ]},
+  {id:'filo',nome:'Filosofia',desc:'Em ordem histórica, dos gregos aos contemporâneos. Os contratualistas e a Escola de Frankfurt aparecem com frequência.',mods:[
+   {nome:'Do mito à razão',t:[['filo-socrates','Pré-socráticos e Sócrates'],['filo-platao','Platão e Aristóteles',3],['filo-medieval','Filosofia medieval: Agostinho e Tomás de Aquino',1]]},
+   {nome:'Modernidade',t:[['filo-maquiavel','Maquiavel e a política'],['filo-conhec','Racionalismo e empirismo: Descartes, Locke e Hume'],['filo-contrato','Contratualistas: Hobbes, Locke e Rousseau',3],['filo-ilum','Iluminismo e Kant']]},
+   {nome:'Contemporânea',t:[['filo-contemp','Nietzsche, Escola de Frankfurt e existencialismo',3],['filo-etica','Ética e bioética']]}
+  ]},
+  {id:'soc',nome:'Sociologia',desc:'Os três clássicos primeiro: eles dão o vocabulário para cidadania, trabalho e desigualdade.',mods:[
+   {nome:'Clássicos',t:[['soc-durk','Durkheim e o fato social'],['soc-weber','Weber e a ação social'],['soc-marx','Marx e a luta de classes',3]]},
+   {nome:'Temas',t:[['soc-cultura','Cultura, identidade e indústria cultural',3],['soc-trab','Trabalho, desigualdade e estratificação',3],['soc-estado','Estado, poder e democracia'],['soc-movim','Cidadania e movimentos sociais',3],['soc-dh','Questões raciais, de gênero e direitos humanos',3]]}
+  ]}
  ]},
- {id:'red',nome:'Redação',cor:'--a-red',semRevisao:true,desc:'Vale 1000 pontos e é o curinga que salva qualquer vestibular.',grupos:[
-  {nome:'Estrutura dissertativo-argumentativa',t:[['Introdução: tese e contextualização'],['Desenvolvimento 1: argumento e repertório produtivo'],['Desenvolvimento 2: argumento e repertório produtivo'],['Conclusão: proposta de intervenção com os 5 elementos']]}
+ {id:'red',nome:'Redação',cor:'--a-red',semRevisao:true,materias:[
+  {id:'red',nome:'Redação',desc:'Vale 1000 pontos e é o curinga que salva qualquer vestibular. Entenda as regras antes de treinar a escrita.',mods:[
+   {nome:'Fundamentos',t:[['red-comp','As 5 competências da correção',3],['red-proposta','Leitura da proposta e dos textos motivadores',3],['red-tipo','Texto dissertativo-argumentativo']]},
+   {nome:'Estrutura',t:[['red-intro','Introdução: contextualização e tese',3],['red-desenv','Desenvolvimento: construção de argumentos',3],['red-repert','Repertório sociocultural produtivo',3],['red-coesao','Coesão entre e dentro dos parágrafos'],['red-conc','Conclusão: proposta de intervenção com os 5 elementos',3]]},
+   {nome:'Prática',t:[['red-tempo','Redação completa com tempo cronometrado'],['red-reescrita','Reescrita a partir da correção'],['red-eixos','Eixos temáticos frequentes']]}
+  ]}
  ]},
- {id:'tec',nome:'Bloco técnico',cor:'--a-tec',semRevisao:true,desc:'Ritmo profissional e equilíbrio mental sem abandonar o código. Lógica também treina o raciocínio matemático.',grupos:[
-  {nome:'Lógica e algoritmos',t:[['Lógica de programação em Python'],['Estruturas de dados'],['Algoritmos'],['Desafios de lógica (LeetCode)']]},
-  {nome:'Projetos',t:[['Backend com FastAPI'],['Banco de dados MySQL e SQLite'],['Dart e Flutter'],['Leitura técnica e documentação']]}
+ {id:'tec',nome:'Bloco técnico',cor:'--a-tec',semRevisao:true,materias:[
+  {id:'tec',nome:'Programação',desc:'Ritmo profissional e equilíbrio mental sem abandonar o código. Lógica também treina o raciocínio matemático.',mods:[
+   {nome:'Lógica e algoritmos',t:[['tec-python','Lógica de programação em Python'],['tec-ed','Estruturas de dados'],['tec-alg','Algoritmos'],['tec-leet','Desafios de lógica (LeetCode)']]},
+   {nome:'Projetos',t:[['tec-fastapi','Backend com FastAPI'],['tec-db','Banco de dados MySQL e SQLite'],['tec-flutter','Dart e Flutter'],['tec-docs','Leitura técnica e documentação']]}
+  ]}
  ]}
 ];
-var TOPICS={},TOPIC_LIST=[];
-SYLLABUS.forEach(function(a){a.grupos.forEach(function(g,gi){g.t.forEach(function(t,ti){
-  var o={id:a.id+'.'+gi+'.'+ti,nome:t[0],hot:!!t[1],area:a.id,areaNome:a.nome,grupo:g.nome,rev:!a.semRevisao};
-  TOPICS[o.id]=o;TOPIC_LIST.push(o);
-})})});
+var TOPICS={},TOPIC_LIST=[],MATERIAS=[],MATERIA={};
+SYLLABUS.forEach(function(a){a.materias.forEach(function(m){
+  m.area=a.id;m.cor=a.cor;m.ids=[];MATERIAS.push(m);MATERIA[m.id]=m;
+  m.mods.forEach(function(md,mi){md.t.forEach(function(t){
+    var p=t[2]||2;
+    var o={id:t[0],nome:t[1],p:p,hot:p===3,area:a.id,areaNome:a.nome,materia:m.id,materiaNome:m.nome,grupo:m.nome,mod:md.nome,modIdx:mi,ord:TOPIC_LIST.length,rev:!a.semRevisao};
+    TOPICS[o.id]=o;TOPIC_LIST.push(o);m.ids.push(o.id);
+  })});
+})});
 function areaById(id){for(var i=0;i<SYLLABUS.length;i++)if(SYLLABUS[i].id===id)return SYLLABUS[i]}
+
+/* Ids da versão anterior do conteúdo, para não perder o progresso */
+var OLD_IDS={
+ 'mat.0.0':'mat-razao','mat.0.1':'mat-regra3','mat.0.2':'mat-porcent','mat.0.3':'mat-juros','mat.0.4':'mat-escalas','mat.0.5':['mat-media','mat-desvio'],
+ 'mat.1.0':'mat-afim','mat.1.1':'mat-quad','mat.1.2':'mat-expo','mat.1.3':'mat-log','mat.1.4':'mat-pa','mat.1.5':'mat-pg',
+ 'mat.2.0':'mat-areas','mat.2.1':'mat-circ','mat.2.2':'mat-triang','mat.2.3':'mat-prisma','mat.2.4':['mat-cone','mat-esfera'],'mat.2.5':'mat-reta','mat.2.6':'mat-eqcirc',
+ 'mat.3.0':'mat-pfc','mat.3.1':'mat-comb','mat.3.2':'mat-comb','mat.3.3':'mat-probcond','mat.3.4':'mat-probcond',
+ 'nat.0.0':['fis-mru','fis-mruv'],'nat.0.1':'fis-lanc','nat.0.2':'fis-newton','nat.0.3':'fis-atrito','nat.0.4':['fis-ohm','fis-circ'],'nat.0.5':'fis-pot','nat.0.6':'fis-calor','nat.0.7':'fis-gases','nat.0.8':['fis-fenond','fis-doppler'],'nat.0.9':'fis-espelhos',
+ 'nat.1.0':'qui-esteq','nat.1.1':'qui-solu','nat.1.2':'qui-ph','nat.1.3':'qui-termo','nat.1.4':'qui-cinet','nat.1.5':'qui-funcoes','nat.1.6':'qui-isom','nat.1.7':'qui-pilhas','nat.1.8':['qui-eletrolise','qui-redox'],
+ 'nat.2.0':'bio-cadeias','nat.2.1':'bio-impactos','nat.2.2':'bio-dna','nat.2.3':'bio-mendel','nat.2.4':'bio-biotec','nat.2.5':'bio-circ','nat.2.6':'bio-nerv','nat.2.7':'bio-nerv','nat.2.8':'bio-dig','nat.2.9':['bio-teorias','bio-especiacao'],'nat.2.10':'bio-cito',
+ 'ling.0.0':'port-funcoes','ling.0.1':'port-figuras','ling.0.2':['port-coesao','port-coerencia'],'ling.0.3':'port-generos','ling.0.4':'port-variacao',
+ 'ling.1.0':'lit-rom','ling.1.1':'lit-real','ling.1.2':'lit-vang','ling.1.3':'lit-mod1','ling.1.4':'lit-mod2','ling.1.5':'lit-mod3',
+ 'ling.2.0':'port-tic','ling.2.1':'edf-praticas','ling.2.2':'ing-skim',
+ 'hum.0.0':['hist-colonia','hist-escrav'],'hum.0.1':'hist-repvelha','hum.0.2':'hist-vargas','hum.0.3':'hist-ditadura','hum.0.4':'hist-feudal','hum.0.5':'hist-revind','hum.0.6':'hist-imper','hum.0.7':'hist-imper','hum.0.8':'hist-2gm','hum.0.9':'hist-gfria',
+ 'hum.1.0':'geo-clima','hum.1.1':['geo-relevo','geo-hidro'],'hum.1.2':'geo-biomas','hum.1.3':['geo-global','geo-geopol'],'hum.1.4':'geo-urb','hum.1.5':'geo-demo','hum.1.6':'geo-ind',
+ 'hum.2.0':['filo-socrates','filo-platao'],'hum.2.1':'filo-contrato','hum.2.2':'filo-ilum','hum.2.3':['soc-durk','soc-weber','soc-marx'],'hum.2.4':'soc-movim','hum.2.5':['soc-trab','soc-cultura'],
+ 'red.0.0':'red-intro','red.0.1':'red-desenv','red.0.2':'red-repert','red.0.3':'red-conc',
+ 'tec.0.0':'tec-python','tec.0.1':'tec-ed','tec.0.2':'tec-alg','tec.0.3':'tec-leet','tec.1.0':'tec-fastapi','tec.1.1':'tec-db','tec.1.2':'tec-flutter','tec.1.3':'tec-docs'
+};
+function migrateTopics(){
+  var changed=false,nt={};
+  Object.keys(topics).forEach(function(k){
+    var to=OLD_IDS[k];
+    if(!to){if(TOPICS[k])nt[k]=topics[k];return}
+    changed=true;
+    (Array.isArray(to)?to:[to]).forEach(function(id){
+      var cur=nt[id]||topics[id];
+      if(!cur||topics[k].s>cur.s)nt[id]=clone(topics[k]);
+    });
+  });
+  Object.keys(picks).forEach(function(d){Object.keys(picks[d]).forEach(function(b){
+    var p=picks[d][b],to=OLD_IDS[p.t];
+    if(to){p.t=Array.isArray(to)?to[0]:to;changed=true}
+  })});
+  if(changed){topics=nt;save('topics',topics);save('picks',picks)}
+}
 
 /* Matéria ligada a cada bloco de estudo */
 var SUBJECTS={
  '':{n:'Nenhuma'},
  mat:{n:'Matemática',area:'mat'},
- fis:{n:'Física',area:'nat',g:'Física'},
- qui:{n:'Química',area:'nat',g:'Química'},
- bio:{n:'Biologia',area:'nat',g:'Biologia'},
+ fis:{n:'Física',m:'fis'},
+ qui:{n:'Química',m:'qui'},
+ bio:{n:'Biologia',m:'bio'},
  nat:{n:'Ciências da Natureza (todas)',area:'nat'},
- ling:{n:'Linguagens',area:'ling'},
- hum:{n:'Ciências Humanas',area:'hum'},
- red:{n:'Redação: estrutura',area:'red'},
+ ling:{n:'Linguagens (todas)',area:'ling'},
+ port:{n:'Língua Portuguesa',m:'port'},
+ lit:{n:'Literatura',m:'lit'},
+ ing:{n:'Inglês',m:'ing'},
+ hum:{n:'Ciências Humanas (todas)',area:'hum'},
+ hist:{n:'História',m:'hist'},
+ geo:{n:'Geografia',m:'geo'},
+ filo:{n:'Filosofia',m:'filo'},
+ soc:{n:'Sociologia',m:'soc'},
+ red:{n:'Redação: teoria',area:'red'},
  tec:{n:'Bloco técnico',area:'tec'},
  rev:{n:'Revisões programadas'},
  rep:{n:'Banco de repertórios'},
- redsim:{n:'Redação simulada (registrar nota)'},
- ing:{n:'Inglês'}
+ redsim:{n:'Redação simulada (registrar nota)'}
 };
 function topicsFor(subj){
-  var s=SUBJECTS[subj];if(!s||!s.area)return [];
-  return TOPIC_LIST.filter(function(t){return t.area===s.area&&(!s.g||t.grupo===s.g)});
+  var s=SUBJECTS[subj];if(!s||(!s.area&&!s.m))return [];
+  return TOPIC_LIST.filter(function(t){return s.m?t.materia===s.m:t.area===s.area});
 }
 
 /* =========================================================
@@ -461,7 +606,7 @@ var DEFAULT=[
    ========================================================= */
 var PREFIX='minha-rotina:';
 // Dados que vão para a nuvem e para o backup
-var KEYS=['routine.v2','progress','notes','focus','topics','picks','essays','reps','sims','exam','best'];
+var KEYS=['routine.v2','progress','notes','focus','topics','picks','essays','reps','sims','exam','best','trailMode'];
 function load(k,d){try{var v=localStorage.getItem(PREFIX+k);return v?JSON.parse(v):d}catch(e){return d}}
 function rawSave(k,v){try{localStorage.setItem(PREFIX+k,JSON.stringify(v))}catch(e){}}
 function save(k,v){rawSave(k,v);if(KEYS.indexOf(k)>=0&&typeof markDirty==='function')markDirty()}
@@ -479,6 +624,7 @@ function reloadState(){
   reps=load('reps',[]);          // repertórios
   sims=load('sims',[]);          // simulados
   exam=load('exam','');          // data da prova
+  migrateTopics();
 }
 reloadState();
 var theme=load('theme','auto');
@@ -536,7 +682,8 @@ function dueReviews(){
     .sort(function(a,b){return topics[a].next<topics[b].next?-1:1});
 }
 function suggestTopic(subj){
-  var list=topicsFor(subj);
+  var list=topicsFor(subj).map(function(t){return t.id});
+  list=trailOrder(list);
   for(var i=0;i<list.length;i++)if(tstate(list[i].id).s===0)return list[i].id;
   for(var j=0;j<list.length;j++)if(tstate(list[j].id).s<3)return list[j].id;
   return null;
@@ -642,7 +789,7 @@ function blockHTML(b,date,opts){
         list.forEach(function(t){
           var s=tstate(t.id).s;
           if(s===3&&t.id!==cur)return;
-          h+='<option value="'+t.id+'"'+(t.id===cur?' selected':'')+'>'+(SUBJECTS[b.subject].g||b.subject==='mat'||b.subject==='hum'||b.subject==='ling'||b.subject==='tec'?'':t.grupo+' · ')+esc(t.nome)+(s?' ('+STATUS[s].toLowerCase()+')':'')+(t.hot?' · cai muito':'')+'</option>';
+          h+='<option value="'+t.id+'"'+(t.id===cur?' selected':'')+'>'+(SUBJECTS[b.subject].m||b.subject==='mat'||b.subject==='red'||b.subject==='tec'?'':t.materiaNome+' · ')+esc(t.nome)+(s?' ('+STATUS[s].toLowerCase()+')':'')+(t.hot?' · cai muito':'')+'</option>';
         });
         h+='</select></div>';
       }else h+='<p class="pick">Todos os tópicos desta matéria estão dominados.</p>';
@@ -720,47 +867,93 @@ function renderSemana(){
 }
 
 /* =========================================================
-   TELA: CONTEÚDO ENEM
+   TELA: TRILHA DO ENEM
    ========================================================= */
+var trailSel=load('trailSel','');
+function trailOrder(ids){
+  var list=ids.map(function(id){return TOPICS[id]});
+  if(load('trailMode','didatica')==='prioridade')list=list.slice().sort(function(a,b){return b.p-a.p||a.ord-b.ord});
+  return list;
+}
+function nextStep(ids){
+  var list=trailOrder(ids);
+  for(var i=0;i<list.length;i++)if(tstate(list[i].id).s===0)return list[i];
+  for(var j=0;j<list.length;j++)if(tstate(list[j].id).s<3)return list[j];
+  return null;
+}
+function matCoverage(m){var st=0,dom=0;m.ids.forEach(function(id){var s=tstate(id).s;if(s>=1)st++;if(s===3)dom++});return {total:m.ids.length,studied:st,mastered:dom}}
+function pill(t){return t.p===3?'<span class="hot">cai muito</span>':t.p===1?'<span class="low">cai pouco</span>':''}
+function topicRow(t,num,dueSet,isNext,showMod){
+  var st=tstate(t.id);
+  var h='<li class="topic s'+st.s+(isNext?' next':'')+'">';
+  if(num)h+='<span class="num" aria-hidden="true">'+num+'</span>';
+  h+='<button class="st s'+st.s+'" data-act="cycle" data-t="'+t.id+'" aria-label="'+esc(t.nome)+': '+STATUS[st.s]+'. Avançar status"><i></i><span>'+STATUS[st.s]+'</span></button>';
+  h+='<span class="nm">'+esc(t.nome)+(showMod?'<small>Etapa: '+esc(t.mod)+'</small>':'')+(isNext?'<small class="here">Próximo passo</small>':'')+'</span>'+pill(t);
+  if(st.next)h+='<span class="nx'+(dueSet[t.id]?' due':'')+'">'+(dueSet[t.id]?'revisar hoje':'rev. '+shortDate(st.next))+'</span>';
+  return h+'</li>';
+}
+function passFilter(t,dueSet){
+  var s=tstate(t.id).s;
+  if(contentFilter==='pendentes'&&s===3)return false;
+  if(contentFilter==='naovistos'&&s!==0)return false;
+  if(contentFilter==='revisar'&&!dueSet[t.id])return false;
+  if(contentFilter==='hot'&&!t.hot)return false;
+  return true;
+}
 function renderConteudo(){
-  var all=areaCoverage(),due=dueReviews();
-  var h='<div class="summary"><div class="chips" role="group" aria-label="Filtrar tópicos">';
-  [['todos','Todos'],['pendentes','Ainda não dominados'],['naovistos','Não vistos'],['revisar','Para revisar hoje ('+due.length+')'],['hot','Cai muito']].forEach(function(f){
-    h+='<button class="chip" data-act="cf" data-f="'+f[0]+'" aria-pressed="'+(contentFilter===f[0])+'">'+f[1]+'</button>';
-  });
-  h+='</div><span style="flex:1"></span><button class="icon-btn no-print" data-act="print">Imprimir checklist</button></div>';
-  h+='<p class="hint">'+all.studied+' de '+all.total+' tópicos estudados · '+all.mastered+' dominados. Clique no status para avançar: não visto, estudado, revisado, dominado. Ao estudar um tópico, ele volta para revisão em 1, 7 e 30 dias.</p>';
-  h+='<div class="legend" style="margin-bottom:16px">'+STATUS.map(function(s,i){return '<span class="st s'+i+'" aria-hidden="true"><i></i>'+s+'</span>'}).join('')+'</div>';
-  h+='<div class="areas">';
-  var dueSet={};due.forEach(function(id){dueSet[id]=1});
-  SYLLABUS.forEach(function(a){
-    var cov=areaCoverage(a.id),pp=Math.round(cov.studied/cov.total*100);
-    var gh='';
-    a.grupos.forEach(function(g,gi){
-      var rows='',gs=0,gt=0;
-      g.t.forEach(function(t,ti){
-        var id=a.id+'.'+gi+'.'+ti,T=TOPICS[id],st=tstate(id);gt++;if(st.s>=1)gs++;
-        if(contentFilter==='pendentes'&&st.s===3)return;
-        if(contentFilter==='naovistos'&&st.s!==0)return;
-        if(contentFilter==='revisar'&&!dueSet[id])return;
-        if(contentFilter==='hot'&&!T.hot)return;
-        rows+='<li class="topic s'+st.s+'"><button class="st s'+st.s+'" data-act="cycle" data-t="'+id+'" aria-label="'+esc(T.nome)+': '+STATUS[st.s]+'. Avançar status"><i></i><span>'+STATUS[st.s]+'</span></button>';
-        rows+='<span class="nm">'+esc(T.nome)+'</span>';
-        if(T.hot)rows+='<span class="hot">cai muito</span>';
-        if(st.next)rows+='<span class="nx'+(dueSet[id]?' due':'')+'">'+(dueSet[id]?'revisar hoje':'rev. '+shortDate(st.next))+'</span>';
-        rows+='</li>';
-      });
-      if(!rows)return;
-      gh+='<details class="grp" open><summary><span class="t">'+esc(g.nome)+'</span><span class="c">'+gs+'/'+gt+'</span></summary><ul class="topics">'+rows+'</ul></details>';
+  var mode=load('trailMode','didatica'),due=dueReviews(),dueSet={};due.forEach(function(id){dueSet[id]=1});
+  var m=MATERIA[trailSel]||null;
+  var h='<div class="chips trailnav" role="group" aria-label="Escolher matéria"><button class="chip" data-act="trail" data-m="" aria-pressed="'+(!m)+'">Visão geral</button>';
+  MATERIAS.forEach(function(x){var c=matCoverage(x);h+='<button class="chip" data-act="trail" data-m="'+x.id+'" aria-pressed="'+(m===x)+'">'+esc(x.nome)+' <small>'+c.studied+'/'+c.total+'</small></button>'});
+  h+='</div><div class="summary"><div class="chips" role="group" aria-label="Ordem da trilha"><span class="lbl">Ordem</span>';
+  h+='<button class="chip" data-act="tmode" data-v="didatica" aria-pressed="'+(mode==='didatica')+'">Do básico ao avançado</button>';
+  h+='<button class="chip" data-act="tmode" data-v="prioridade" aria-pressed="'+(mode==='prioridade')+'">Mais cobrados primeiro</button></div>';
+  if(m){
+    h+='<div class="chips" role="group" aria-label="Filtrar tópicos">';
+    [['todos','Todos'],['pendentes','Não dominados'],['naovistos','Não vistos'],['revisar','Revisar hoje'],['hot','Cai muito']].forEach(function(f){
+      h+='<button class="chip" data-act="cf" data-f="'+f[0]+'" aria-pressed="'+(contentFilter===f[0])+'">'+f[1]+'</button>';
     });
-    if(!gh)return;
-    h+='<section class="panel area"><div class="area-h"><span class="sw" style="background:var('+a.cor+')"></span><h2>'+esc(a.nome)+'</h2><span class="cnt">'+cov.studied+'/'+cov.total+'</span></div>';
-    h+='<p class="desc">'+esc(a.desc)+'</p><div class="progress thin" role="progressbar" aria-label="'+esc(a.nome)+' estudado" aria-valuenow="'+pp+'" aria-valuemin="0" aria-valuemax="100"><i style="width:'+pp+'%;background:var('+a.cor+')"></i></div>';
-    h+=gh+'</section>';
-  });
+    h+='</div><span style="flex:1"></span><button class="icon-btn no-print" data-act="print">Imprimir trilha</button>';
+  }
   h+='</div>';
-  if(h.indexOf('<section')<0)h+='<p class="empty">Nenhum tópico neste filtro.</p>';
-  return h;
+
+  if(!m){
+    var all=areaCoverage();
+    h+='<p class="hint">'+all.studied+' de '+all.total+' tópicos estudados em '+MATERIAS.length+' matérias. Cada trilha segue a ordem em que vale estudar: primeiro a base que as etapas seguintes usam. Os blocos de estudo da sua rotina sugerem sempre o próximo passo da trilha. Perto da prova, use "Mais cobrados primeiro".</p>';
+    h+='<div class="matgrid">';
+    MATERIAS.forEach(function(x){
+      var c=matCoverage(x),pp=Math.round(c.studied/c.total*100),nx=nextStep(x.ids);
+      h+='<div class="panel matcard"><div class="area-h"><span class="sw" style="background:var('+x.cor+')"></span><h3>'+esc(x.nome)+'</h3><span class="cnt">'+c.studied+'/'+c.total+'</span></div>';
+      h+='<div class="progress thin"><i style="width:'+pp+'%;background:var('+x.cor+')"></i></div>';
+      h+='<p class="nextline">'+(nx?'<span>Próximo passo</span>'+esc(nx.nome):'<span>Trilha concluída</span>Todos os tópicos dominados')+'</p>';
+      h+='<button class="btn sm ghost" data-act="trail" data-m="'+x.id+'">Abrir trilha</button></div>';
+    });
+    return h+'</div>';
+  }
+
+  var c=matCoverage(m),pp=Math.round(c.studied/c.total*100),nx=nextStep(m.ids);
+  h+='<section class="panel trail"><div class="area-h"><span class="sw" style="background:var('+m.cor+')"></span><h2>'+esc(m.nome)+'</h2><span class="cnt">'+c.studied+'/'+c.total+(c.mastered?' · '+c.mastered+' dominados':'')+'</span></div>';
+  h+='<p class="desc">'+esc(m.desc)+'</p><div class="progress thin"><i style="width:'+pp+'%;background:var('+m.cor+')"></i></div>';
+  h+='<div class="legend" style="margin:12px 0 4px">'+STATUS.map(function(s,i){return '<span class="st s'+i+'" aria-hidden="true"><i></i>'+s+'</span>'}).join('')+'</div>';
+  var any=false;
+  if(mode==='didatica'){
+    var n=0;
+    m.mods.forEach(function(md,mi){
+      var rows='',ms=0;
+      md.t.forEach(function(tt){
+        var t=TOPICS[tt[0]];n++;if(tstate(t.id).s>=1)ms++;
+        if(passFilter(t,dueSet))rows+=topicRow(t,n,dueSet,nx&&nx.id===t.id,false);
+      });
+      if(!rows)return;any=true;
+      h+='<div class="stage"><div class="stage-h"><h3>Etapa '+(mi+1)+': '+esc(md.nome)+'</h3><span>'+ms+'/'+md.t.length+'</span></div><ol class="topics">'+rows+'</ol></div>';
+    });
+  }else{
+    var rows=trailOrder(m.ids).filter(function(t){return passFilter(t,dueSet)}).map(function(t,i){return topicRow(t,i+1,dueSet,nx&&nx.id===t.id,true)}).join('');
+    if(rows){any=true;h+='<div class="stage"><div class="stage-h"><h3>Por incidência no ENEM</h3></div><ol class="topics">'+rows+'</ol></div>'}
+  }
+  if(!any)h+='<p class="empty" style="margin-top:12px">Nenhum tópico neste filtro.</p>';
+  h+='<p class="hint" style="margin:14px 0 0">Clique no status para avançar: não visto, estudado, revisado, dominado. Ao estudar um tópico, ele volta para revisão em 1, 7 e 30 dias.</p>';
+  return h+'</section>';
 }
 
 /* =========================================================
@@ -928,7 +1121,7 @@ function renderEditar(){
    - Revisões atrasadas (15%)
    Componentes sem dados ficam de fora e os pesos são redistribuídos.
    ========================================================= */
-var AREA_OF_SUBJECT={mat:'mat',fis:'nat',qui:'nat',bio:'nat',nat:'nat',ling:'ling',ing:'ling',hum:'hum',red:'red',rep:'red',redsim:'red'};
+var AREA_OF_SUBJECT={mat:'mat',fis:'nat',qui:'nat',bio:'nat',nat:'nat',ling:'ling',port:'ling',lit:'ling',ing:'ling',hum:'hum',hist:'hum',geo:'hum',filo:'hum',soc:'hum',red:'red',rep:'red',redsim:'red'};
 var RISK_AREAS=['mat','nat','ling','hum','red'];
 var SIM_FIELD={mat:'mt',nat:'cn',ling:'lc',hum:'ch'};
 var LEVELS=['Baixo','Médio','Alto','Crítico'];
@@ -1143,6 +1336,8 @@ main.addEventListener('click',function(e){
   else if(a==='rev-ok'||a==='rev-no'){reviewTopic(b.dataset.t,a==='rev-ok');render();toast(a==='rev-ok'?(topics[b.dataset.t].s===3?'Tópico dominado!':'Próxima revisão em '+shortDate(topics[b.dataset.t].next)):'Volta para revisão amanhã')}
   else if(a==='cycle'){cycleTopic(b.dataset.t);render();keepFocus('[data-act="cycle"][data-t="'+b.dataset.t+'"]')}
   else if(a==='cf'){contentFilter=b.dataset.f;render()}
+  else if(a==='trail'){trailSel=b.dataset.m;rawSave('trailSel',trailSel);contentFilter='todos';render();window.scrollTo(0,0)}
+  else if(a==='tmode'){save('trailMode',b.dataset.v);render()}
   else if(a==='wk'){weekOffset=b.dataset.d==='0'?0:weekOffset+(+b.dataset.d);render()}
   else if(a==='print'){document.querySelectorAll('details').forEach(function(x){x.open=true});window.print()}
   else if(a==='resetweek'){
