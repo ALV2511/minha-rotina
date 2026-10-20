@@ -196,6 +196,18 @@ details.grp summary span.c{font-size:13px;color:var(--ink-soft)}
 .num{flex:none;width:26px;text-align:right;font-weight:800;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 .topic .nm small{display:block;font-size:12px;font-weight:600;color:var(--ink-soft)}
 .topic .nm small.here{color:var(--ink);font-weight:800}
+.trailbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.eacts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.eacts button{border:1.5px solid var(--line);background:var(--paper);border-radius:8px;min-width:36px;height:34px;padding:0 10px;font-weight:700;font-size:13px}
+.eacts button:disabled{opacity:.35;cursor:default}
+.eacts button.d{color:var(--bad)}
+.trail .topic.editing{border-bottom:1px solid var(--line);border-radius:0}
+.addrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.addrow input{flex:1 1 220px;width:auto}
+.addrow select{flex:0 1 170px;width:auto}
+.addmod h3{font-size:18px;margin:0}
+.newmat{border-style:dashed}
+.newmat h3{font-size:20px;margin:0}
 .low{font-size:12px;font-weight:700;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:0 8px;white-space:nowrap}
 @media (max-width:560px){.trail .topic{flex-wrap:wrap}.trail .topic .nm{flex-basis:calc(100% - 150px)}}
 
@@ -509,15 +521,44 @@ var SYLLABUS=[
   ]}
  ]}
 ];
-var TOPICS={},TOPIC_LIST=[],MATERIAS=[],MATERIA={};
-SYLLABUS.forEach(function(a){a.materias.forEach(function(m){
-  m.area=a.id;m.cor=a.cor;m.ids=[];MATERIAS.push(m);MATERIA[m.id]=m;
-  m.mods.forEach(function(md,mi){md.t.forEach(function(t){
-    var p=t[2]||2;
-    var o={id:t[0],nome:t[1],p:p,hot:p===3,area:a.id,areaNome:a.nome,materia:m.id,materiaNome:m.nome,grupo:m.nome,mod:md.nome,modIdx:mi,ord:TOPIC_LIST.length,rev:!a.semRevisao};
-    TOPICS[o.id]=o;TOPIC_LIST.push(o);m.ids.push(o.id);
-  })});
-})});
+var AREA_OF_SUBJECT={mat:'mat',fis:'nat',qui:'nat',bio:'nat',nat:'nat',ling:'ling',port:'ling',lit:'ling',ing:'ling',hum:'hum',hist:'hum',geo:'hum',filo:'hum',soc:'hum',red:'red',rep:'red',redsim:'red'};
+var RISK_AREAS_BASE=['mat','nat','ling','hum','red'];
+/* Monta a trilha final: base acima + personalizações do usuário
+   (tópicos e matérias criados, nomes trocados, ocultos e nova ordem). */
+var TOPICS={},TOPIC_LIST=[],MATERIAS=[],MATERIA={},BASE_TOPIC={},BASE_MAT={};
+SYLLABUS.forEach(function(a){a.materias.forEach(function(m){BASE_MAT[m.id]=[];m.mods.forEach(function(md){md.t.forEach(function(t){BASE_TOPIC[t[0]]={nome:t[1],p:t[2]||2,materia:m.id,mod:md.nome};BASE_MAT[m.id].push(t[0])})})})});
+var CUSTOM_AREA={id:'out',nome:'Outras matérias',cor:'--ink-soft',materias:[]};
+var custom={topics:[],materias:[],hidden:{},renamed:{},order:{}};
+function normCustom(c){c=c&&typeof c==='object'?c:{};['topics','materias'].forEach(function(k){if(!Array.isArray(c[k]))c[k]=[]});['hidden','renamed','order'].forEach(function(k){if(!c[k]||typeof c[k]!=='object')c[k]={}});return c}
+function buildSyllabus(){
+  TOPICS={};TOPIC_LIST=[];MATERIAS=[];MATERIA={};
+  Object.keys(SUBJECTS).forEach(function(k){if(SUBJECTS[k].custom)delete SUBJECTS[k]});
+  var areas=SYLLABUS.concat(custom.materias.some(function(x){return x.area==='out'})?[CUSTOM_AREA]:[]);
+  areas.forEach(function(a){
+    var mats=a.materias.map(function(m){return {base:m,id:m.id,nome:m.nome,desc:m.desc}})
+      .concat(custom.materias.filter(function(x){return x.area===a.id}).map(function(x){return {base:null,id:x.id,nome:x.nome,desc:x.desc||'Matéria criada por você.',custom:true}}));
+    mats.forEach(function(src){
+      var m={id:src.id,nome:src.nome,desc:src.desc,custom:!!src.custom,area:a.id,cor:a.cor,mods:[],ids:[],hiddenIds:[]};
+      function modOf(nome){for(var i=0;i<m.mods.length;i++)if(m.mods[i].nome===nome)return m.mods[i];var md={nome:nome,ids:[]};m.mods.push(md);return md}
+      if(src.base)src.base.mods.forEach(function(md){var x=modOf(md.nome);md.t.forEach(function(t){if(custom.hidden[t[0]])m.hiddenIds.push(t[0]);else x.ids.push(t[0])})});
+      custom.topics.forEach(function(t){if(t.materia!==m.id)return;if(custom.hidden[t.id])m.hiddenIds.push(t.id);else modOf(t.mod||'Meus tópicos').ids.push(t.id)});
+      m.mods=m.mods.filter(function(md){return md.ids.length});
+      m.mods.forEach(function(md,mi){
+        var ord=custom.order[m.id+'|'+md.nome];
+        if(Array.isArray(ord))md.ids.sort(function(x,y){var i=ord.indexOf(x),j=ord.indexOf(y);return (i<0?1e6:i)-(j<0?1e6:j)});
+        md.ids.forEach(function(id){
+          var b=BASE_TOPIC[id],c=null;
+          if(!b)for(var i=0;i<custom.topics.length;i++)if(custom.topics[i].id===id){c=custom.topics[i];break}
+          var src2=b||c,p=src2.p||2;
+          var o={id:id,nome:custom.renamed[id]||src2.nome,p:p,hot:p===3,area:a.id,areaNome:a.nome,materia:m.id,materiaNome:m.nome,grupo:m.nome,mod:md.nome,modIdx:mi,ord:TOPIC_LIST.length,rev:!a.semRevisao,custom:!b};
+          TOPICS[id]=o;TOPIC_LIST.push(o);m.ids.push(id);
+        });
+      });
+      MATERIAS.push(m);MATERIA[m.id]=m;
+      if(m.custom){SUBJECTS[m.id]={n:m.nome,m:m.id,custom:true};if(RISK_AREAS_BASE.indexOf(a.id)>=0)AREA_OF_SUBJECT[m.id]=a.id}
+    });
+  });
+}
 function areaById(id){for(var i=0;i<SYLLABUS.length;i++)if(SYLLABUS[i].id===id)return SYLLABUS[i]}
 
 /* Ids da versão anterior do conteúdo, para não perder o progresso */
@@ -542,7 +583,7 @@ function migrateTopics(){
   var changed=false,nt={};
   Object.keys(topics).forEach(function(k){
     var to=OLD_IDS[k];
-    if(!to){if(TOPICS[k])nt[k]=topics[k];return}
+    if(!to){nt[k]=topics[k];return}
     changed=true;
     (Array.isArray(to)?to:[to]).forEach(function(id){
       var cur=nt[id]||topics[id];
@@ -606,7 +647,7 @@ var DEFAULT=[
    ========================================================= */
 var PREFIX='minha-rotina:';
 // Dados que vão para a nuvem e para o backup
-var KEYS=['routine.v2','progress','notes','focus','topics','picks','essays','reps','sims','exam','best','trailMode'];
+var KEYS=['routine.v2','progress','notes','focus','topics','picks','essays','reps','sims','exam','best','trailMode','custom'];
 function load(k,d){try{var v=localStorage.getItem(PREFIX+k);return v?JSON.parse(v):d}catch(e){return d}}
 function rawSave(k,v){try{localStorage.setItem(PREFIX+k,JSON.stringify(v))}catch(e){}}
 function save(k,v){rawSave(k,v);if(KEYS.indexOf(k)>=0&&typeof markDirty==='function')markDirty()}
@@ -624,6 +665,8 @@ function reloadState(){
   reps=load('reps',[]);          // repertórios
   sims=load('sims',[]);          // simulados
   exam=load('exam','');          // data da prova
+  custom=normCustom(load('custom',null));
+  buildSyllabus();
   migrateTopics();
 }
 reloadState();
@@ -791,8 +834,8 @@ function blockHTML(b,date,opts){
           if(s===3&&t.id!==cur)return;
           h+='<option value="'+t.id+'"'+(t.id===cur?' selected':'')+'>'+(SUBJECTS[b.subject].m||b.subject==='mat'||b.subject==='red'||b.subject==='tec'?'':t.materiaNome+' · ')+esc(t.nome)+(s?' ('+STATUS[s].toLowerCase()+')':'')+(t.hot?' · cai muito':'')+'</option>';
         });
-        h+='</select></div>';
-      }else h+='<p class="pick">Todos os tópicos desta matéria estão dominados.</p>';
+        h+='<option value="__new">+ Outro tópico (adicionar à trilha)</option></select></div>';
+      }else h+='<p class="pick">Todos os tópicos desta matéria estão dominados. <button class="link" data-act="today-new" data-b="'+b.id+'" data-date="'+k+'">Adicionar outro tópico</button></p>';
     }else if(cur&&(done||opts.showPick)){
       var p=picks[k]&&picks[k][b.id];
       if(p||done)h+='<div class="pick">Tópico: '+esc(TOPICS[cur].nome)+'</div>';
@@ -900,60 +943,205 @@ function passFilter(t,dueSet){
   if(contentFilter==='hot'&&!t.hot)return false;
   return true;
 }
+var trailEdit=false;
+function pctOf(c){return c.total?Math.round(c.studied/c.total*100):0}
+function editRow(t,num,md){
+  var st=tstate(t.id),i=md.ids.indexOf(t.id);
+  var h='<li class="topic s'+st.s+' editing">';
+  if(num)h+='<span class="num" aria-hidden="true">'+num+'</span>';
+  h+='<span class="nm">'+esc(t.nome)+(t.custom?'<small>Criado por você</small>':custom.renamed[t.id]?'<small>Nome alterado por você</small>':'')+'</span>'+pill(t);
+  h+='<span class="eacts">';
+  h+='<button data-act="tp-up" data-t="'+t.id+'" aria-label="Mover para cima"'+(i===0?' disabled':'')+'>↑</button>';
+  h+='<button data-act="tp-down" data-t="'+t.id+'" aria-label="Mover para baixo"'+(i===md.ids.length-1?' disabled':'')+'>↓</button>';
+  h+='<button data-act="tp-ren" data-t="'+t.id+'">Renomear</button>';
+  h+='<button class="d" data-act="tp-hide" data-t="'+t.id+'">'+(t.custom?'Apagar':'Ocultar')+'</button>';
+  return h+'</span></li>';
+}
+function addTopicForm(m,mod){
+  return '<form class="addrow" data-addtopic="'+m.id+'" data-mod="'+esc(mod)+'"><label class="sr" for="at-'+esc(m.id+mod)+'">Novo tópico em '+esc(mod)+'</label>'+
+    '<input id="at-'+esc(m.id+mod)+'" name="nome" maxlength="120" placeholder="Novo tópico nesta etapa" required>'+
+    '<select name="p" aria-label="Incidência"><option value="2">Incidência normal</option><option value="3">Cai muito</option><option value="1">Cai pouco</option></select>'+
+    '<button class="btn sm" type="submit">Adicionar</button></form>';
+}
 function renderConteudo(){
   var mode=load('trailMode','didatica'),due=dueReviews(),dueSet={};due.forEach(function(id){dueSet[id]=1});
-  var m=MATERIA[trailSel]||null;
+  var m=MATERIA[trailSel]||null;if(!m)trailEdit=false;
   var h='<div class="chips trailnav" role="group" aria-label="Escolher matéria"><button class="chip" data-act="trail" data-m="" aria-pressed="'+(!m)+'">Visão geral</button>';
   MATERIAS.forEach(function(x){var c=matCoverage(x);h+='<button class="chip" data-act="trail" data-m="'+x.id+'" aria-pressed="'+(m===x)+'">'+esc(x.nome)+' <small>'+c.studied+'/'+c.total+'</small></button>'});
-  h+='</div><div class="summary"><div class="chips" role="group" aria-label="Ordem da trilha"><span class="lbl">Ordem</span>';
-  h+='<button class="chip" data-act="tmode" data-v="didatica" aria-pressed="'+(mode==='didatica')+'">Do básico ao avançado</button>';
-  h+='<button class="chip" data-act="tmode" data-v="prioridade" aria-pressed="'+(mode==='prioridade')+'">Mais cobrados primeiro</button></div>';
-  if(m){
-    h+='<div class="chips" role="group" aria-label="Filtrar tópicos">';
-    [['todos','Todos'],['pendentes','Não dominados'],['naovistos','Não vistos'],['revisar','Revisar hoje'],['hot','Cai muito']].forEach(function(f){
-      h+='<button class="chip" data-act="cf" data-f="'+f[0]+'" aria-pressed="'+(contentFilter===f[0])+'">'+f[1]+'</button>';
-    });
-    h+='</div><span style="flex:1"></span><button class="icon-btn no-print" data-act="print">Imprimir trilha</button>';
-  }
   h+='</div>';
+  if(!trailEdit){
+    h+='<div class="summary"><div class="chips" role="group" aria-label="Ordem da trilha"><span class="lbl">Ordem</span>';
+    h+='<button class="chip" data-act="tmode" data-v="didatica" aria-pressed="'+(mode==='didatica')+'">Do básico ao avançado</button>';
+    h+='<button class="chip" data-act="tmode" data-v="prioridade" aria-pressed="'+(mode==='prioridade')+'">Mais cobrados primeiro</button></div>';
+    if(m){
+      h+='<div class="chips" role="group" aria-label="Filtrar tópicos">';
+      [['todos','Todos'],['pendentes','Não dominados'],['naovistos','Não vistos'],['revisar','Revisar hoje'],['hot','Cai muito']].forEach(function(f){
+        h+='<button class="chip" data-act="cf" data-f="'+f[0]+'" aria-pressed="'+(contentFilter===f[0])+'">'+f[1]+'</button>';
+      });
+      h+='</div><span style="flex:1"></span><button class="icon-btn no-print" data-act="print">Imprimir trilha</button>';
+    }
+    h+='</div>';
+  }
 
   if(!m){
     var all=areaCoverage();
-    h+='<p class="hint">'+all.studied+' de '+all.total+' tópicos estudados em '+MATERIAS.length+' matérias. Cada trilha segue a ordem em que vale estudar: primeiro a base que as etapas seguintes usam. Os blocos de estudo da sua rotina sugerem sempre o próximo passo da trilha. Perto da prova, use "Mais cobrados primeiro".</p>';
+    h+='<p class="hint">'+all.studied+' de '+all.total+' tópicos estudados em '+MATERIAS.length+' matérias. Cada trilha segue a ordem em que vale estudar: primeiro a base que as etapas seguintes usam. Os blocos de estudo da sua rotina sugerem sempre o próximo passo da trilha. Perto da prova, use "Mais cobrados primeiro". Para mudar o que estudar, abra uma trilha e clique em "Editar trilha".</p>';
     h+='<div class="matgrid">';
     MATERIAS.forEach(function(x){
-      var c=matCoverage(x),pp=Math.round(c.studied/c.total*100),nx=nextStep(x.ids);
+      var c=matCoverage(x),nx=nextStep(x.ids);
       h+='<div class="panel matcard"><div class="area-h"><span class="sw" style="background:var('+x.cor+')"></span><h3>'+esc(x.nome)+'</h3><span class="cnt">'+c.studied+'/'+c.total+'</span></div>';
-      h+='<div class="progress thin"><i style="width:'+pp+'%;background:var('+x.cor+')"></i></div>';
-      h+='<p class="nextline">'+(nx?'<span>Próximo passo</span>'+esc(nx.nome):'<span>Trilha concluída</span>Todos os tópicos dominados')+'</p>';
+      h+='<div class="progress thin"><i style="width:'+pctOf(c)+'%;background:var('+x.cor+')"></i></div>';
+      h+='<p class="nextline">'+(nx?'<span>Próximo passo</span>'+esc(nx.nome):c.total?'<span>Trilha concluída</span>Todos os tópicos dominados':'<span>Trilha vazia</span>Adicione os primeiros tópicos')+'</p>';
       h+='<button class="btn sm ghost" data-act="trail" data-m="'+x.id+'">Abrir trilha</button></div>';
     });
+    h+='<form class="panel matcard newmat" id="addMatForm"><h3>Criar matéria</h3><p class="hint" style="margin:0">Para estudar algo que não está aqui, como Espanhol ou um conteúdo de vestibular específico.</p>';
+    h+='<label class="f">Nome<input name="nome" maxlength="60" required placeholder="Ex.: Espanhol"></label>';
+    h+='<label class="f">Área<select name="area">'+SYLLABUS.map(function(a){return '<option value="'+a.id+'">'+esc(a.nome)+'</option>'}).join('')+'<option value="out">Outras matérias</option></select></label>';
+    h+='<button class="btn sm" type="submit">Criar e adicionar tópicos</button></form>';
     return h+'</div>';
   }
 
-  var c=matCoverage(m),pp=Math.round(c.studied/c.total*100),nx=nextStep(m.ids);
-  h+='<section class="panel trail"><div class="area-h"><span class="sw" style="background:var('+m.cor+')"></span><h2>'+esc(m.nome)+'</h2><span class="cnt">'+c.studied+'/'+c.total+(c.mastered?' · '+c.mastered+' dominados':'')+'</span></div>';
-  h+='<p class="desc">'+esc(m.desc)+'</p><div class="progress thin"><i style="width:'+pp+'%;background:var('+m.cor+')"></i></div>';
+  var c=matCoverage(m),nx=nextStep(m.ids);
+  h+='<section class="panel trail'+(trailEdit?' is-editing':'')+'"><div class="area-h"><span class="sw" style="background:var('+m.cor+')"></span><h2>'+esc(m.nome)+'</h2><span class="cnt">'+c.studied+'/'+c.total+(c.mastered?' · '+c.mastered+' dominados':'')+'</span></div>';
+  h+='<p class="desc">'+esc(m.desc)+'</p><div class="progress thin"><i style="width:'+pctOf(c)+'%;background:var('+m.cor+')"></i></div>';
+  h+='<div class="trailbar no-print"><button class="btn sm'+(trailEdit?'':' ghost')+'" data-act="trail-edit">'+(trailEdit?'Concluir edição':'Editar trilha')+'</button>';
+  if(trailEdit){
+    if(m.custom)h+='<button class="btn sm ghost" data-act="mat-ren" data-m="'+m.id+'">Renomear matéria</button><button class="btn sm danger" data-act="mat-del" data-m="'+m.id+'">Apagar matéria</button>';
+    else h+='<button class="btn sm ghost" data-act="mat-reset" data-m="'+m.id+'">Voltar à trilha original</button>';
+  }
+  h+='</div>';
+
+  if(trailEdit){
+    h+='<p class="hint" style="margin:10px 0 0">Adicione tópicos e etapas, renomeie, mude a ordem ou oculte o que não quer estudar. O progresso de cada tópico é mantido, mesmo dos ocultos.</p>';
+    var n=0;
+    m.mods.forEach(function(md,mi){
+      h+='<div class="stage"><div class="stage-h"><h3>Etapa '+(mi+1)+': '+esc(md.nome)+'</h3><span>'+md.ids.length+(md.ids.length===1?' tópico':' tópicos')+'</span></div><ol class="topics">';
+      md.ids.forEach(function(id){n++;h+=editRow(TOPICS[id],n,md)});
+      h+='</ol>'+addTopicForm(m,md.nome)+'</div>';
+    });
+    h+='<form class="stage addmod" data-addmod="'+m.id+'"><h3>'+(m.mods.length?'Nova etapa':'Primeira etapa')+'</h3><div class="addrow">';
+    h+='<input name="mod" maxlength="60" required placeholder="Nome da etapa" aria-label="Nome da etapa"'+(m.mods.length?'':' value="Fundamentos"')+'>';
+    h+='<input name="nome" maxlength="120" required placeholder="Primeiro tópico" aria-label="Primeiro tópico da etapa">';
+    h+='<button class="btn sm" type="submit">Criar etapa</button></div></form>';
+    if(m.hiddenIds.length){
+      h+='<div class="stage"><div class="stage-h"><h3>Ocultos</h3><span>'+m.hiddenIds.length+'</span></div><ul class="topics">';
+      m.hiddenIds.forEach(function(id){
+        var b=BASE_TOPIC[id],ct=custom.topics.filter(function(x){return x.id===id})[0],nome=custom.renamed[id]||(b?b.nome:ct?ct.nome:id);
+        h+='<li class="topic editing"><span class="nm" style="color:var(--ink-soft)">'+esc(nome)+'</span><span class="eacts"><button data-act="tp-show" data-t="'+id+'">Mostrar de novo</button></span></li>';
+      });
+      h+='</ul></div>';
+    }
+    return h+'</section>';
+  }
+
   h+='<div class="legend" style="margin:12px 0 4px">'+STATUS.map(function(s,i){return '<span class="st s'+i+'" aria-hidden="true"><i></i>'+s+'</span>'}).join('')+'</div>';
   var any=false;
   if(mode==='didatica'){
-    var n=0;
+    var k=0;
     m.mods.forEach(function(md,mi){
       var rows='',ms=0;
-      md.t.forEach(function(tt){
-        var t=TOPICS[tt[0]];n++;if(tstate(t.id).s>=1)ms++;
-        if(passFilter(t,dueSet))rows+=topicRow(t,n,dueSet,nx&&nx.id===t.id,false);
+      md.ids.forEach(function(id){
+        var t=TOPICS[id];k++;if(tstate(t.id).s>=1)ms++;
+        if(passFilter(t,dueSet))rows+=topicRow(t,k,dueSet,nx&&nx.id===t.id,false);
       });
       if(!rows)return;any=true;
-      h+='<div class="stage"><div class="stage-h"><h3>Etapa '+(mi+1)+': '+esc(md.nome)+'</h3><span>'+ms+'/'+md.t.length+'</span></div><ol class="topics">'+rows+'</ol></div>';
+      h+='<div class="stage"><div class="stage-h"><h3>Etapa '+(mi+1)+': '+esc(md.nome)+'</h3><span>'+ms+'/'+md.ids.length+'</span></div><ol class="topics">'+rows+'</ol></div>';
     });
   }else{
     var rows=trailOrder(m.ids).filter(function(t){return passFilter(t,dueSet)}).map(function(t,i){return topicRow(t,i+1,dueSet,nx&&nx.id===t.id,true)}).join('');
     if(rows){any=true;h+='<div class="stage"><div class="stage-h"><h3>Por incidência no ENEM</h3></div><ol class="topics">'+rows+'</ol></div>'}
   }
-  if(!any)h+='<p class="empty" style="margin-top:12px">Nenhum tópico neste filtro.</p>';
+  if(!any)h+='<p class="empty" style="margin-top:12px">'+(m.ids.length?'Nenhum tópico neste filtro.':'Esta trilha ainda não tem tópicos. Clique em "Editar trilha" para adicionar.')+'</p>';
   h+='<p class="hint" style="margin:14px 0 0">Clique no status para avançar: não visto, estudado, revisado, dominado. Ao estudar um tópico, ele volta para revisão em 1, 7 e 30 dias.</p>';
   return h+'</section>';
+}
+
+/* Ações de personalização da trilha */
+function saveCustom(){save('custom',custom);buildSyllabus()}
+function cleanName(s){return String(s||'').replace(/\s+/g,' ').trim().slice(0,120)}
+function newTopic(materia,mod,nome,p){
+  var t={id:'u-'+uid(),materia:materia,mod:mod,nome:nome,p:p||2};
+  custom.topics.push(t);
+  var key=materia+'|'+mod;if(Array.isArray(custom.order[key]))custom.order[key].push(t.id);
+  return t.id;
+}
+function moveTopic(id,dir){
+  var t=TOPICS[id];if(!t)return;
+  var md=MATERIA[t.materia].mods[t.modIdx],ids=md.ids.slice(),i=ids.indexOf(id),j=i+dir;
+  if(j<0||j>=ids.length)return;
+  ids[i]=ids[j];ids[j]=id;custom.order[t.materia+'|'+md.nome]=ids;saveCustom();
+}
+function trailAction(a,b){
+  var id=b.dataset.t,t=TOPICS[id];
+  if(a==='trail-edit'){trailEdit=!trailEdit;contentFilter='todos';render();return true}
+  if(a==='tp-up'||a==='tp-down'){moveTopic(id,a==='tp-up'?-1:1);render();keepFocus('[data-act="'+a+'"][data-t="'+id+'"]');return true}
+  if(a==='tp-ren'&&t){
+    var nv=prompt('Novo nome do tópico:',t.nome);if(nv==null)return true;nv=cleanName(nv);if(!nv)return true;
+    if(t.custom)custom.topics.forEach(function(x){if(x.id===id)x.nome=nv});
+    else if(BASE_TOPIC[id].nome===nv)delete custom.renamed[id];else custom.renamed[id]=nv;
+    saveCustom();render();return true;
+  }
+  if(a==='tp-hide'&&t){
+    if(t.custom){
+      if(!confirm('Apagar o tópico "'+t.nome+'"? O progresso dele também será apagado.'))return true;
+      custom.topics=custom.topics.filter(function(x){return x.id!==id});delete topics[id];save('topics',topics);
+    }else custom.hidden[id]=true;
+    saveCustom();render();toast(t.custom?'Tópico apagado':'Tópico ocultado. Ele fica na lista de ocultos.');return true;
+  }
+  if(a==='tp-show'){delete custom.hidden[id];saveCustom();render();return true}
+  if(a==='mat-reset'){
+    var mid=b.dataset.m;if(!confirm('Voltar esta trilha ao original? Os tópicos ocultos reaparecem e os nomes e a ordem originais voltam. Os tópicos que você criou continuam.'))return true;
+    (BASE_MAT[mid]||[]).forEach(function(x){delete custom.hidden[x];delete custom.renamed[x]});
+    Object.keys(custom.order).forEach(function(k){if(k.indexOf(mid+'|')===0)delete custom.order[k]});
+    saveCustom();render();toast('Trilha original restaurada');return true;
+  }
+  if(a==='mat-ren'){
+    var cm=custom.materias.filter(function(x){return x.id===b.dataset.m})[0];if(!cm)return true;
+    var nn=prompt('Novo nome da matéria:',cm.nome);if(nn==null)return true;nn=cleanName(nn).slice(0,60);if(!nn)return true;
+    cm.nome=nn;saveCustom();render();return true;
+  }
+  if(a==='mat-del'){
+    var mid2=b.dataset.m,mm=MATERIA[mid2];
+    if(!confirm('Apagar a matéria "'+mm.nome+'" e todos os tópicos dela?'))return true;
+    custom.topics.filter(function(x){return x.materia===mid2}).forEach(function(x){delete topics[x.id];delete custom.hidden[x.id]});
+    custom.topics=custom.topics.filter(function(x){return x.materia!==mid2});
+    custom.materias=custom.materias.filter(function(x){return x.id!==mid2});
+    Object.keys(custom.order).forEach(function(k){if(k.indexOf(mid2+'|')===0)delete custom.order[k]});
+    save('topics',topics);trailSel='';rawSave('trailSel','');trailEdit=false;saveCustom();render();toast('Matéria apagada');return true;
+  }
+  return false;
+}
+function trailSubmit(f){
+  var fd=new FormData(f);
+  if(f.dataset.addtopic){
+    var nome=cleanName(fd.get('nome'));if(!nome)return true;
+    newTopic(f.dataset.addtopic,f.dataset.mod,nome,+fd.get('p')||2);saveCustom();render();
+    keepFocus('form[data-addtopic="'+f.dataset.addtopic+'"][data-mod="'+f.dataset.mod.replace(/"/g,'\\"')+'"] input');toast('Tópico adicionado');return true;
+  }
+  if(f.dataset.addmod){
+    var mod=cleanName(fd.get('mod')).slice(0,60),nm=cleanName(fd.get('nome'));if(!mod||!nm)return true;
+    newTopic(f.dataset.addmod,mod,nm,2);saveCustom();render();toast('Etapa criada');return true;
+  }
+  if(f.id==='addMatForm'){
+    var mn=cleanName(fd.get('nome')).slice(0,60);if(!mn)return true;
+    var area=String(fd.get('area'));if(!areaById(area)&&area!=='out')area='out';
+    var cm={id:'cm-'+uid(),nome:mn,area:area,desc:'Matéria criada por você.'};
+    custom.materias.push(cm);saveCustom();trailSel=cm.id;rawSave('trailSel',cm.id);trailEdit=true;render();window.scrollTo(0,0);toast('Matéria criada. Agora adicione as etapas e os tópicos.');return true;
+  }
+  return false;
+}
+/* "Outro tópico" direto no bloco de hoje */
+function addTopicFromToday(blockId,dateKey){
+  var blk=null;routine.forEach(function(d){d.forEach(function(x){if(x.id===blockId)blk=x})});if(!blk)return;
+  var cur=pickFor(dateKey,blk),s=SUBJECTS[blk.subject]||{};
+  var mid=s.m||(cur&&TOPICS[cur]?TOPICS[cur].materia:null);
+  if(!mid){var ms=MATERIAS.filter(function(x){return x.area===s.area});mid=ms.length?ms[0].id:null}
+  if(!mid)return;
+  var nome=prompt('O que você vai estudar? O tópico entra na trilha de '+MATERIA[mid].nome+', na etapa "Meus tópicos".');
+  nome=cleanName(nome);if(!nome){render();return}
+  var id=newTopic(mid,'Meus tópicos',nome,2);saveCustom();
+  picks[dateKey]=picks[dateKey]||{};picks[dateKey][blockId]={t:id,auto:false};save('picks',picks);
+  render();toast('Tópico adicionado à trilha de '+MATERIA[mid].nome);
 }
 
 /* =========================================================
@@ -1121,7 +1309,7 @@ function renderEditar(){
    - Revisões atrasadas (15%)
    Componentes sem dados ficam de fora e os pesos são redistribuídos.
    ========================================================= */
-var AREA_OF_SUBJECT={mat:'mat',fis:'nat',qui:'nat',bio:'nat',nat:'nat',ling:'ling',port:'ling',lit:'ling',ing:'ling',hum:'hum',hist:'hum',geo:'hum',filo:'hum',soc:'hum',red:'red',rep:'red',redsim:'red'};
+
 var RISK_AREAS=['mat','nat','ling','hum','red'];
 var SIM_FIELD={mat:'mt',nat:'cn',ling:'lc',hum:'ch'};
 var LEVELS=['Baixo','Médio','Alto','Crítico'];
@@ -1336,8 +1524,10 @@ main.addEventListener('click',function(e){
   else if(a==='rev-ok'||a==='rev-no'){reviewTopic(b.dataset.t,a==='rev-ok');render();toast(a==='rev-ok'?(topics[b.dataset.t].s===3?'Tópico dominado!':'Próxima revisão em '+shortDate(topics[b.dataset.t].next)):'Volta para revisão amanhã')}
   else if(a==='cycle'){cycleTopic(b.dataset.t);render();keepFocus('[data-act="cycle"][data-t="'+b.dataset.t+'"]')}
   else if(a==='cf'){contentFilter=b.dataset.f;render()}
-  else if(a==='trail'){trailSel=b.dataset.m;rawSave('trailSel',trailSel);contentFilter='todos';render();window.scrollTo(0,0)}
+  else if(a==='trail'){trailSel=b.dataset.m;trailEdit=false;rawSave('trailSel',trailSel);contentFilter='todos';render();window.scrollTo(0,0)}
   else if(a==='tmode'){save('trailMode',b.dataset.v);render()}
+  else if(a==='today-new')addTopicFromToday(b.dataset.b,b.dataset.date);
+  else if(trailAction(a,b)){}
   else if(a==='wk'){weekOffset=b.dataset.d==='0'?0:weekOffset+(+b.dataset.d);render()}
   else if(a==='print'){document.querySelectorAll('details').forEach(function(x){x.open=true});window.print()}
   else if(a==='resetweek'){
@@ -1380,6 +1570,7 @@ main.addEventListener('input',function(e){
 });
 main.addEventListener('change',function(e){
   var el=e.target;
+  if(el.dataset.pick&&el.value==='__new'){addTopicFromToday(el.dataset.pick,el.dataset.date);return}
   if(el.dataset.pick){var k=el.dataset.date;picks[k]=picks[k]||{};picks[k][el.dataset.pick]={t:el.value,auto:false};save('picks',picks);render();keepFocus('[data-pick="'+el.dataset.pick+'"]');return}
   if(el.id==='examDate'){exam=el.value;save('exam',exam);renderStats();return}
   if(el.dataset.f&&el.tagName==='SELECT'){routine[+el.dataset.day][+el.dataset.i][el.dataset.f]=el.value;saveRoutine();renderStats()}
@@ -1387,6 +1578,7 @@ main.addEventListener('change',function(e){
 main.addEventListener('submit',function(e){
   e.preventDefault();var f=e.target,fd=new FormData(f);
   if(f.id==='aiForm'){if(!aiBusy)generatePlan(f);return}
+  if(trailSubmit(f))return;
   if(f.id==='essayForm'){
     essays.push({id:uid(),date:fd.get('date'),tema:String(fd.get('tema')).trim(),c:[0,1,2,3,4].map(function(i){return +fd.get('c'+i)})});
     save('essays',essays);render();toast('Redação salva');
