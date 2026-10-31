@@ -349,6 +349,45 @@ details.grp summary span.c{font-size:13px;color:var(--ink-soft)}
   .st{min-width:0;border:0;padding:0}.st span{display:none}
   .st i{width:14px;height:14px;border-radius:3px}
 }
+
+/* Prática, metas e conquistas */
+h4.sub{font-size:13px;color:var(--ink-soft);margin:16px 0 4px;font-weight:800}
+.mrow{display:grid;grid-template-columns:minmax(110px,1.3fr) 2fr auto;gap:8px;align-items:center;font-size:14px;font-weight:600;margin:7px 0}
+.mrow b{text-align:right;font-variant-numeric:tabular-nums}
+.errlist{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.errlist li{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
+.errlist li.ok{opacity:.7}
+.errlist .acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.tag{display:inline-block;font-size:12px;font-weight:800;border-radius:999px;padding:1px 9px;background:var(--warn-bg);color:var(--warn);margin-right:6px}
+.tag.ok{background:var(--ok-bg);color:var(--ok)}
+.errmeta{font-size:13px;color:var(--ink-soft);font-weight:600;margin:2px 0 0}
+.errnote{font-size:14px;margin-top:4px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 0}
+.filters label.f{min-width:140px;flex:1}
+.bignum{font-size:34px;font-weight:800;margin:0 0 8px;font-variant-numeric:tabular-nums;line-height:1.1}
+.bignum small{font-size:15px;color:var(--ink-soft);font-weight:700}
+.heat .rel{background:var(--bad);border-color:var(--bad);display:flex;align-items:center;justify-content:center;color:var(--paper);font-size:12px;font-weight:800;line-height:1}
+.heat .rel::after{content:'×'}
+ul.plan{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-weight:600}
+label.chip{display:inline-flex;align-items:center;cursor:pointer;gap:6px}
+label.chip input[type=checkbox]{width:auto;flex:none;margin:0;padding:0;accent-color:var(--ink)}
+label.chip:has(input:checked){background:var(--ink);color:var(--paper);border-color:var(--ink)}
+#habRelForm textarea,#habPlanForm textarea{min-height:60px}
+.simclock{font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(44px,12vw,84px);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.simclock.over{color:var(--bad)}
+.simacts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.simcard{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:10px}
+.simcard .row{display:flex;justify-content:space-between;gap:8px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.badge{border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--card)}
+.badge b{display:block;line-height:1.2}
+.badge span{font-size:13px;color:var(--ink-soft);font-weight:600}
+.badge.off{opacity:.6;border-style:dashed}
+.badge.on{border-color:var(--ok);background:var(--ok-bg)}
+.badge.on b{color:var(--ok)}
+h3.areahead{display:flex;align-items:center;gap:8px;margin:24px 0 10px;font-size:22px}
+h3.areahead .sw{width:14px;height:14px;border-radius:4px;flex:none}
+h3.areahead small{font-size:14px;color:var(--ink-soft);font-weight:700}
 </style>
 </head>
 <body>
@@ -365,6 +404,9 @@ details.grp summary span.c{font-size:13px;color:var(--ink-soft)}
     <button class="tab" data-view="hoje">Hoje</button>
     <button class="tab" data-view="semana">Semana</button>
     <button class="tab" data-view="conteudo">Trilha ENEM</button>
+    <button class="tab" data-view="dev">Trilha Dev</button>
+    <button class="tab" data-view="pratica">Prática</button>
+    <button class="tab" data-view="habitos">Hábitos</button>
     <button class="tab" data-view="redacao">Redação</button>
     <button class="tab" data-view="progresso">Progresso</button>
     <button class="tab" data-view="diagnostico">Diagnóstico</button>
@@ -514,11 +556,215 @@ var SYLLABUS=[
    {nome:'Prática',t:[['red-tempo','Redação completa com tempo cronometrado'],['red-reescrita','Reescrita a partir da correção'],['red-eixos','Eixos temáticos frequentes']]}
   ]}
  ]},
- {id:'tec',nome:'Bloco técnico',cor:'--a-tec',semRevisao:true,materias:[
-  {id:'tec',nome:'Programação',desc:'Ritmo profissional e equilíbrio mental sem abandonar o código. Lógica também treina o raciocínio matemático.',mods:[
-   {nome:'Lógica e algoritmos',t:[['tec-python','Lógica de programação em Python'],['tec-ed','Estruturas de dados'],['tec-alg','Algoritmos'],['tec-leet','Desafios de lógica (LeetCode)']]},
-   {nome:'Projetos',t:[['tec-fastapi','Backend com FastAPI'],['tec-db','Banco de dados MySQL e SQLite'],['tec-flutter','Dart e Flutter'],['tec-docs','Leitura técnica e documentação']]}
-  ]}
+];
+/* =========================================================
+   TRILHA DEV: DESENVOLVEDOR FULLSTACK
+   área → matéria (assunto) → etapa → tópico. Peso: 3 essencial, 2 normal, 1 avançado.
+   Formato do tópico: "id|Nome|peso". O id final é dv-<matéria>-<id> e não pode mudar,
+   porque o progresso fica guardado nele.
+   ========================================================= */
+function dm(slug,nome,desc,mods){
+  return {id:"dv-"+slug,nome:nome,desc:desc,mods:mods.map(function(md){
+    return {nome:md[0],t:md[1].split(";").map(function(x){var p=x.split("|");return ["dv-"+slug+"-"+p[0].trim(),p[1].trim(),+p[2]||2]})};
+  })};
+}
+var DEV_SYLLABUS=[
+ {id:"d-fund",nome:"Fundamentos de computação",cor:"--a-tec",trilha:"dev",materias:[
+  dm("log","Lógica e algoritmos","A base de tudo: pensar em passos antes de escrever código. Aqui nascem a lógica, a análise de custo e a resolução de problemas.",[
+   ["Pensar como programador","var|Variáveis, tipos de dados e operadores|3; cond|Condicionais e lógica booleana|3; laco|Laços e iteração|3; func|Funções, parâmetros e retorno|3; escopo|Escopo e ciclo de vida das variáveis|2; recur|Recursão|3"],
+   ["Resolver problemas","decomp|Decomposição de problemas|3; pseudo|Pseudocódigo e fluxogramas|2; mesa|Teste de mesa e depuração|3; padroes|Padrões: contadores, acumuladores e flags|2; leet|Prática com desafios de lógica (LeetCode, Codewars)|2"],
+   ["Análise de algoritmos","bigo|Complexidade de tempo e espaço (Big O)|3; busca|Busca linear e binária|3; ord|Ordenação: bubble, merge e quick sort|3; dc|Divisão e conquista|2; bt|Backtracking|1; guloso|Algoritmos gulosos|1; dp|Programação dinâmica|1"]
+  ]),
+  dm("ed","Estruturas de dados","Onde e como guardar dados para que o programa seja simples e rápido.",[
+   ["Estruturas lineares","array|Arrays e listas|3; pilha|Pilhas|3; fila|Filas|3; ll|Listas encadeadas|2; deque|Deques e filas de prioridade|2"],
+   ["Hash e árvores","hash|Tabelas hash, dicionários e conjuntos|3; arv|Árvores e árvores binárias de busca|3; heap|Heaps|2; trie|Tries|1; balanc|Árvores balanceadas (AVL, rubro-negra)|1"],
+   ["Grafos","grafo|Grafos: lista e matriz de adjacência|2; busca|Busca em largura e em profundidade|3; dijk|Caminho mínimo (Dijkstra)|1; uf|Union-Find|1; topo|Ordenação topológica|1"]
+  ]),
+  dm("poo","Paradigmas e orientação a objetos","Como organizar código em objetos, funções e módulos que outras pessoas conseguem manter.",[
+   ["Orientação a objetos","classe|Classes, objetos e atributos|3; encap|Encapsulamento|3; heranca|Herança|3; poli|Polimorfismo e interfaces|3; abstr|Abstração e classes abstratas|2; compo|Composição sobre herança|3"],
+   ["Outros paradigmas","proc|Programação procedural e estruturada|2; func|Programação funcional: map, filter e reduce|2; imut|Imutabilidade e funções puras|2; decl|Programação declarativa x imperativa|1; assinc|Programação assíncrona e concorrência (conceitos)|2"]
+  ]),
+  dm("so","Computador, sistema operacional e redes","O que acontece por baixo do código, do binário até o clique que chega ao servidor.",[
+   ["Como o computador funciona","bin|Sistemas numéricos: binário e hexadecimal|2; cpu|CPU, memória e armazenamento|2; proc|Processos e threads|2; mem|Memória: stack, heap e coletor de lixo|2; arq|Arquivos, sistema de arquivos e permissões|2"],
+   ["Como a internet funciona","cs|Modelo cliente-servidor|3; ip|IP, DNS e portas|3; tcp|TCP, UDP e o modelo em camadas|2; http|HTTP e HTTPS: do clique à resposta|3; tls|Criptografia, certificados e TLS (visão geral)|2; cdn|CDN, cache e latência (visão geral)|2"]
+  ])
+ ]},
+ {id:"d-ferr",nome:"Ferramentas do dia a dia",cor:"--a-nat",trilha:"dev",materias:[
+  dm("term","Terminal e Linux","O terminal é a ferramenta que aparece em todo servidor, tutorial e pipeline.",[
+   ["Primeiros comandos","nav|Navegação e arquivos (ls, cd, cp, mv, rm)|3; ler|Ler arquivos (cat, less, head, tail)|2; grep|Buscar texto e arquivos (grep, find)|3; perm|Permissões e donos (chmod, chown)|3; pipe|Pipes, redirecionamento e variáveis de ambiente|3"],
+   ["Administração","proc|Processos e serviços (ps, top, systemctl)|2; pkg|Gerenciadores de pacotes (apt)|2; ssh|SSH e chaves|3; sh|Scripts em shell (bash)|2; logs|Logs e diagnóstico (journalctl, tail -f)|2; cron|Agendamento com cron|1; vim|Editor no terminal (nano e vim)|1"]
+  ]),
+  dm("git","Git e GitHub","Controle de versão: o histórico do seu trabalho e a base do trabalho em equipe.",[
+   ["Git básico","commit|Repositório, commit e histórico|3; stage|Área de preparação, status e diff|3; ign|.gitignore|3; branch|Branches e merge|3; remoto|Remotos: clone, push e pull|3"],
+   ["Colaboração","pr|Pull requests e code review|3; conf|Resolução de conflitos|3; undo|Desfazer: restore, reset e revert|3; rebase|Rebase e histórico limpo|2; stash|Stash e cherry-pick|2; flow|Fluxos de trabalho (GitHub Flow, trunk-based)|2; conv|Mensagens de commit e Conventional Commits|2; tags|Tags, releases e versionamento semântico|2; gha|Issues, projetos e GitHub Actions (visão geral)|1"]
+  ]),
+  dm("amb","Ambiente de desenvolvimento","Preparar a máquina e o projeto para trabalhar sem atrito.",[
+   ["Ambiente","ide|VS Code: atalhos e extensões|2; dbg|Depurador: breakpoints e inspeção|3; venv|Ambientes virtuais Python (venv e pip)|3; npm|Node, npm e gerenciamento de dependências|3; lint|Linters e formatadores (ruff, ESLint, Prettier)|2; env|Variáveis de ambiente e arquivos .env|3; docs|Ler documentação oficial e mensagens de erro|3"]
+  ])
+ ]},
+ {id:"d-front",nome:"Frontend",cor:"--a-mat",trilha:"dev",materias:[
+  dm("html","HTML","A estrutura de toda página: o que é cada elemento e por que o significado importa.",[
+   ["Estrutura","doc|Estrutura do documento e tags básicas|3; sem|HTML semântico (header, main, nav, section)|3; txt|Texto, listas e links|3; midia|Imagens, áudio e vídeo|2"],
+   ["Formulários e acessibilidade","form|Formulários e inputs|3; valid|Validação nativa de formulários|2; a11y|Acessibilidade: alt, labels e ARIA|3; seo|Meta tags e SEO básico|2"]
+  ]),
+  dm("css","CSS","Como deixar a página bonita, responsiva e fácil de manter.",[
+   ["Fundamentos","sel|Seletores e especificidade|3; box|Modelo de caixa|3; tipo|Cores, fontes e tipografia|2; unid|Unidades (px, rem, %, vw)|3; pos|Posicionamento e display|3"],
+   ["Layout","flex|Flexbox|3; grid|CSS Grid|3; resp|Design responsivo e media queries|3; mobf|Mobile first|2"],
+   ["Avançado","vars|Variáveis CSS e tema claro e escuro|2; anim|Transições e animações|2; pseudo|Pseudoclasses e pseudoelementos|2; org|Organização do CSS (BEM) e Sass|1; tw|Tailwind CSS e frameworks de UI|2"]
+  ]),
+  dm("js","JavaScript","A linguagem do navegador. Dominar o básico bem evita a maior parte dos bugs de frontend.",[
+   ["Linguagem","base|Variáveis, tipos e operadores (let e const)|3; func|Funções, arrow functions e escopo|3; arr|Arrays e métodos (map, filter, reduce)|3; obj|Objetos, destructuring e spread|3; str|Strings, datas e JSON|3; this|this, closures e hoisting|2; class|Classes e protótipos|2; mod|Módulos (import e export)|3; err|Tratamento de erros (try e catch)|2"],
+   ["No navegador","dom|DOM: selecionar e alterar elementos|3; ev|Eventos|3; store|localStorage e sessionStorage|2; fetch|Fetch API e consumo de APIs REST|3; async|Promises e async/await|3; loop|Event loop|2"],
+   ["Ecossistema","bundle|Bundlers e Vite|2; test|Testes em JavaScript (Vitest e Jest)|2"]
+  ]),
+  dm("ts","TypeScript","JavaScript com tipos: menos erros em produção e código que se explica sozinho.",[
+   ["Tipos","tipos|Tipos básicos, inferência e anotações|3; ifc|Interfaces e type aliases|3; uniao|União, interseção e narrowing|3; gen|Genéricos|2; util|Utility types (Partial, Pick, Omit)|2; cfg|tsconfig e modo estrito|2; zod|Validação em tempo de execução (Zod)|1"]
+  ]),
+  dm("react","React","A biblioteca mais usada para interfaces. Pense em componentes e estado.",[
+   ["Fundamentos","comp|Componentes e JSX|3; props|Props e composição|3; state|Estado com useState|3; efeito|Efeitos com useEffect|3; lista|Listas, chaves e renderização condicional|3; forms|Formulários controlados|3"],
+   ["Estado e dados","ctx|Context API|2; hooks|Hooks personalizados|2; reducer|useReducer e padrões de estado|2; query|Busca de dados e cache (TanStack Query)|2; rotas|Rotas (React Router)|3; glob|Estado global (Zustand ou Redux Toolkit)|1"],
+   ["Qualidade","perf|Performance (memo, useMemo, useCallback)|2; teste|Testes de componentes (Testing Library)|2; a11y|Acessibilidade em React|2; next|Next.js: SSR, SSG e rotas|1"]
+  ]),
+  dm("web","Web: performance e plataforma","O que separa uma página que funciona de uma página rápida, segura e confiável.",[
+   ["Boas práticas","tools|DevTools do navegador|3; cors|CORS e cookies|3; vitais|Core Web Vitals e performance|2; imgs|Otimização de imagens e fontes|2; pwa|PWA e service workers|1; seo|SEO técnico|1; i18n|Internacionalização|1"]
+  ])
+ ]},
+ {id:"d-back",nome:"Backend",cor:"--a-hum",trilha:"dev",materias:[
+  dm("http","HTTP e APIs REST","O contrato entre frontend, mobile e servidor.",[
+   ["Protocolo","metodos|Métodos HTTP e idempotência|3; status|Códigos de status|3; headers|Cabeçalhos, cookies e content-type|3; rest|Princípios REST e modelagem de recursos|3"],
+   ["APIs bem feitas","pag|Paginação, filtros e ordenação|3; erros|Padrão de erros|2; versao|Versionamento de APIs|2; openapi|Documentação com OpenAPI e Swagger|3; hooks|Webhooks|1; ws|WebSockets e Server-Sent Events|1; gql|GraphQL (visão geral)|1"]
+  ]),
+  dm("py","Python","A linguagem principal da trilha: simples de ler e forte em backend, dados e automação.",[
+   ["Linguagem","base|Sintaxe, tipos e estruturas de controle|3; col|Listas, tuplas, dicionários e conjuntos|3; func|Funções, args e kwargs|3; comp|Compreensões de lista|2; mod|Módulos, pacotes e imports|3; arq|Arquivos, JSON e CSV|3; exc|Exceções|3; poo|Classes e orientação a objetos|3; tipos|dataclasses e type hints|2"],
+   ["Avançado","gen|Geradores e iteradores|2; dec|Decoradores|2; ctx|Gerenciadores de contexto|2; asyncio|asyncio e programação assíncrona|3; conc|Threads, processos e o GIL|1; pkg|Empacotamento e pyproject.toml|2"]
+  ]),
+  dm("fapi","FastAPI","Framework moderno para APIs em Python, com validação e documentação automáticas.",[
+   ["Primeira API","hello|Rotas, parâmetros de caminho e de query|3; pyd|Modelos com Pydantic|3; body|Corpo da requisição e validação|3; resp|Modelos de resposta e status codes|3; swag|Documentação automática (Swagger)|2"],
+   ["API completa","dep|Injeção de dependências|3; db|Integração com banco (SQLAlchemy)|3; crud|CRUD completo|3; auth|Autenticação com JWT e OAuth2|3; mid|Middlewares e CORS|2; bg|Tarefas em segundo plano|2; erros|Tratamento de erros|2; camadas|Estrutura de projeto em camadas|3; teste|Testes com TestClient e pytest|3; deploy|Deploy com Uvicorn e Gunicorn|2"]
+  ]),
+  dm("node","Node.js","JavaScript no servidor: bom para quem já domina a linguagem no frontend.",[
+   ["Node","rt|Runtime, módulos e npm|2; express|Express: rotas e middlewares|2; ts|TypeScript no backend|2; orm|Prisma e acesso a banco|2; auth|Autenticação em Node|2; serverless|Funções serverless (Vercel)|2; nest|NestJS (visão geral)|1; streams|Arquivos e streams|1"]
+  ]),
+  dm("php","PHP","Linguagem de servidor muito usada na web, de sites simples a grandes sistemas. Estude o PHP moderno (8 em diante).",[
+   ["Linguagem","base|Sintaxe, variáveis e tipos|3; ctrl|Estruturas de controle e laços|3; arr|Arrays e funções de array|3; func|Funções, escopo e tipagem (type hints)|3; str|Strings, datas e expressões regulares|2; inc|include, require e organização em arquivos|2; super|Superglobais: $_GET, $_POST e $_SESSION|3"],
+   ["Orientação a objetos e ecossistema","poo|Classes, objetos e namespaces|3; ifc|Interfaces, traits e classes abstratas|3; exc|Exceções e tratamento de erros|3; auto|Autoload e PSR-4|3; composer|Composer e gerenciamento de dependências|3; psr|Padrões PSR (PSR-12) e formatadores (Pint)|2; php8|Recursos do PHP 8: enums, match, readonly e named arguments|2"],
+   ["Web e dados","form|Formulários, validação e sanitização|3; sessao|Sessões, cookies e login|3; pdo|PDO: conexão e consultas preparadas|3; http|Consumo de APIs (cURL e Guzzle) e JSON|2; upload|Upload de arquivos|2; mvc|Estrutura MVC sem framework|2; teste|Testes com PHPUnit ou Pest|2; xdebug|Depuração com Xdebug|2; deploy|Hospedagem, PHP-FPM e servidor web (Apache ou Nginx)|2"]
+  ]),
+  dm("laravel","Laravel","O framework PHP mais usado: rotas, banco, autenticação e filas prontos para uso.",[
+   ["Fundamentos","inst|Instalação, estrutura de pastas e Artisan|3; rotas|Rotas e controllers|3; blade|Views com Blade|3; req|Requests, validação e Form Requests|3; mid|Middlewares|2; env|Configuração e variáveis de ambiente|3"],
+   ["Banco de dados","mig|Migrations e seeders|3; eloq|Eloquent: modelos e consultas|3; rel|Relacionamentos (hasMany, belongsTo e muitos-para-muitos)|3; n1|Eager loading e problema N+1|3; qb|Query Builder|2; fac|Factories e dados de teste|2"],
+   ["API e produção","api|APIs REST com API Resources|3; auth|Autenticação (Breeze e Sanctum)|3; polic|Autorização: Gates e Policies|3; teste|Testes de feature e unitários (Pest ou PHPUnit)|3; fila|Filas, jobs e agendador de tarefas|2; cache|Cache e armazenamento de arquivos|2; deploy|Deploy e otimizações (config:cache e workers)|2; live|Livewire e Inertia (visão geral)|1"]
+  ]),
+  dm("auth","Autenticação e autorização","Quem é a pessoa e o que ela pode fazer. Erros aqui viram vazamento de dados.",[
+   ["Conceitos","hash|Hash de senha (bcrypt e argon2)|3; sessao|Sessões e cookies|3; jwt|JWT: estrutura, expiração e refresh|3; rbac|Papéis e permissões (RBAC)|3; oauth|OAuth2 e login social|2; mfa|Autenticação em dois fatores|2"]
+  ]),
+  dm("infra","Cache, filas e tarefas assíncronas","Como fazer o sistema aguentar mais gente sem ficar lento.",[
+   ["Desempenho e processamento","cache|Cache: conceitos e invalidação|3; redis|Redis|2; fila|Filas e mensageria (RabbitMQ e SQS)|2; tarefas|Tarefas assíncronas (Celery ou RQ)|2; jobs|Agendamento de jobs|2; rate|Limitação de taxa|2; logs|Logs estruturados|3; lote|Processamento em lote de grandes volumes|1"]
+  ])
+ ]},
+ {id:"d-db",nome:"Banco de dados",cor:"--a-ling",trilha:"dev",materias:[
+  dm("sql","SQL","A linguagem de consulta que atravessa quase todo projeto.",[
+   ["Consultas","select|SELECT, WHERE e ORDER BY|3; agr|Agregações e GROUP BY|3; join|JOINs (INNER, LEFT, RIGHT)|3; sub|Subconsultas e CTEs|2; uniao|UNION e operações de conjunto|1; janela|Funções de janela|1"],
+   ["Estrutura e manipulação","ddl|CREATE, ALTER e DROP|3; dml|INSERT, UPDATE e DELETE|3; tipos|Tipos de dados e constraints|3; view|Views|2; proc|Procedures, triggers e functions|1"]
+  ]),
+  dm("mod","Modelagem de dados","Um bom modelo evita meses de gambiarra.",[
+   ["Modelagem","er|Modelo entidade-relacionamento|3; rel|Relacionamentos 1:1, 1:N e N:N|3; chaves|Chaves primárias e estrangeiras|3; norm|Normalização (1FN, 2FN e 3FN)|3; desn|Desnormalização consciente|2; migr|Migrações de esquema|3; soft|Soft delete e auditoria|2; pratica|Modelar um sistema real do zero|3"]
+  ]),
+  dm("sgbd","SQLite, MySQL e PostgreSQL","Os bancos relacionais mais usados e quando escolher cada um.",[
+   ["Bancos relacionais","sqlite|SQLite: quando usar|3; mysql|MySQL: instalação, usuários e engines|3; pg|PostgreSQL: JSONB e extensões|2; escolha|Diferenças entre os três e como escolher|3; tools|Ferramentas de administração (DBeaver e Workbench)|2; bkp|Backup e restauração|3; nuvem|Bancos gerenciados na nuvem (Supabase)|2; repl|Replicação e alta disponibilidade (visão geral)|1"]
+  ]),
+  dm("perf","Desempenho e transações","Por que uma consulta fica lenta e como manter os dados consistentes.",[
+   ["Desempenho","idx|Índices: B-tree, compostos e quando usar|3; plano|Plano de execução (EXPLAIN)|3; n1|Problema N+1|3; pool|Pool de conexões|2; part|Particionamento e sharding|1"],
+   ["Transações","acid|Transações e propriedades ACID|3; iso|Níveis de isolamento e locks|2; dead|Deadlocks|1"]
+  ]),
+  dm("orm","ORMs e acesso a dados","Como o código conversa com o banco sem espalhar SQL por tudo.",[
+   ["ORMs","orm|O que é um ORM e quando evitar|3; sqla|SQLAlchemy (Core e ORM)|3; alembic|Migrações com Alembic|3; param|Consultas parametrizadas|3; repo|Padrão Repository|2; prisma|Prisma|1"]
+  ]),
+  dm("nosql","NoSQL","Alternativas ao modelo relacional e os casos em que valem a pena.",[
+   ["NoSQL","quando|Quando usar NoSQL: CAP e consistência eventual|2; mongo|Documentos: MongoDB|2; kv|Chave-valor: Redis|2; fire|Firebase e Firestore|2; col|Colunar e séries temporais|1; grafo|Grafos: Neo4j|1; busca|Busca textual (Elasticsearch)|1"]
+  ])
+ ]},
+ {id:"d-mob",nome:"Mobile",cor:"--a-red",trilha:"dev",materias:[
+  dm("dart","Dart","A linguagem do Flutter: tipada, moderna e parecida com as que você já conhece.",[
+   ["Linguagem","base|Sintaxe, tipos e null safety|3; col|Coleções e funções|3; poo|Classes, mixins e herança|3; futuro|Future, async e await|3; stream|Streams|2; pkg|Pacotes e pub.dev|2; gen|Genéricos e extensões|1"]
+  ]),
+  dm("flutter","Flutter","Um código só para Android e iOS.",[
+   ["Widgets e telas","inst|Instalação e primeiro app|3; widget|StatelessWidget e StatefulWidget|3; layout|Layouts: Row, Column, Stack e Expanded|3; lista|Listas (ListView) e rolagem|3; form|Formulários e validação|3; nav|Navegação e rotas (GoRouter)|3; tema|Temas e Material 3|2; resp|Responsividade e adaptação de telas|2; anim|Animações|1"],
+   ["Estado e dados","estado|Gerenciamento de estado (Provider ou Riverpod)|3; http|Consumo de APIs (dio ou http)|3; local|Armazenamento local (shared_preferences e SQLite)|3; auth|Autenticação e armazenamento seguro|2"],
+   ["Qualidade e publicação","teste|Testes em Flutter|2; arq|Arquitetura (MVVM e Clean)|2; nativo|Plugins e recursos nativos (câmera e GPS)|2; push|Notificações push|1; loja|Build, assinatura e publicação nas lojas|2"]
+  ]),
+  dm("conc","Conceitos de mobile","O que muda quando o app roda no bolso de alguém.",[
+   ["Conceitos","ciclo|Ciclo de vida do app|2; ux|Padrões de UX mobile|2; offline|Offline-first e sincronização|2; perf|Desempenho e consumo de bateria|1; politicas|Políticas das lojas de aplicativos|1; pwa|PWA como alternativa ao app nativo|1"]
+  ])
+ ]},
+ {id:"d-qual",nome:"Qualidade de código",cor:"--a-nat",trilha:"dev",materias:[
+  dm("test","Testes","Testar é o que permite mudar o código sem medo.",[
+   ["Testes automatizados","piram|Pirâmide de testes|3; unit|Testes unitários (pytest e Vitest)|3; mock|Mocks, stubs e fakes|3; integr|Testes de integração|3; e2e|Testes end-to-end (Playwright)|2; tdd|TDD: red, green e refactor|2; cov|Cobertura e o que ela não mostra|2; ci|Rodar testes no CI|3; contrato|Testes de contrato de API|1; prop|Testes baseados em propriedades|1"]
+  ]),
+  dm("clean","Código limpo","Código é lido muito mais vezes do que escrito.",[
+   ["Legibilidade","nomes|Nomes e legibilidade|3; func|Funções pequenas e com uma responsabilidade|3; dry|DRY, KISS e YAGNI|3; smell|Code smells|3; refat|Refatoração segura|3; erros|Tratamento de erros consistente|3; coment|Comentários úteis e documentação|2; estilo|Estilo e padronização do time|2"]
+  ]),
+  dm("solid","Princípios e padrões de projeto","Soluções conhecidas para problemas que se repetem.",[
+   ["Princípios","solid|SOLID: os cinco princípios|3; acopl|Acoplamento e coesão|3; di|Injeção de dependências|3; antip|Anti-padrões|2"],
+   ["Padrões de projeto","cria|Criacionais (Factory, Singleton e Builder)|2; estru|Estruturais (Adapter, Decorator e Facade)|2; comp|Comportamentais (Strategy e Observer)|2"]
+  ]),
+  dm("rev","Revisão e manutenção","Como o código sobrevive ao tempo e à equipe.",[
+   ["Manutenção","cr|Code review: como dar e receber|3; prpeq|Pull requests pequenos|3; depur|Depuração sistemática|3; doc|Documentação: README e ADRs|3; debt|Dívida técnica|2; legado|Trabalhar com código legado|2; change|Changelog e versionamento semântico|2"]
+  ])
+ ]},
+ {id:"d-ops",nome:"DevOps e nuvem",cor:"--a-ling",trilha:"dev",materias:[
+  dm("docker","Docker","Empacotar o projeto para rodar igual em qualquer máquina.",[
+   ["Containers","cont|Containers e máquinas virtuais|3; img|Imagens e Dockerfile|3; run|Rodar containers, portas e volumes|3; compose|Docker Compose|3; rede|Redes entre containers|2; multi|Imagens menores e multi-stage|2; reg|Registries (Docker Hub e GHCR)|2; seg|Segurança de containers|2; k8s|Kubernetes: conceitos|1"]
+  ]),
+  dm("cicd","CI/CD","Testar e publicar automaticamente a cada mudança.",[
+   ["Pipeline","conceito|Integração e entrega contínuas|3; gha|GitHub Actions: workflows|3; etapas|Pipeline: lint, testes e build|3; deploy|Deploy automatizado|3; segredos|Segredos no pipeline|3; envs|Ambientes: dev, staging e produção|3; rollback|Estratégias de deploy e rollback|2; flags|Feature flags|1; iac|Infraestrutura como código (Terraform)|1"]
+  ]),
+  dm("deploy","Deploy e hospedagem","Colocar o projeto no ar e mantê-lo lá.",[
+   ["Hospedagem","vercel|Vercel e hospedagem estática|3; vps|VPS: provisionar e configurar|3; nginx|Nginx como proxy reverso|3; dns|Domínios, DNS e HTTPS (Let's Encrypt)|3; paas|PaaS (Render, Railway e Fly.io)|2; nuvem|Nuvem: AWS, GCP ou Azure (conceitos)|2; s3|Armazenamento de objetos (S3)|2; serverless|Serverless: quando vale|2; custo|Custos e planos gratuitos|2"]
+  ]),
+  dm("obs","Monitoramento e operação","Saber que algo quebrou antes de o usuário avisar.",[
+   ["Operação","logs|Logs centralizados|3; health|Health checks e uptime|3; erros|Rastreamento de erros (Sentry)|3; bkp|Backup e recuperação de desastres|3; metr|Métricas (Prometheus e Grafana)|2; alerta|Alertas e plantão|2; post|Post-mortem sem culpados|2; trace|Tracing distribuído|1; slo|SLI, SLO e SLA|1"]
+  ])
+ ]},
+ {id:"d-sec",nome:"Segurança",cor:"--a-red",trilha:"dev",materias:[
+  dm("owasp","OWASP Top 10","As falhas que mais derrubam aplicações web e como evitá-las.",[
+   ["Principais falhas","inj|Injeção (SQL e comandos)|3; xss|XSS|3; csrf|CSRF|3; acesso|Controle de acesso quebrado|3; cripto|Falhas criptográficas|3; config|Configuração insegura|3; deps|Componentes vulneráveis e dependências|3; log|Falhas de log e monitoramento|2; ssrf|SSRF|2; design|Design inseguro e modelagem de ameaças|2"]
+  ]),
+  dm("secauth","Autenticação segura","Fazer login do jeito que não vira notícia.",[
+   ["Login seguro","senha|Armazenamento e política de senhas|3; cookie|Cookies seguros (HttpOnly, Secure e SameSite)|3; jwt|Armadilhas do JWT|3; brute|Proteção contra força bruta|3; recup|Recuperação de conta segura|3; rls|Controle por linha (Row Level Security, como no Supabase)|3; oidc|OAuth e OpenID Connect na prática|2; passkey|MFA e passkeys|2"]
+  ]),
+  dm("segr","Segredos, infraestrutura e privacidade","Proteger chaves, servidores e dados pessoais.",[
+   ["Proteção","nunca|Nunca versionar segredos|3; menor|Princípio do menor privilégio|3; https|HTTPS e cabeçalhos de segurança (CSP e HSTS)|3; audit|Auditoria de dependências (npm audit e pip-audit)|3; rot|Rotação e revogação de chaves|3; lgpd|LGPD: dados pessoais e consentimento|3; vault|Gestão de segredos|2; fw|Firewall e portas expostas|2; bkp|Backup seguro|2; incid|Resposta a incidentes|2"]
+  ])
+ ]},
+ {id:"d-arq",nome:"Arquitetura e system design",cor:"--a-hum",trilha:"dev",materias:[
+  dm("pad","Padrões de arquitetura","Como organizar um sistema inteiro, não só uma função.",[
+   ["Arquitetura de aplicações","mono|Monólito bem estruturado|3; camadas|Arquitetura em camadas|3; mvc|MVC e variações|3; modular|Monólito modular|2; hex|Arquitetura hexagonal e Clean Architecture|2; ddd|Domain-Driven Design (noções)|2; micro|Microsserviços: quando (não) usar|2; doze|12-factor app|2; evento|Arquitetura orientada a eventos|1; cqrs|CQRS e Event Sourcing|1"]
+  ]),
+  dm("sys","System design","Projetar sistemas que aguentam crescer.",[
+   ["Fundamentos","req|Requisitos funcionais e não funcionais|3; escala|Escalabilidade vertical e horizontal|3; lb|Balanceamento de carga|3; cache|Estratégias de cache|3; filas|Filas e processamento assíncrono|3; cap|Teorema CAP e consistência|2; dbesc|Replicação, sharding e índices|2; cdn|CDN|2; rate|Rate limiting|2; falha|Tolerância a falhas e resiliência|2; estima|Estimativa de capacidade|2"],
+   ["Prática","casos|Casos clássicos: encurtador de URL, feed e chat|3; entrevista|System design em entrevistas|2"]
+  ]),
+  dm("doc","Documentar decisões","Arquitetura que ninguém entende não ajuda ninguém.",[
+   ["Documentação","trade|Análise de trade-offs|3; adr|ADRs: registros de decisão|2; c4|Diagramas C4|2; uml|UML básico: classes e sequência|2; poc|Prova de conceito|1"]
+  ])
+ ]},
+ {id:"d-car",nome:"Carreira e profissão",cor:"--a-mat",trilha:"dev",materias:[
+  dm("ing","Inglês técnico","Quase toda a documentação, as vagas e os erros estão em inglês.",[
+   ["Inglês no dia a dia","leitura|Ler documentação em inglês|3; erros|Entender mensagens de erro|3; vocab|Vocabulário técnico essencial|3; escrita|Escrever commits, PRs e issues em inglês|3; ouvir|Ouvir palestras e podcasts técnicos|2; entrev|Inglês em entrevistas|2"]
+  ]),
+  dm("agil","Metodologias ágeis","Como equipes de software organizam o trabalho.",[
+   ["Ágil","manif|Manifesto ágil|2; scrum|Scrum: papéis, eventos e artefatos|3; kanban|Kanban e limite de trabalho em progresso|3; hist|Histórias de usuário e critérios de aceite|3; estim|Estimativas|2; retro|Retrospectivas|2; mvp|MVP e visão de produto|2; foco|Gestão de tempo e foco|2"]
+  ]),
+  dm("port","Portfólio e projetos","O portfólio prova o que o currículo apenas diz.",[
+   ["Projetos","p1|Projeto 1: CRUD completo com API e frontend|3; p2|Projeto 2: autenticação e deploy|3; p3|Projeto 3: app mobile consumindo a sua API|3; p4|Projeto 4: projeto com testes e CI|3"],
+   ["Vitrine","readme|README profissional|3; gh|Perfil do GitHub|3; linked|LinkedIn e currículo|2; oss|Contribuir com código aberto|1; blog|Escrever sobre o que aprende|1"]
+  ]),
+  dm("soft","Soft skills e carreira","O que faz uma pessoa desenvolvedora ser contratada e crescer.",[
+   ["Trabalho em equipe","comm|Comunicação clara por escrito|3; ajuda|Pedir ajuda do jeito certo|3; feedback|Receber feedback|3; remoto|Trabalho remoto e assíncrono|2; etica|Ética e LGPD no dia a dia|2"],
+   ["Carreira","entrev|Entrevista técnica e live coding|3; aprender|Aprender a aprender|3; nivel|Júnior, pleno e sênior|2; freela|Freelancing e contratos|1"]
+  ]),
+  dm("livre","Projetos e estudos livres","Espaço para o que você quiser estudar e que não cabe nas outras matérias. Use Editar trilha para adicionar tópicos.",[])
  ]}
 ];
 var AREA_OF_SUBJECT={mat:'mat',fis:'nat',qui:'nat',bio:'nat',nat:'nat',ling:'ling',port:'ling',lit:'ling',ing:'ling',hum:'hum',hist:'hum',geo:'hum',filo:'hum',soc:'hum',red:'red',rep:'red',redsim:'red'};
@@ -526,19 +772,19 @@ var RISK_AREAS_BASE=['mat','nat','ling','hum','red'];
 /* Monta a trilha final: base acima + personalizações do usuário
    (tópicos e matérias criados, nomes trocados, ocultos e nova ordem). */
 var TOPICS={},TOPIC_LIST=[],MATERIAS=[],MATERIA={},BASE_TOPIC={},BASE_MAT={};
-SYLLABUS.forEach(function(a){a.materias.forEach(function(m){BASE_MAT[m.id]=[];m.mods.forEach(function(md){md.t.forEach(function(t){BASE_TOPIC[t[0]]={nome:t[1],p:t[2]||2,materia:m.id,mod:md.nome};BASE_MAT[m.id].push(t[0])})})})});
+SYLLABUS.concat(DEV_SYLLABUS).forEach(function(a){a.materias.forEach(function(m){BASE_MAT[m.id]=[];m.mods.forEach(function(md){md.t.forEach(function(t){BASE_TOPIC[t[0]]={nome:t[1],p:t[2]||2,materia:m.id,mod:md.nome};BASE_MAT[m.id].push(t[0])})})})});
 var CUSTOM_AREA={id:'out',nome:'Outras matérias',cor:'--ink-soft',materias:[]};
 var custom={topics:[],materias:[],hidden:{},renamed:{},order:{}};
 function normCustom(c){c=c&&typeof c==='object'?c:{};['topics','materias'].forEach(function(k){if(!Array.isArray(c[k]))c[k]=[]});['hidden','renamed','order'].forEach(function(k){if(!c[k]||typeof c[k]!=='object')c[k]={}});return c}
 function buildSyllabus(){
   TOPICS={};TOPIC_LIST=[];MATERIAS=[];MATERIA={};
   Object.keys(SUBJECTS).forEach(function(k){if(SUBJECTS[k].custom)delete SUBJECTS[k]});
-  var areas=SYLLABUS.concat(custom.materias.some(function(x){return x.area==='out'})?[CUSTOM_AREA]:[]);
+  var areas=SYLLABUS.concat(custom.materias.some(function(x){return x.area==='out'})?[CUSTOM_AREA]:[],DEV_SYLLABUS);
   areas.forEach(function(a){
     var mats=a.materias.map(function(m){return {base:m,id:m.id,nome:m.nome,desc:m.desc}})
       .concat(custom.materias.filter(function(x){return x.area===a.id}).map(function(x){return {base:null,id:x.id,nome:x.nome,desc:x.desc||'Matéria criada por você.',custom:true}}));
     mats.forEach(function(src){
-      var m={id:src.id,nome:src.nome,desc:src.desc,custom:!!src.custom,area:a.id,cor:a.cor,mods:[],ids:[],hiddenIds:[]};
+      var m={id:src.id,nome:src.nome,desc:src.desc,custom:!!src.custom,area:a.id,cor:a.cor,trilha:a.trilha||'enem',mods:[],ids:[],hiddenIds:[]};
       function modOf(nome){for(var i=0;i<m.mods.length;i++)if(m.mods[i].nome===nome)return m.mods[i];var md={nome:nome,ids:[]};m.mods.push(md);return md}
       if(src.base)src.base.mods.forEach(function(md){var x=modOf(md.nome);md.t.forEach(function(t){if(custom.hidden[t[0]])m.hiddenIds.push(t[0]);else x.ids.push(t[0])})});
       custom.topics.forEach(function(t){if(t.materia!==m.id)return;if(custom.hidden[t.id])m.hiddenIds.push(t.id);else modOf(t.mod||'Meus tópicos').ids.push(t.id)});
@@ -550,7 +796,7 @@ function buildSyllabus(){
           var b=BASE_TOPIC[id],c=null;
           if(!b)for(var i=0;i<custom.topics.length;i++)if(custom.topics[i].id===id){c=custom.topics[i];break}
           var src2=b||c,p=src2.p||2;
-          var o={id:id,nome:custom.renamed[id]||src2.nome,p:p,hot:p===3,area:a.id,areaNome:a.nome,materia:m.id,materiaNome:m.nome,grupo:m.nome,mod:md.nome,modIdx:mi,ord:TOPIC_LIST.length,rev:!a.semRevisao,custom:!b};
+          var o={id:id,nome:custom.renamed[id]||src2.nome,p:p,hot:p===3,area:a.id,areaNome:a.nome,materia:m.id,materiaNome:m.nome,grupo:m.nome,mod:md.nome,modIdx:mi,ord:TOPIC_LIST.length,rev:!a.semRevisao,trilha:a.trilha||'enem',custom:!b};
           TOPICS[id]=o;TOPIC_LIST.push(o);m.ids.push(id);
         });
       });
@@ -559,7 +805,7 @@ function buildSyllabus(){
     });
   });
 }
-function areaById(id){for(var i=0;i<SYLLABUS.length;i++)if(SYLLABUS[i].id===id)return SYLLABUS[i]}
+function areaById(id){var all=SYLLABUS.concat(DEV_SYLLABUS);for(var i=0;i<all.length;i++)if(all[i].id===id)return all[i]}
 
 /* Ids da versão anterior do conteúdo, para não perder o progresso */
 var OLD_IDS={
@@ -577,8 +823,21 @@ var OLD_IDS={
  'hum.1.0':'geo-clima','hum.1.1':['geo-relevo','geo-hidro'],'hum.1.2':'geo-biomas','hum.1.3':['geo-global','geo-geopol'],'hum.1.4':'geo-urb','hum.1.5':'geo-demo','hum.1.6':'geo-ind',
  'hum.2.0':['filo-socrates','filo-platao'],'hum.2.1':'filo-contrato','hum.2.2':'filo-ilum','hum.2.3':['soc-durk','soc-weber','soc-marx'],'hum.2.4':'soc-movim','hum.2.5':['soc-trab','soc-cultura'],
  'red.0.0':'red-intro','red.0.1':'red-desenv','red.0.2':'red-repert','red.0.3':'red-conc',
- 'tec.0.0':'tec-python','tec.0.1':'tec-ed','tec.0.2':'tec-alg','tec.0.3':'tec-leet','tec.1.0':'tec-fastapi','tec.1.1':'tec-db','tec.1.2':'tec-flutter','tec.1.3':'tec-docs'
+ 'tec.0.0':'dv-py-base','tec.0.1':'dv-ed-array','tec.0.2':'dv-log-decomp','tec.0.3':'dv-log-leet','tec.1.0':'dv-fapi-hello','tec.1.1':'dv-sql-select','tec.1.2':'dv-flutter-inst','tec.1.3':'dv-amb-docs',
+ 'tec-python':'dv-py-base','tec-ed':'dv-ed-array','tec-alg':'dv-log-decomp','tec-leet':'dv-log-leet','tec-fastapi':'dv-fapi-hello','tec-db':'dv-sql-select','tec-flutter':'dv-flutter-inst','tec-docs':'dv-amb-docs'
 };
+/* Antigo bloco de programação → Trilha Dev: leva para a nova trilha o que o usuário personalizou */
+var TEC_MAP={'tec-python':'dv-py-base','tec-ed':'dv-ed-array','tec-alg':'dv-log-decomp','tec-leet':'dv-log-leet','tec-fastapi':'dv-fapi-hello','tec-db':'dv-sql-select','tec-flutter':'dv-flutter-inst','tec-docs':'dv-amb-docs'};
+function migrateCustomTec(c){
+  var ch=false;
+  c.topics.forEach(function(t){if(t.materia==='tec'){t.materia='dv-livre';ch=true}});
+  c.materias.forEach(function(m){if(m.area==='tec'){m.area='d-car';ch=true}});
+  ['hidden','renamed'].forEach(function(k){Object.keys(c[k]).forEach(function(id){if(TEC_MAP[id]){c[k][TEC_MAP[id]]=c[k][id];delete c[k][id];ch=true}})});
+  Object.keys(c.order).forEach(function(key){
+    if(key.indexOf('tec|')===0){var ids=c.order[key].filter(function(x){return x.indexOf('u-')===0});delete c.order[key];if(ids.length)c.order['dv-livre|'+key.slice(4)]=ids;ch=true}
+  });
+  return ch;
+}
 function migrateTopics(){
   var changed=false,nt={};
   Object.keys(topics).forEach(function(k){
@@ -615,14 +874,25 @@ var SUBJECTS={
  filo:{n:'Filosofia',m:'filo'},
  soc:{n:'Sociologia',m:'soc'},
  red:{n:'Redação: teoria',area:'red'},
- tec:{n:'Bloco técnico',area:'tec'},
+ tec:{n:'Programação (toda a Trilha Dev)',trilha:'dev'},
+ 'd-fund':{n:'Dev: Fundamentos de computação',area:'d-fund'},
+ 'd-ferr':{n:'Dev: Ferramentas do dia a dia',area:'d-ferr'},
+ 'd-front':{n:'Dev: Frontend',area:'d-front'},
+ 'd-back':{n:'Dev: Backend',area:'d-back'},
+ 'd-db':{n:'Dev: Banco de dados',area:'d-db'},
+ 'd-mob':{n:'Dev: Mobile',area:'d-mob'},
+ 'd-qual':{n:'Dev: Qualidade de código',area:'d-qual'},
+ 'd-ops':{n:'Dev: DevOps e nuvem',area:'d-ops'},
+ 'd-sec':{n:'Dev: Segurança',area:'d-sec'},
+ 'd-arq':{n:'Dev: Arquitetura e system design',area:'d-arq'},
+ 'd-car':{n:'Dev: Carreira e profissão',area:'d-car'},
  rev:{n:'Revisões programadas'},
  rep:{n:'Banco de repertórios'},
  redsim:{n:'Redação simulada (registrar nota)'}
 };
 function topicsFor(subj){
-  var s=SUBJECTS[subj];if(!s||(!s.area&&!s.m))return [];
-  return TOPIC_LIST.filter(function(t){return s.m?t.materia===s.m:t.area===s.area});
+  var s=SUBJECTS[subj];if(!s||(!s.area&&!s.m&&!s.trilha))return [];
+  return TOPIC_LIST.filter(function(t){return s.m?t.materia===s.m:s.trilha?t.trilha===s.trilha:t.area===s.area});
 }
 
 /* =========================================================
@@ -647,13 +917,14 @@ var DEFAULT=[
    ========================================================= */
 var PREFIX='minha-rotina:';
 // Dados que vão para a nuvem e para o backup
-var KEYS=['routine.v2','progress','notes','focus','topics','picks','essays','reps','sims','exam','best','trailMode','custom'];
+var KEYS=['routine.v2','progress','notes','focus','topics','picks','essays','reps','sims','exam','best','trailMode','custom','errors','hours','goals','badges','daylog','water','waterGoal','habitSync'];
+// O registro do hábito (chave 'habit') só entra aqui quando a pessoa ativa a sincronização, veja syncHabitKey()
 function load(k,d){try{var v=localStorage.getItem(PREFIX+k);return v?JSON.parse(v):d}catch(e){return d}}
 function rawSave(k,v){try{localStorage.setItem(PREFIX+k,JSON.stringify(v))}catch(e){}}
 function save(k,v){rawSave(k,v);if(KEYS.indexOf(k)>=0&&typeof markDirty==='function')markDirty()}
 function clone(o){return JSON.parse(JSON.stringify(o))}
 
-var routine,progress,notes,focus,topics,picks,essays,reps,sims,exam;
+var routine,progress,notes,focus,topics,picks,essays,reps,sims,exam,errs,hoursBy,goals,badges,daylog,water,waterGoal,habit;
 function reloadState(){
   routine=load('routine.v2',clone(DEFAULT));
   progress=load('progress',{});  // {data:{bloco:true}}
@@ -665,10 +936,20 @@ function reloadState(){
   reps=load('reps',[]);          // repertórios
   sims=load('sims',[]);          // simulados
   exam=load('exam','');          // data da prova
+  errs=load('errors',[]);        // caderno de erros
+  hoursBy=load('hours',{});      // {data:{materia:minutos}} foco real
+  goals=load('goals',null);      // metas semanais {h,t,r}
+  badges=load('badges',{});      // {conquista:data}
+  daylog=load('daylog',{});      // {data:{r:revisões feitas}}
+  water=load('water',{});        // {data:{ml,adds:[ml...]}}
+  waterGoal=load('waterGoal',2000);
+  habit=load('habit',null);      // hábito a largar: fica só neste aparelho, salvo se a pessoa ativar a sincronização
   custom=normCustom(load('custom',null));
+  if(migrateCustomTec(custom))save('custom',custom);
   buildSyllabus();
   migrateTopics();
 }
+syncHabitKey();
 reloadState();
 var theme=load('theme','auto');
 var view=load('view','hoje');
@@ -704,6 +985,7 @@ function studyTopic(id,dateKey){
 }
 function reviewTopic(id,ok){
   var t=topics[id];if(!t)return;
+  bumpLog('r');
   if(ok){
     t.n=(t.n||0)+1;
     if(t.n>=REV.length){t.s=3;t.next=null}
@@ -736,8 +1018,8 @@ function pickFor(dateKey,b){
   if(p&&TOPICS[p.t])return p.t;
   return suggestTopic(b.subject);
 }
-function areaCoverage(areaId){
-  var list=TOPIC_LIST.filter(function(t){return !areaId||t.area===areaId});
+function areaCoverage(areaId,kind){
+  var list=TOPIC_LIST.filter(function(t){return areaId?t.area===areaId:t.trilha===(kind||'enem')});
   var st=0,dom=0;list.forEach(function(t){var s=tstate(t.id).s;if(s>=1)st++;if(s===3)dom++});
   return {total:list.length,studied:st,mastered:dom};
 }
@@ -807,7 +1089,7 @@ function clamp(v,a,b){v=parseInt(v,10);if(isNaN(v))return null;return Math.max(a
 var CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 var toastT;
 function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},2600)}
-function go(v){view=v;save('view',v);weekOffset=0;render();window.scrollTo(0,0)}
+function go(v){view=v;save('view',v);weekOffset=0;trailEdit=false;render();window.scrollTo(0,0)}
 
 /* =========================================================
    COMPONENTE: BLOCO
@@ -822,18 +1104,21 @@ function blockHTML(b,date,opts){
   h+='<div class="body"><div class="kind">'+TYPES[b.type]+(b.time?'<span class="time">'+esc(b.time)+'</span>':'')+'</div>';
   h+='<ul class="items">'+items.map(function(i){return '<li>'+esc(i)+'</li>'}).join('')+'</ul>';
 
-  var list=topicsFor(b.subject),focusLabel=items.join(', ');
+  var list=topicsFor(b.subject),focusLabel=items.join(', '),focusSubj=(SUBJECTS[b.subject]&&SUBJECTS[b.subject].m)||b.subject||'';
   if(list.length){
     var cur=pickFor(k,b);
     if(opts.full&&!done){
       if(cur){
-        focusLabel=TOPICS[cur].nome;
+        focusLabel=TOPICS[cur].nome;focusSubj=TOPICS[cur].materia;
         h+='<div class="topicbox"><label class="lbl" for="pk-'+b.id+'">Tópico de hoje</label><select id="pk-'+b.id+'" data-pick="'+b.id+'" data-date="'+k+'">';
+        var grp=list.length&&list[0].trilha==='dev',lastM='';
         list.forEach(function(t){
           var s=tstate(t.id).s;
           if(s===3&&t.id!==cur)return;
-          h+='<option value="'+t.id+'"'+(t.id===cur?' selected':'')+'>'+(SUBJECTS[b.subject].m||b.subject==='mat'||b.subject==='red'||b.subject==='tec'?'':t.materiaNome+' · ')+esc(t.nome)+(s?' ('+STATUS[s].toLowerCase()+')':'')+(t.hot?' · cai muito':'')+'</option>';
+          if(grp&&t.materia!==lastM){if(lastM)h+='</optgroup>';h+='<optgroup label="'+esc(t.areaNome+' · '+t.materiaNome)+'">';lastM=t.materia}
+          h+='<option value="'+t.id+'"'+(t.id===cur?' selected':'')+'>'+(SUBJECTS[b.subject].m||b.subject==='mat'||b.subject==='red'||grp?'':t.materiaNome+' · ')+esc(t.nome)+(s?' ('+STATUS[s].toLowerCase()+')':'')+(t.hot?(t.trilha==='dev'?' · essencial':' · cai muito'):'')+'</option>';
         });
+        if(grp&&lastM)h+='</optgroup>';
         h+='<option value="__new">+ Outro tópico (adicionar à trilha)</option></select></div>';
       }else h+='<p class="pick">Todos os tópicos desta matéria estão dominados. <button class="link" data-act="today-new" data-b="'+b.id+'" data-date="'+k+'">Adicionar outro tópico</button></p>';
     }else if(cur&&(done||opts.showPick)){
@@ -843,7 +1128,7 @@ function blockHTML(b,date,opts){
   }
   if(opts.full&&!done){
     h+='<div class="extra">';
-    if(b.type==='estudo')h+='<button class="link" data-act="focus" data-label="'+esc(focusLabel)+'">Iniciar foco de 25 min</button>';
+    if(b.type==='estudo')h+='<button class="link" data-act="focus" data-label="'+esc(focusLabel)+'" data-subj="'+esc(focusSubj)+'">Iniciar foco de 25 min</button>';
     if(b.subject==='rev'){var n=dueReviews().length;h+='<span class="pick">'+(n?n+' revisão'+(n>1?'ões':'')+' pendente'+(n>1?'s':'')+' no painel ao lado':'Nenhuma revisão pendente hoje')+'</span>'}
     if(b.subject==='rep')h+='<button class="link" data-act="go" data-v="redacao">Adicionar repertório ('+reps.length+' no banco)</button>';
     if(b.subject==='redsim')h+='<button class="link" data-act="go" data-v="redacao">Registrar nota da redação</button>';
@@ -881,6 +1166,7 @@ function renderHoje(){
   var AL=computeAlerts().filter(function(a){return a.lv!=='info'});
   if(AL.length)h+='<div class="panel"><h3>Alertas</h3>'+alertsHTML(AL.slice(0,2))+'<button class="link" data-act="go" data-v="diagnostico" style="margin-top:8px">Ver diagnóstico completo</button></div>';
   h+=reviewsPanel();
+  h+=waterPanel(false);
   h+='<div class="panel"><h3>Anotações do dia</h3><label class="sr" for="note">Anotações de hoje</label><textarea id="note" data-date="'+tk()+'" placeholder="O que estudou, dúvidas para revisar, cargas do treino...">'+esc(notes[tk()]||'')+'</textarea></div>';
   var tm=addDays(d,1),ti=dayIdx(tm);
   h+='<div class="panel next"><h3>Amanhã · '+DAYS[ti]+'</h3><div class="list">'+(routine[ti].length?routine[ti].map(function(b){return blockHTML(b,tm)}).join(''):'<p class="empty">Nada planejado.</p>')+'</div></div>';
@@ -912,7 +1198,9 @@ function renderSemana(){
 /* =========================================================
    TELA: TRILHA DO ENEM
    ========================================================= */
-var trailSel=load('trailSel','');
+var trailSel=load('trailSel',''),devSel=load('devSel','');
+function getSel(k){return k==='dev'?devSel:trailSel}
+function setSel(k,id){if(k==='dev'){devSel=id;rawSave('devSel',id)}else{trailSel=id;rawSave('trailSel',id)}}
 function trailOrder(ids){
   var list=ids.map(function(id){return TOPICS[id]});
   if(load('trailMode','didatica')==='prioridade')list=list.slice().sort(function(a,b){return b.p-a.p||a.ord-b.ord});
@@ -925,7 +1213,7 @@ function nextStep(ids){
   return null;
 }
 function matCoverage(m){var st=0,dom=0;m.ids.forEach(function(id){var s=tstate(id).s;if(s>=1)st++;if(s===3)dom++});return {total:m.ids.length,studied:st,mastered:dom}}
-function pill(t){return t.p===3?'<span class="hot">cai muito</span>':t.p===1?'<span class="low">cai pouco</span>':''}
+function pill(t){var d=t.trilha==='dev';return t.p===3?'<span class="hot">'+(d?'essencial':'cai muito')+'</span>':t.p===1?'<span class="low">'+(d?'avançado':'cai pouco')+'</span>':''}
 function topicRow(t,num,dueSet,isNext,showMod){
   var st=tstate(t.id);
   var h='<li class="topic s'+st.s+(isNext?' next':'')+'">';
@@ -960,22 +1248,48 @@ function editRow(t,num,md){
 function addTopicForm(m,mod){
   return '<form class="addrow" data-addtopic="'+m.id+'" data-mod="'+esc(mod)+'"><label class="sr" for="at-'+esc(m.id+mod)+'">Novo tópico em '+esc(mod)+'</label>'+
     '<input id="at-'+esc(m.id+mod)+'" name="nome" maxlength="120" placeholder="Novo tópico nesta etapa" required>'+
-    '<select name="p" aria-label="Incidência"><option value="2">Incidência normal</option><option value="3">Cai muito</option><option value="1">Cai pouco</option></select>'+
+    (m.trilha==='dev'?'<select name="p" aria-label="Prioridade"><option value="2">Prioridade normal</option><option value="3">Essencial</option><option value="1">Avançado</option></select>':'<select name="p" aria-label="Incidência"><option value="2">Incidência normal</option><option value="3">Cai muito</option><option value="1">Cai pouco</option></select>')+
     '<button class="btn sm" type="submit">Adicionar</button></form>';
 }
-function renderConteudo(){
-  var mode=load('trailMode','didatica'),due=dueReviews(),dueSet={};due.forEach(function(id){dueSet[id]=1});
-  var m=MATERIA[trailSel]||null;if(!m)trailEdit=false;
-  var h='<div class="chips trailnav" role="group" aria-label="Escolher matéria"><button class="chip" data-act="trail" data-m="" aria-pressed="'+(!m)+'">Visão geral</button>';
-  MATERIAS.forEach(function(x){var c=matCoverage(x);h+='<button class="chip" data-act="trail" data-m="'+x.id+'" aria-pressed="'+(m===x)+'">'+esc(x.nome)+' <small>'+c.studied+'/'+c.total+'</small></button>'});
-  h+='</div>';
+/* Textos que mudam entre a Trilha ENEM e a Trilha Dev */
+var TK={
+ enem:{hotL:'Cai muito',byP:'Por incidência no ENEM',ordP:'Mais cobrados primeiro',
+  hint:function(all,n){return all.studied+' de '+all.total+' tópicos estudados em '+n+' matérias. Cada trilha segue a ordem em que vale estudar: primeiro a base que as etapas seguintes usam. Os blocos de estudo da sua rotina sugerem sempre o próximo passo da trilha. Perto da prova, use "Mais cobrados primeiro". Para mudar o que estudar, abra uma trilha e clique em "Editar trilha".'}},
+ dev:{hotL:'Essenciais',byP:'Por prioridade',ordP:'Essenciais primeiro',
+  hint:function(all,n){return all.studied+' de '+all.total+' tópicos estudados em '+n+' assuntos. A ordem vai do básico ao avançado e os blocos de Programação da sua rotina sugerem sempre o próximo passo. Já domina algo? Abra o assunto e use "Já domino esta etapa" para pular para o que falta. Os tópicos essenciais são o núcleo de quem quer trabalhar como fullstack.'}}
+};
+function matCard(x){
+  var c=matCoverage(x),nx=nextStep(x.ids);
+  var h='<div class="panel matcard"><div class="area-h"><span class="sw" style="background:var('+x.cor+')"></span><h3>'+esc(x.nome)+'</h3><span class="cnt">'+c.studied+'/'+c.total+'</span></div>';
+  h+='<div class="progress thin"><i style="width:'+pctOf(c)+'%;background:var('+x.cor+')"></i></div>';
+  h+='<p class="nextline">'+(nx?'<span>Próximo passo</span>'+esc(nx.nome):c.total?'<span>Trilha concluída</span>Todos os tópicos dominados':'<span>Trilha vazia</span>Adicione os primeiros tópicos')+'</p>';
+  return h+'<button class="btn sm ghost" data-act="trail" data-k="'+x.trilha+'" data-m="'+x.id+'">Abrir trilha</button></div>';
+}
+function addMatFormHTML(kind){
+  var dev=kind==='dev',areas=dev?DEV_SYLLABUS:SYLLABUS;
+  var h='<form class="panel matcard newmat" id="addMatForm"><h3>Criar '+(dev?'assunto':'matéria')+'</h3><p class="hint" style="margin:0">'+(dev?'Para estudar algo que não está na trilha, como uma linguagem ou ferramenta nova.':'Para estudar algo que não está aqui, como Espanhol ou um conteúdo de vestibular específico.')+'</p>';
+  h+='<label class="f">Nome<input name="nome" maxlength="60" required placeholder="'+(dev?'Ex.: Go ou Rust':'Ex.: Espanhol')+'"></label>';
+  h+='<label class="f">Área<select name="area">'+areas.map(function(a){return '<option value="'+a.id+'">'+esc(a.nome)+'</option>'}).join('')+(dev?'':'<option value="out">Outras matérias</option>')+'</select></label>';
+  return h+'<button class="btn sm" type="submit">Criar e adicionar tópicos</button></form>';
+}
+function renderTrail(kind){
+  var K=TK[kind],mode=load('trailMode','didatica'),due=dueReviews(),dueSet={};due.forEach(function(id){dueSet[id]=1});
+  var mats=MATERIAS.filter(function(x){return x.trilha===kind});
+  var m=MATERIA[getSel(kind)]||null;if(m&&m.trilha!==kind)m=null;if(!m)trailEdit=false;
+  var h='';
+  var navMats=kind==='dev'?(m?mats.filter(function(x){return x.area===m.area}):[]):mats;
+  if(kind==='enem'||m){
+    h+='<div class="chips trailnav" role="group" aria-label="Escolher matéria"><button class="chip" data-act="trail" data-k="'+kind+'" data-m="" aria-pressed="'+(!m)+'">Visão geral</button>';
+    navMats.forEach(function(x){var c=matCoverage(x);h+='<button class="chip" data-act="trail" data-k="'+kind+'" data-m="'+x.id+'" aria-pressed="'+(m===x)+'">'+esc(x.nome)+' <small>'+c.studied+'/'+c.total+'</small></button>'});
+    h+='</div>';
+  }
   if(!trailEdit){
     h+='<div class="summary"><div class="chips" role="group" aria-label="Ordem da trilha"><span class="lbl">Ordem</span>';
     h+='<button class="chip" data-act="tmode" data-v="didatica" aria-pressed="'+(mode==='didatica')+'">Do básico ao avançado</button>';
-    h+='<button class="chip" data-act="tmode" data-v="prioridade" aria-pressed="'+(mode==='prioridade')+'">Mais cobrados primeiro</button></div>';
+    h+='<button class="chip" data-act="tmode" data-v="prioridade" aria-pressed="'+(mode==='prioridade')+'">'+K.ordP+'</button></div>';
     if(m){
       h+='<div class="chips" role="group" aria-label="Filtrar tópicos">';
-      [['todos','Todos'],['pendentes','Não dominados'],['naovistos','Não vistos'],['revisar','Revisar hoje'],['hot','Cai muito']].forEach(function(f){
+      [['todos','Todos'],['pendentes','Não dominados'],['naovistos','Não vistos'],['revisar','Revisar hoje'],['hot',K.hotL]].forEach(function(f){
         h+='<button class="chip" data-act="cf" data-f="'+f[0]+'" aria-pressed="'+(contentFilter===f[0])+'">'+f[1]+'</button>';
       });
       h+='</div><span style="flex:1"></span><button class="icon-btn no-print" data-act="print">Imprimir trilha</button>';
@@ -984,21 +1298,17 @@ function renderConteudo(){
   }
 
   if(!m){
-    var all=areaCoverage();
-    h+='<p class="hint">'+all.studied+' de '+all.total+' tópicos estudados em '+MATERIAS.length+' matérias. Cada trilha segue a ordem em que vale estudar: primeiro a base que as etapas seguintes usam. Os blocos de estudo da sua rotina sugerem sempre o próximo passo da trilha. Perto da prova, use "Mais cobrados primeiro". Para mudar o que estudar, abra uma trilha e clique em "Editar trilha".</p>';
-    h+='<div class="matgrid">';
-    MATERIAS.forEach(function(x){
-      var c=matCoverage(x),nx=nextStep(x.ids);
-      h+='<div class="panel matcard"><div class="area-h"><span class="sw" style="background:var('+x.cor+')"></span><h3>'+esc(x.nome)+'</h3><span class="cnt">'+c.studied+'/'+c.total+'</span></div>';
-      h+='<div class="progress thin"><i style="width:'+pctOf(c)+'%;background:var('+x.cor+')"></i></div>';
-      h+='<p class="nextline">'+(nx?'<span>Próximo passo</span>'+esc(nx.nome):c.total?'<span>Trilha concluída</span>Todos os tópicos dominados':'<span>Trilha vazia</span>Adicione os primeiros tópicos')+'</p>';
-      h+='<button class="btn sm ghost" data-act="trail" data-m="'+x.id+'">Abrir trilha</button></div>';
-    });
-    h+='<form class="panel matcard newmat" id="addMatForm"><h3>Criar matéria</h3><p class="hint" style="margin:0">Para estudar algo que não está aqui, como Espanhol ou um conteúdo de vestibular específico.</p>';
-    h+='<label class="f">Nome<input name="nome" maxlength="60" required placeholder="Ex.: Espanhol"></label>';
-    h+='<label class="f">Área<select name="area">'+SYLLABUS.map(function(a){return '<option value="'+a.id+'">'+esc(a.nome)+'</option>'}).join('')+'<option value="out">Outras matérias</option></select></label>';
-    h+='<button class="btn sm" type="submit">Criar e adicionar tópicos</button></form>';
-    return h+'</div>';
+    var all=areaCoverage(null,kind);
+    h+='<p class="hint">'+K.hint(all,mats.length)+'</p>';
+    if(kind==='dev'){
+      DEV_SYLLABUS.forEach(function(a){
+        var ms=mats.filter(function(x){return x.area===a.id}),ac=areaCoverage(a.id);
+        h+='<h3 class="areahead"><span class="sw" style="background:var('+a.cor+')"></span>'+esc(a.nome)+' <small>'+ac.studied+'/'+ac.total+'</small></h3><div class="matgrid">'+ms.map(matCard).join('')+'</div>';
+      });
+      return h+'<div class="matgrid" style="margin-top:22px">'+addMatFormHTML('dev')+'</div>';
+    }
+    h+='<div class="matgrid">'+mats.map(matCard).join('')+addMatFormHTML('enem')+'</div>';
+    return h;
   }
 
   var c=matCoverage(m),nx=nextStep(m.ids);
@@ -1045,16 +1355,18 @@ function renderConteudo(){
         if(passFilter(t,dueSet))rows+=topicRow(t,k,dueSet,nx&&nx.id===t.id,false);
       });
       if(!rows)return;any=true;
-      h+='<div class="stage"><div class="stage-h"><h3>Etapa '+(mi+1)+': '+esc(md.nome)+'</h3><span>'+ms+'/'+md.ids.length+'</span></div><ol class="topics">'+rows+'</ol></div>';
+      h+='<div class="stage"><div class="stage-h"><h3>Etapa '+(mi+1)+': '+esc(md.nome)+'</h3><span>'+ms+'/'+md.ids.length+(kind==='dev'?' · <button class="link no-print" data-act="stage-dom" data-m="'+m.id+'" data-mi="'+mi+'">Já domino esta etapa</button>':'')+'</span></div><ol class="topics">'+rows+'</ol></div>';
     });
   }else{
-    var rows=trailOrder(m.ids).filter(function(t){return passFilter(t,dueSet)}).map(function(t,i){return topicRow(t,i+1,dueSet,nx&&nx.id===t.id,true)}).join('');
-    if(rows){any=true;h+='<div class="stage"><div class="stage-h"><h3>Por incidência no ENEM</h3></div><ol class="topics">'+rows+'</ol></div>'}
+    var rows2=trailOrder(m.ids).filter(function(t){return passFilter(t,dueSet)}).map(function(t,i){return topicRow(t,i+1,dueSet,nx&&nx.id===t.id,true)}).join('');
+    if(rows2){any=true;h+='<div class="stage"><div class="stage-h"><h3>'+K.byP+'</h3></div><ol class="topics">'+rows2+'</ol></div>'}
   }
   if(!any)h+='<p class="empty" style="margin-top:12px">'+(m.ids.length?'Nenhum tópico neste filtro.':'Esta trilha ainda não tem tópicos. Clique em "Editar trilha" para adicionar.')+'</p>';
   h+='<p class="hint" style="margin:14px 0 0">Clique no status para avançar: não visto, estudado, revisado, dominado. Ao estudar um tópico, ele volta para revisão em 1, 7 e 30 dias.</p>';
   return h+'</section>';
 }
+function renderConteudo(){return renderTrail('enem')}
+function renderDev(){return renderTrail('dev')}
 
 /* Ações de personalização da trilha */
 function saveCustom(){save('custom',custom);buildSyllabus()}
@@ -1074,6 +1386,12 @@ function moveTopic(id,dir){
 function trailAction(a,b){
   var id=b.dataset.t,t=TOPICS[id];
   if(a==='trail-edit'){trailEdit=!trailEdit;contentFilter='todos';render();return true}
+  if(a==='stage-dom'){
+    var sm=MATERIA[b.dataset.m],smd=sm&&sm.mods[+b.dataset.mi];if(!smd)return true;
+    if(!confirm('Marcar os '+smd.ids.length+' tópicos da etapa "'+smd.nome+'" como dominados? Use quando você já sabe esse conteúdo. Eles não contam nas metas da semana.'))return true;
+    var n2=0;smd.ids.forEach(function(x){if(tstate(x).s<3){topics[x]={s:3,at:'',n:REV.length,next:null};n2++}});
+    save('topics',topics);render();toast(n2+' tópico'+(n2===1?'':'s')+' marcado'+(n2===1?'':'s')+' como dominado'+(n2===1?'':'s'));return true;
+  }
   if(a==='tp-up'||a==='tp-down'){moveTopic(id,a==='tp-up'?-1:1);render();keepFocus('[data-act="'+a+'"][data-t="'+id+'"]');return true}
   if(a==='tp-ren'&&t){
     var nv=prompt('Novo nome do tópico:',t.nome);if(nv==null)return true;nv=cleanName(nv);if(!nv)return true;
@@ -1107,7 +1425,7 @@ function trailAction(a,b){
     custom.topics=custom.topics.filter(function(x){return x.materia!==mid2});
     custom.materias=custom.materias.filter(function(x){return x.id!==mid2});
     Object.keys(custom.order).forEach(function(k){if(k.indexOf(mid2+'|')===0)delete custom.order[k]});
-    save('topics',topics);trailSel='';rawSave('trailSel','');trailEdit=false;saveCustom();render();toast('Matéria apagada');return true;
+    save('topics',topics);setSel(mm.trilha,'');trailEdit=false;saveCustom();render();toast('Matéria apagada');return true;
   }
   return false;
 }
@@ -1126,7 +1444,7 @@ function trailSubmit(f){
     var mn=cleanName(fd.get('nome')).slice(0,60);if(!mn)return true;
     var area=String(fd.get('area'));if(!areaById(area)&&area!=='out')area='out';
     var cm={id:'cm-'+uid(),nome:mn,area:area,desc:'Matéria criada por você.'};
-    custom.materias.push(cm);saveCustom();trailSel=cm.id;rawSave('trailSel',cm.id);trailEdit=true;render();window.scrollTo(0,0);toast('Matéria criada. Agora adicione as etapas e os tópicos.');return true;
+    custom.materias.push(cm);saveCustom();setSel((areaById(area)&&areaById(area).trilha)||'enem',cm.id);trailEdit=true;render();window.scrollTo(0,0);toast('Matéria criada. Agora adicione as etapas e os tópicos.');return true;
   }
   return false;
 }
@@ -1135,7 +1453,7 @@ function addTopicFromToday(blockId,dateKey){
   var blk=null;routine.forEach(function(d){d.forEach(function(x){if(x.id===blockId)blk=x})});if(!blk)return;
   var cur=pickFor(dateKey,blk),s=SUBJECTS[blk.subject]||{};
   var mid=s.m||(cur&&TOPICS[cur]?TOPICS[cur].materia:null);
-  if(!mid){var ms=MATERIAS.filter(function(x){return x.area===s.area});mid=ms.length?ms[0].id:null}
+  if(!mid){var ms=MATERIAS.filter(function(x){return s.trilha?x.trilha===s.trilha:x.area===s.area});mid=ms.length?ms[0].id:null}
   if(!mid)return;
   var nome=prompt('O que você vai estudar? O tópico entra na trilha de '+MATERIA[mid].nome+', na etapa "Meus tópicos".');
   nome=cleanName(nome);if(!nome){render();return}
@@ -1232,6 +1550,7 @@ function renderProgresso(){
   h+='<div class="row"><span>Sequência atual</span><span>'+streakNow()+' dias</span></div>';
   h+='<div class="row"><span>Melhor sequência</span><span>'+bestStreak()+' dias</span></div>';
   h+='<div class="row"><span>Revisões pendentes</span><span>'+dueReviews().length+'</span></div></div></div>';
+  h+=metasPanel()+horasPanel();
   // Conteúdo por área
   h+='<div class="panel"><h3>Conteúdo estudado por área</h3><div class="split">';
   SYLLABUS.forEach(function(a){
@@ -1239,6 +1558,7 @@ function renderProgresso(){
     h+='<div><div class="row"><span>'+esc(a.nome)+'</span><span>'+c.studied+'/'+c.total+(c.mastered?' · '+c.mastered+' dominados':'')+'</span></div><div class="progress" style="margin:0"><i style="width:'+Math.round(c.studied/c.total*100)+'%;background:var('+a.cor+')"></i></div></div>';
   });
   h+='</div></div>';
+  h+=devPanel();
   // Mapa de calor
   h+='<div class="panel"><h3>Constância em 12 semanas</h3><div class="heat" role="img" aria-label="Dias concluídos nas últimas 12 semanas">';
   var start=addDays(mon,-77);
@@ -1249,6 +1569,7 @@ function renderProgresso(){
   }
   h+='</div><p class="hint" style="margin:8px 0 0">Cada linha é uma semana, de segunda a domingo. Verde cheio é dia completo.</p></div>';
   h+='</div>';
+  h+=badgesPanel();
   // Simulados
   h+='<div class="panel" style="margin-top:16px"><h3>Simulados</h3><p class="hint">Registre os acertos de cada área (de 45 questões). Acertos não são a nota TRI, mas mostram a tendência.</p>';
   h+='<form class="form" id="simForm"><div class="row2"><label class="f">Data<input type="date" name="date" value="'+tk()+'" required></label><label class="f">Simulado<input name="nome" placeholder="Ex.: ENEM 2023, 1º dia" required></label></div>';
@@ -1382,7 +1703,7 @@ function computeAlerts(R){
     var days=daysBetween(today(),pk(exam));
     if(days>0){
       var cut=dkey(addDays(today(),-27)),remaining=0,recent=0;
-      TOPIC_LIST.forEach(function(t){if(t.area==='tec')return;var s=topics[t.id];if(!s)remaining++;else if(s.at&&s.at>=cut)recent++});
+      TOPIC_LIST.forEach(function(t){if(t.trilha!=='enem')return;var s=topics[t.id];if(!s)remaining++;else if(s.at&&s.at>=cut)recent++});
       var pace=recent/4,weeks=days/7;
       if(remaining>0){
         if(pace===0)out.push({lv:'high',t:'Nenhum tópico novo nas últimas 4 semanas. Faltam '+remaining+' tópicos e '+Math.floor(weeks)+' semanas até a prova: '+Math.ceil(remaining/Math.max(weeks,1))+' por semana.'});
@@ -1390,6 +1711,12 @@ function computeAlerts(R){
       }
     }
   }
+  var ES=errStats(30);
+  if(ES.list.length>=5){
+    var mo=sortedCounts(ES.mot)[0],share=mo[1]/ES.list.length;
+    if(share>=.4&&MOTIVO_DICA[mo[0]])out.push({lv:share>=.5?'high':'info',t:'Seus erros dos últimos 30 dias: '+Math.round(share*100)+'% são "'+MOTIVO[mo[0]].toLowerCase()+'". Ação: '+MOTIVO_DICA[mo[0]].charAt(0).toUpperCase()+MOTIVO_DICA[mo[0]].slice(1)});
+  }
+  sortedCounts(ES.top).filter(function(p){return p[1]>=3}).slice(0,2).forEach(function(p){out.push({lv:'high',t:'Você errou "'+TOPICS[p[0]].nome+'" '+p[1]+' vezes e ainda não resolveu. Revise o tópico e refaça as questões do caderno.'})});
   if(!sims.length&&!essays.length)out.push({lv:'info',t:'Registre simulados e redações para o índice considerar seu desempenho, não só o conteúdo estudado.'});
   return out;
 }
@@ -1427,6 +1754,7 @@ function renderDiagnostico(){
   h+='</div></form>';
   if(aiErr)h+='<div class="msg err">'+esc(aiErr)+'</div>';
   h+='</div></div>';
+  h+='<div style="margin-top:16px">'+erroSummaryPanel()+'<button class="link" data-act="go-err" style="margin-top:8px">Abrir o caderno de erros</button></div>';
   if(aiPlan){
     h+='<div class="panel" style="margin-top:16px"><h3>Plano sugerido</h3><p style="margin:0">'+esc(aiPlan.resumo||'')+'</p><div class="planweek">';
     for(var i=0;i<7;i++){
@@ -1495,14 +1823,648 @@ function renderStats(){
   document.getElementById('sub').textContent=fmt(new Date(),{weekday:'long',day:'numeric',month:'long'});
 }
 function render(){
+  checkBadges();
   document.querySelectorAll('.tab').forEach(function(t){if(t.dataset.view===view)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current')});
-  var V={hoje:renderHoje,semana:renderSemana,conteudo:renderConteudo,redacao:renderRedacao,progresso:renderProgresso,editar:renderEditar,conta:renderConta,diagnostico:renderDiagnostico};
+  var V={hoje:renderHoje,semana:renderSemana,conteudo:renderConteudo,redacao:renderRedacao,progresso:renderProgresso,editar:renderEditar,conta:renderConta,diagnostico:renderDiagnostico,pratica:renderPratica,dev:renderDev,habitos:renderHabitos};
   document.getElementById('main').innerHTML=(V[view]||renderHoje)();
   renderStats();
   if(view==='conta')document.getElementById('syncBtn').setAttribute('aria-current','page');else document.getElementById('syncBtn').removeAttribute('aria-current');
   drawSync();
 }
 function keepFocus(sel){var el=document.querySelector(sel);if(el)el.focus()}
+
+/* =========================================================
+   PRÁTICA: CADERNO DE ERROS E SIMULADO CRONOMETRADO
+   ========================================================= */
+var MOTIVOS=[['conteudo','Não sabia o conteúdo'],['esqueci','Esqueci o que já tinha estudado'],['interp','Erro de interpretação'],['tempo','Faltou tempo'],['descuido','Distração ou descuido'],['chute','Chutei']];
+var MOTIVO={};MOTIVOS.forEach(function(m){MOTIVO[m[0]]=m[1]});
+var MOTIVO_DICA={
+ conteudo:'estude na trilha os tópicos desses erros antes de fazer mais questões.',
+ esqueci:'faça as revisões de 1, 7 e 30 dias em dia.',
+ interp:'treine sublinhar o que o enunciado pede antes de ler as alternativas.',
+ tempo:'faça simulados cronometrados e defina um tempo máximo por questão.',
+ descuido:'reserve os últimos minutos de cada bloco para conferir as respostas.',
+ chute:'marque as questões em que chutou e revise esses tópicos.'
+};
+var praticaTab=load('praticaTab','erros'),errFilter={mat:'',mot:'',st:'pend'};
+function matLabel(id){return MATERIA[id]?MATERIA[id].nome:((SUBJECTS[id]&&SUBJECTS[id].n)||'Outros')}
+function hm(m){m=Math.round(m);return Math.floor(m/60)+'h'+pad(m%60)}
+function errMaterias(){return MATERIAS.filter(function(m){return m.trilha==='enem'&&m.area!=='red'})}
+function errTopicOptions(mat){
+  var m=MATERIA[mat],h='<option value="">Sem tópico definido</option>';
+  if(m)m.mods.forEach(function(md){h+='<optgroup label="'+esc(md.nome)+'">'+md.ids.map(function(id){return '<option value="'+id+'">'+esc(TOPICS[id].nome)+'</option>'}).join('')+'</optgroup>'});
+  return h;
+}
+function sortedCounts(o){return Object.keys(o).map(function(k){return [k,o[k]]}).sort(function(a,b){return b[1]-a[1]})}
+function errStats(days){
+  var since=days?dkey(addDays(today(),-(days-1))):'',list=errs.filter(function(e){return !since||e.date>=since});
+  var mot={},mat={},top={};
+  list.forEach(function(e){
+    mot[e.motivo]=(mot[e.motivo]||0)+1;mat[e.mat]=(mat[e.mat]||0)+1;
+    if(e.top&&TOPICS[e.top]&&!e.ok)top[e.top]=(top[e.top]||0)+1;
+  });
+  return {list:list,mot:mot,mat:mat,top:top};
+}
+function reopenTopic(id){
+  var t=TOPICS[id];if(!t)return '';
+  var st=topics[id];
+  if(!st||st.s===0)return 'Tópico ainda não visto: estude-o na trilha.';
+  if(!t.rev)return '';
+  if(st.s===3){st.s=2;st.n=Math.min(st.n||0,REV.length-1)}
+  st.next=tk();save('topics',topics);
+  return 'O tópico volta para revisão hoje.';
+}
+function mrows(pairs,labelFn,max){
+  return pairs.map(function(p){return '<div class="mrow"><span>'+esc(labelFn(p[0]))+'</span><div class="meter"><i style="width:'+Math.round(p[1]/max*100)+'%"></i></div><b>'+p[1]+'</b></div>'}).join('');
+}
+function erroSummaryPanel(){
+  var S=errStats(30),h='<div class="panel"><h3>Padrão dos erros (30 dias)</h3>';
+  if(!S.list.length)return h+'<p class="empty">Nenhum erro registrado nos últimos 30 dias. Anote cada questão errada dos simulados e das listas: o motivo mostra o que corrigir primeiro.</p></div>';
+  var mo=sortedCounts(S.mot),ma=sortedCounts(S.mat),tp=sortedCounts(S.top).slice(0,5);
+  h+='<p class="hint">'+S.list.length+' erro'+(S.list.length>1?'s':'')+' registrado'+(S.list.length>1?'s':'')+'.</p>';
+  h+='<h4 class="sub">Por motivo</h4>'+mrows(mo,function(k){return MOTIVO[k]||k},mo[0][1]);
+  h+='<h4 class="sub">Por matéria</h4>'+mrows(ma.slice(0,6),matLabel,ma[0][1]);
+  if(tp.length)h+='<h4 class="sub">Tópicos com erro pendente</h4>'+mrows(tp,function(k){return TOPICS[k].nome},tp[0][1]);
+  return h+'</div>';
+}
+function renderErros(){
+  var mats=errMaterias(),m0=mats[0]?mats[0].id:'';
+  var h='<div class="two"><div class="stack">';
+  h+='<div class="panel"><h3>Registrar questão errada</h3><form class="form" id="errForm">';
+  h+='<div class="row2"><label class="f">Data<input type="date" name="date" value="'+tk()+'" required></label>';
+  h+='<label class="f">Matéria<select name="errMat" required>'+mats.map(function(m){return '<option value="'+m.id+'">'+esc(m.nome)+'</option>'}).join('')+'</select></label></div>';
+  h+='<label class="f">Tópico<select name="top" id="errTop">'+errTopicOptions(m0)+'</select></label>';
+  h+='<label class="f">Por que errou<select name="motivo" required>'+MOTIVOS.map(function(m){return '<option value="'+m[0]+'">'+m[1]+'</option>'}).join('')+'</select></label>';
+  h+='<label class="f">Qual questão<input name="q" maxlength="160" placeholder="Ex.: ENEM 2022, questão 112, ou o tema"></label>';
+  h+='<label class="f">O que eu devia ter percebido (opcional)<textarea name="nota" maxlength="400" style="min-height:70px" placeholder="Ex.: o enunciado pedia a razão, não a diferença"></textarea></label>';
+  h+='<div><button class="btn" type="submit">Salvar no caderno</button></div></form>';
+  h+='<p class="hint" style="margin:10px 0 0">Ao salvar, o tópico escolhido volta para a fila de revisões de hoje. Use "Refiz e acertei" quando resolver a questão de novo sem consulta.</p></div>';
+  h+=erroSummaryPanel();
+  h+='</div><div class="stack"><div class="panel"><h3>Meu caderno</h3>';
+  h+='<div class="chips" role="group" aria-label="Situação">';
+  [['pend','Pendentes'],['ok','Resolvidos'],['todos','Todos']].forEach(function(f){h+='<button class="chip" data-act="ef-st" data-v="'+f[0]+'" aria-pressed="'+(errFilter.st===f[0])+'">'+f[1]+'</button>'});
+  h+='</div><div class="filters"><label class="f">Matéria<select data-ef="mat"><option value="">Todas</option>'+mats.map(function(m){return '<option value="'+m.id+'"'+(errFilter.mat===m.id?' selected':'')+'>'+esc(m.nome)+'</option>'}).join('')+'</select></label>';
+  h+='<label class="f">Motivo<select data-ef="mot"><option value="">Todos</option>'+MOTIVOS.map(function(m){return '<option value="'+m[0]+'"'+(errFilter.mot===m[0]?' selected':'')+'>'+m[1]+'</option>'}).join('')+'</select></label></div>';
+  var list=errs.filter(function(e){
+    if(errFilter.st==='pend'&&e.ok)return false;
+    if(errFilter.st==='ok'&&!e.ok)return false;
+    if(errFilter.mat&&e.mat!==errFilter.mat)return false;
+    if(errFilter.mot&&e.motivo!==errFilter.mot)return false;
+    return true;
+  }).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0});
+  if(!errs.length)h+='<p class="empty" style="margin-top:12px">Caderno vazio. Depois de cada simulado ou lista, registre aqui as questões que errou.</p>';
+  else if(!list.length)h+='<p class="empty" style="margin-top:12px">Nenhum erro neste filtro.</p>';
+  else{
+    h+='<ul class="errlist">'+list.map(function(e){
+      var t=e.top&&TOPICS[e.top]?TOPICS[e.top].nome:'';
+      return '<li class="'+(e.ok?'ok':'')+'"><div><div><span class="tag'+(e.ok?' ok':'')+'">'+esc(MOTIVO[e.motivo]||e.motivo)+'</span><b>'+esc(matLabel(e.mat))+(t?' · '+esc(t):'')+'</b></div>'+
+        '<div class="errmeta">'+shortDate(e.date)+(e.q?' · '+esc(e.q):'')+(e.ok?' · resolvido em '+shortDate(e.ok):'')+'</div>'+(e.nota?'<div class="errnote">'+esc(e.nota)+'</div>':'')+'</div>'+
+        '<div class="acts">'+(e.ok?'<button class="link" data-act="err-open" data-id="'+e.id+'">Reabrir</button>':'<button class="btn sm" data-act="err-ok" data-id="'+e.id+'">Refiz e acertei</button>')+
+        '<button class="del" data-act="del-err" data-id="'+e.id+'" aria-label="Apagar erro">×</button></div></li>';
+    }).join('')+'</ul>';
+  }
+  return h+'</div></div></div>';
+}
+
+/* Simulado cronometrado: o tempo entre um "Terminei" e o seguinte vira o tempo da área */
+var SIMDEF={
+ 1:{nome:'1º dia',min:330,qs:90,areas:[['lc','Linguagens',45],['ch','Humanas',45],['red','Redação',0]]},
+ 2:{nome:'2º dia',min:300,qs:90,areas:[['cn','Natureza',45],['mt','Matemática',45]]}
+};
+var SIMREDMIN=60;
+var simRun=load('sim.run',null);
+function simElapsed(r){return Math.max(0,Math.round(((r.fin?r.endAt:Date.now())-r.start)/1000))}
+function clockText(s){var a=Math.abs(s);return (s<0?'+':'')+pad(Math.floor(a/3600))+':'+pad(Math.floor(a%3600/60))+':'+pad(a%60)}
+function simSegments(r){
+  var seg={},prev=0;
+  r.cps.forEach(function(c){seg[c.a]=Math.max(0,c.t-prev);prev=c.t});
+  return seg;
+}
+function simRefPace(day,total,redMin){return Math.round(((day===1?total-redMin:total)/SIMDEF[day].qs)*10)/10}
+function simTick(){
+  if(!simRun||simRun.fin)return;
+  var el=simElapsed(simRun),rem=simRun.total*60-el;
+  if(rem<=0&&!simRun.beeped){simRun.beeped=true;rawSave('sim.run',simRun);beep();toast('Tempo esgotado. Termine e registre o que fez.')}
+  var c=document.getElementById('simClock');if(!c)return;
+  c.textContent=clockText(rem);c.classList.toggle('over',rem<0);
+  var b=document.getElementById('simBar');if(b)b.style.width=Math.min(100,Math.round(el/(simRun.total*60)*100))+'%';
+  var e=document.getElementById('simElapsed');if(e)e.textContent='Decorrido: '+clockText(el);
+}
+setInterval(simTick,500);
+function renderSimSetup(){
+  var h='<div class="two"><div class="stack"><div class="panel"><h3>Novo simulado cronometrado</h3>';
+  h+='<p class="hint">No ENEM, o 1º dia tem 90 questões e a redação em 5h30. O 2º dia tem 90 questões em 5h. Ajuste os minutos se a sua prova for diferente.</p>';
+  h+='<form class="form" id="simStartForm"><label class="f">Dia da prova<select name="day"><option value="1">1º dia: Linguagens, Humanas e Redação</option><option value="2">2º dia: Natureza e Matemática</option></select></label>';
+  h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Duração total (min)<input type="number" name="min" min="30" max="600" value="330" required></label>';
+  h+='<label class="f" id="redMinBox">Reservado à redação (min)<input type="number" name="redMin" min="0" max="240" value="'+SIMREDMIN+'"></label></div>';
+  h+='<label class="f">Nome (opcional)<input name="nome" maxlength="80" placeholder="Ex.: ENEM 2023, caderno azul"></label>';
+  h+='<div><button class="btn" type="submit">Iniciar simulado</button></div></form>';
+  h+='<p class="hint" style="margin:10px 0 0">Durante o simulado, toque em "Terminei" ao fechar cada parte da prova. O relógio continua se você trocar de aba ou recarregar a página.</p></div></div>';
+  h+='<div class="stack">'+simHistory()+'</div></div>';
+  return h;
+}
+function renderSimRun(){
+  var r=simRun,def=SIMDEF[r.day],el=simElapsed(r),rem=r.total*60-el,seg=simSegments(r);
+  var h='<div class="two"><div class="stack"><div class="panel simrun"><h3>'+esc(r.nome||('Simulado · '+def.nome))+'</h3>';
+  h+='<div class="simclock'+(rem<0?' over':'')+'" id="simClock">'+clockText(rem)+'</div>';
+  h+='<div class="progress" role="progressbar" aria-label="Tempo do simulado" style="margin:10px 0 6px"><i id="simBar" style="width:'+Math.min(100,Math.round(el/(r.total*60)*100))+'%"></i></div>';
+  h+='<p class="hint" id="simElapsed">Decorrido: '+clockText(el)+'</p>';
+  h+='<p class="hint">Ritmo de referência: <b>'+String(simRefPace(r.day,r.total,r.redMin)).replace('.',',')+' min por questão</b> ('+(r.day===1?'tempo total menos a redação, dividido por 90':'tempo total dividido por 90')+').</p>';
+  h+='<div class="chips" role="group" aria-label="Partes da prova">';
+  def.areas.forEach(function(a){
+    if(seg[a[0]]!=null)h+='<span class="chip" aria-pressed="true">'+esc(a[1])+' · '+hm(seg[a[0]]/60).replace('0h','')+(a[2]?' · '+String(Math.round(seg[a[0]]/60/a[2]*10)/10).replace('.',',')+' min/questão':'')+'</span>';
+    else h+='<button class="chip" data-act="sim-cp" data-a="'+a[0]+'" aria-pressed="false">Terminei: '+esc(a[1])+'</button>';
+  });
+  h+='</div><div class="simacts"><button class="btn" data-act="sim-fin">Finalizar simulado</button>';
+  if(r.cps.length)h+='<button class="btn ghost" data-act="sim-undo">Desfazer último "Terminei"</button>';
+  h+='<button class="btn danger" data-act="sim-cancel">Cancelar</button></div></div></div><div class="stack">'+simHistory()+'</div></div>';
+  return h;
+}
+function renderSimDone(){
+  var r=simRun,def=SIMDEF[r.day],seg=simSegments(r),el=simElapsed(r);
+  var h='<div class="two"><div class="stack"><div class="panel"><h3>Simulado encerrado</h3><p class="hint">Você usou '+hm(el/60)+' de '+hm(r.total)+'. Registre os acertos de cada parte para guardar o simulado.</p>';
+  h+='<form class="form" id="simDoneForm"><div class="grid5" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))">';
+  def.areas.forEach(function(a){
+    var t=seg[a[0]]!=null?' · '+Math.round(seg[a[0]]/60)+' min':'';
+    h+='<label class="f">'+esc(a[1])+t+'<input type="number" inputmode="numeric" name="'+a[0]+'" min="0" max="'+(a[0]==='red'?1000:45)+'" step="'+(a[0]==='red'?20:1)+'" placeholder="'+(a[0]==='red'?'0–1000':'0–45')+'"></label>';
+  });
+  h+='</div><div class="simacts"><button class="btn" type="submit">Salvar simulado</button><button class="btn danger" type="button" data-act="sim-cancel">Descartar</button></div></form></div></div><div class="stack">'+simHistory()+'</div></div>';
+  return h;
+}
+function simHistory(){
+  var list=sims.filter(function(s){return s.cron}).sort(function(a,b){return a.date<b.date?1:-1});
+  var h='<div class="panel"><h3>Meus simulados cronometrados</h3>';
+  if(!list.length)return h+'<p class="empty">Nenhum simulado cronometrado ainda. O resultado mostra em qual parte da prova o tempo se perde.</p></div>';
+  list.slice(0,6).forEach(function(s){
+    var def=SIMDEF[s.dia]||SIMDEF[1];
+    h+='<div class="simcard"><div class="row"><b>'+esc(s.nome)+'</b><span>'+shortDate(s.date)+'</span></div><p class="errmeta">Usou '+hm(s.dur)+' de '+hm(s.total)+(s.ref?' · ritmo de referência '+String(s.ref).replace('.',',')+' min/questão':'')+'</p>';
+    h+='<div class="tblwrap"><table class="tbl"><thead><tr><th>Parte</th><th class="n">Tempo</th><th class="n">Min/questão</th><th class="n">Acertos</th></tr></thead><tbody>';
+    def.areas.forEach(function(a){
+      var t=s.tempo&&s.tempo[a[0]],v=s[a[0]],pace=t!=null&&a[2]?Math.round(t/a[2]*10)/10:null;
+      var slow=pace!=null&&s.ref&&pace>s.ref*1.15;
+      h+='<tr><td>'+esc(a[1])+'</td><td class="n">'+(t!=null?t+' min':'–')+'</td><td class="n">'+(pace!=null?'<span class="'+(slow?'down':'')+'">'+String(pace).replace('.',',')+(slow?' (acima)':'')+'</span>':'–')+'</td><td class="n">'+(v!=null?v+(a[2]?'/'+a[2]:'/1000'):'–')+'</td></tr>';
+    });
+    h+='</tbody></table></div></div>';
+  });
+  return h+'</div>';
+}
+function renderSimulado(){
+  if(!simRun)return renderSimSetup();
+  return simRun.fin?renderSimDone():renderSimRun();
+}
+function renderPratica(){
+  var pend=errs.filter(function(e){return !e.ok}).length;
+  var h='<div class="chips" role="group" aria-label="Prática" style="margin-bottom:14px">';
+  h+='<button class="chip" data-act="ptab" data-v="erros" aria-pressed="'+(praticaTab==='erros')+'">Caderno de erros <small>'+pend+'</small></button>';
+  h+='<button class="chip" data-act="ptab" data-v="simulado" aria-pressed="'+(praticaTab==='simulado')+'">Simulado cronometrado'+(simRun&&!simRun.fin?' <small>em andamento</small>':'')+'</button></div>';
+  return h+(praticaTab==='simulado'?renderSimulado():renderErros());
+}
+function praticaAction(a,b){
+  var id=b.dataset.id;
+  if(a==='ptab'){praticaTab=b.dataset.v;rawSave('praticaTab',praticaTab);render();return true}
+  if(a==='go-err'){praticaTab='erros';rawSave('praticaTab',praticaTab);go('pratica');return true}
+  if(a==='ef-st'){errFilter.st=b.dataset.v;render();return true}
+  if(a==='err-ok'||a==='err-open'){
+    errs.forEach(function(e){if(e.id===id)e.ok=a==='err-ok'?tk():null});
+    save('errors',errs);render();if(a==='err-ok')toast('Erro resolvido');return true;
+  }
+  if(a==='del-err'){if(!confirm('Apagar este erro do caderno?'))return true;errs=errs.filter(function(e){return e.id!==id});save('errors',errs);render();return true}
+  if(a==='sim-cp'&&simRun&&!simRun.fin){
+    if(simRun.cps.some(function(c){return c.a===b.dataset.a}))return true;
+    simRun.cps.push({a:b.dataset.a,t:simElapsed(simRun)});rawSave('sim.run',simRun);render();return true;
+  }
+  if(a==='sim-undo'&&simRun&&!simRun.fin){simRun.cps.pop();rawSave('sim.run',simRun);render();return true}
+  if(a==='sim-fin'&&simRun&&!simRun.fin){
+    var left=SIMDEF[simRun.day].areas.filter(function(x){return !simRun.cps.some(function(c){return c.a===x[0]})}).length;
+    if(left&&!confirm('Ainda há '+left+' parte'+(left>1?'s':'')+' sem "Terminei". Finalizar mesmo assim?'))return true;
+    simRun.fin=true;simRun.endAt=Date.now();rawSave('sim.run',simRun);render();return true;
+  }
+  if(a==='sim-cancel'){
+    if(!confirm('Descartar este simulado? O tempo e as partes marcadas serão perdidos.'))return true;
+    simRun=null;try{localStorage.removeItem(PREFIX+'sim.run')}catch(err){}render();return true;
+  }
+  return false;
+}
+function praticaSubmit(f,fd){
+  if(f.id==='errForm'){
+    var e={id:uid(),date:fd.get('date'),mat:fd.get('errMat'),top:fd.get('top')||'',motivo:fd.get('motivo'),q:String(fd.get('q')||'').trim().slice(0,160),nota:String(fd.get('nota')||'').trim().slice(0,400),ok:null};
+    errs.unshift(e);save('errors',errs);
+    var msg=reopenTopic(e.top);
+    render();toast('Erro registrado. '+msg);return true;
+  }
+  if(f.id==='simStartForm'){
+    var day=+fd.get('day')===2?2:1,total=clamp(fd.get('min'),30,600)||SIMDEF[day].min,red=day===1?(clamp(fd.get('redMin'),0,240)||0):0;
+    simRun={day:day,nome:String(fd.get('nome')||'').trim().slice(0,80),start:Date.now(),total:total,redMin:red,cps:[],fin:false};
+    rawSave('sim.run',simRun);render();return true;
+  }
+  if(f.id==='simDoneForm'&&simRun&&simRun.fin){
+    var r=simRun,def=SIMDEF[r.day],seg=simSegments(r);
+    var x={id:uid(),date:dkey(new Date(r.start)),nome:r.nome||('Simulado cronometrado · '+def.nome),cron:true,dia:r.day,dur:Math.round(simElapsed(r)/60),total:r.total,ref:simRefPace(r.day,r.total,r.redMin),tempo:{}};
+    def.areas.forEach(function(a){
+      x[a[0]]=clamp(fd.get(a[0]),0,a[0]==='red'?1000:45);
+      if(seg[a[0]]!=null)x.tempo[a[0]]=Math.round(seg[a[0]]/60);
+    });
+    sims.push(x);save('sims',sims);
+    simRun=null;try{localStorage.removeItem(PREFIX+'sim.run')}catch(err){}
+    render();toast('Simulado salvo');return true;
+  }
+  return false;
+}
+function praticaChange(el){
+  if(el.name==='errMat'){var t=document.getElementById('errTop');if(t)t.innerHTML=errTopicOptions(el.value);return true}
+  if(el.dataset.ef){errFilter[el.dataset.ef]=el.value;render();return true}
+  if(el.name==='day'&&el.form&&el.form.id==='simStartForm'){
+    var d=+el.value===2?2:1;el.form.min.value=SIMDEF[d].min;
+    var bx=document.getElementById('redMinBox');if(bx){bx.style.display=d===1?'':'none';el.form.redMin.value=d===1?SIMREDMIN:0}
+    return true;
+  }
+  return false;
+}
+
+/* =========================================================
+   METAS SEMANAIS, HORAS REAIS E CONQUISTAS
+   ========================================================= */
+function recordFocus(min){
+  if(!(min>=1))return;
+  var k=tk(),s=(T&&T.subj)||'outros';
+  focus[k]=(focus[k]||0)+min;save('focus',focus);
+  hoursBy[k]=hoursBy[k]||{};hoursBy[k][s]=(hoursBy[k][s]||0)+min;save('hours',hoursBy);
+}
+function bumpLog(f,n){var k=tk();daylog[k]=daylog[k]||{};daylog[k][f]=(daylog[k][f]||0)+(n||1);save('daylog',daylog)}
+function hoursByMat(days){
+  var o={},from=addDays(today(),-(days-1));
+  for(var i=0;i<days;i++){var h=hoursBy[dkey(addDays(from,i))];if(h)Object.keys(h).forEach(function(m){o[m]=(o[m]||0)+h[m]})}
+  return o;
+}
+function plannedMinutes(){var t=0;routine.forEach(function(day){day.forEach(function(b){if(b.type==='estudo')t+=parseDur(b.time)*60})});return t}
+function weekMetrics(){
+  var mon=mondayOf(new Date()),mk=dkey(mon),m=0,r=0,t=0;
+  for(var i=0;i<7;i++){var k=dkey(addDays(mon,i));m+=focus[k]||0;r+=(daylog[k]&&daylog[k].r)||0}
+  Object.keys(topics).forEach(function(id){var s=topics[id];if(s&&s.at&&s.at>=mk)t++});
+  return {h:m/60,t:t,r:r};
+}
+function goalVals(){var g=goals||{};return {h:g.h||8,t:g.t||5,r:g.r||10}}
+function goalsHit(){if(!goals)return false;var m=weekMetrics(),g=goalVals();return m.h>=g.h&&m.t>=g.t&&m.r>=g.r}
+function metasPanel(){
+  var m=weekMetrics(),g=goalVals(),fmtN=function(n){return String(Math.round(n*10)/10).replace('.',',')};
+  var rows=[['h','Horas de foco no cronômetro',m.h,g.h],['t','Tópicos novos estudados',m.t,g.t],['r','Revisões feitas',m.r,g.r]];
+  var h='<div class="panel"><h3>Metas da semana</h3><div class="split">';
+  rows.forEach(function(x){
+    var p=Math.min(100,Math.round(x[2]/x[3]*100));
+    h+='<div><div class="row"><span>'+x[1]+'</span><span>'+fmtN(x[2])+' / '+fmtN(x[3])+(x[2]>=x[3]?' ✓':'')+'</span></div><div class="progress" style="margin:0"><i style="width:'+p+'%'+(x[2]>=x[3]?';background:var(--ok)':'')+'"></i></div></div>';
+  });
+  h+='</div><form class="form" id="goalForm" style="margin-top:14px"><div class="grid5" style="grid-template-columns:repeat(3,minmax(0,1fr))">';
+  h+='<label class="f">Horas<input type="number" name="h" min="0.5" max="80" step="0.5" value="'+g.h+'"></label>';
+  h+='<label class="f">Tópicos<input type="number" name="t" min="1" max="100" value="'+g.t+'"></label>';
+  h+='<label class="f">Revisões<input type="number" name="r" min="1" max="200" value="'+g.r+'"></label></div>';
+  h+='<div><button class="btn sm" type="submit">'+(goals?'Atualizar metas':'Definir metas')+'</button></div></form>';
+  h+='<p class="hint" style="margin:10px 0 0">'+(goals?'A semana vai de segunda a domingo. Bater as 3 metas libera a conquista "Semana redonda".':'Estas são metas sugeridas. Ajuste e salve para valerem como suas.')+'</p></div>';
+  return h;
+}
+function horasPanel(){
+  var wk=hoursByMat(dayIdx(today())+1),m4=hoursByMat(28),keys=sortedCounts(m4);
+  var wkTotal=0;Object.keys(wk).forEach(function(k){wkTotal+=wk[k]});
+  var h='<div class="panel"><h3>Horas reais por matéria</h3>';
+  h+='<div class="split"><div class="row"><span>Foco registrado esta semana</span><span>'+hm(wkTotal)+'</span></div><div class="row"><span>Estudo planejado na rotina (por semana)</span><span>'+hm(plannedMinutes())+'</span></div></div>';
+  if(!keys.length)return h+'<p class="empty" style="margin-top:12px">Sem horas registradas ainda. Use "Iniciar foco de 25 min" nos blocos de estudo do Hoje: cada ciclo entra na matéria do tópico.</p></div>';
+  h+='<h4 class="sub">Últimas 4 semanas</h4>'+keys.map(function(p){
+    return '<div class="mrow"><span>'+esc(matLabel(p[0]))+'</span><div class="meter"><i style="width:'+Math.round(p[1]/keys[0][1]*100)+'%"></i></div><b style="min-width:52px">'+hm(p[1])+'</b></div>';
+  }).join('');
+  return h+'<p class="hint" style="margin:10px 0 0">Conta só o tempo do cronômetro de foco, inclusive ciclos interrompidos.</p></div>';
+}
+var BADGES=[
+ {id:'t1',n:'Primeiro passo',d:'Estudar o primeiro tópico',f:function(c){return c.studied>=1}},
+ {id:'t25',n:'25 tópicos',d:'Estudar 25 tópicos',f:function(c){return c.studied>=25}},
+ {id:'t100',n:'100 tópicos',d:'Estudar 100 tópicos',f:function(c){return c.studied>=100}},
+ {id:'d10',n:'Dominando',d:'Dominar 10 tópicos',f:function(c){return c.mastered>=10}},
+ {id:'dev10',n:'Primeiros commits',d:'Estudar 10 tópicos da Trilha Dev',f:function(c){return c.devStudied>=10}},
+ {id:'dev50',n:'Dev em ritmo',d:'Estudar 50 tópicos da Trilha Dev',f:function(c){return c.devStudied>=50}},
+ {id:'s3',n:'Três em fila',d:'3 dias seguidos completos',f:function(c){return c.streak>=3}},
+ {id:'s7',n:'Semana perfeita',d:'7 dias seguidos completos',f:function(c){return c.streak>=7}},
+ {id:'s30',n:'Hábito formado',d:'30 dias seguidos completos',f:function(c){return c.streak>=30}},
+ {id:'r10',n:'Memória em dia',d:'Fazer 10 revisões',f:function(c){return c.revs>=10}},
+ {id:'r50',n:'Revisora',d:'Fazer 50 revisões',f:function(c){return c.revs>=50}},
+ {id:'h10',n:'10 horas de foco',d:'Somar 10h no cronômetro',f:function(c){return c.focusH>=10}},
+ {id:'h50',n:'50 horas de foco',d:'Somar 50h no cronômetro',f:function(c){return c.focusH>=50}},
+ {id:'e1',n:'Caderno aberto',d:'Registrar o primeiro erro',f:function(c){return c.errs>=1}},
+ {id:'e10',n:'Erro vira acerto',d:'Resolver 10 erros do caderno',f:function(c){return c.errFixed>=10}},
+ {id:'sim1',n:'Prova de fogo',d:'Fazer um simulado cronometrado',f:function(c){return c.simCron>=1}},
+ {id:'red1',n:'Primeira redação',d:'Registrar uma redação',f:function(c){return c.essays>=1}},
+ {id:'wk',n:'Semana redonda',d:'Bater as 3 metas da semana',f:function(c){return c.goalsHit}},
+ {id:'agua7',n:'Hidratação em dia',d:'Bater a meta de água por 7 dias seguidos',f:function(c){return c.waterBest>=7}},
+ {id:'agua30',n:'Água todo dia',d:'Bater a meta de água por 30 dias seguidos',f:function(c){return c.waterBest>=30}}
+];
+function badgeCtx(){
+  var cov=areaCoverage(),revs=0,fm=0;
+  Object.keys(daylog).forEach(function(k){revs+=daylog[k].r||0});
+  Object.keys(focus).forEach(function(k){fm+=focus[k]||0});
+  return {studied:cov.studied,mastered:cov.mastered,devStudied:areaCoverage(null,'dev').studied,waterBest:waterBestRun(),streak:Math.max(load('best',0),streakNow()),revs:revs,focusH:fm/60,errs:errs.length,errFixed:errs.filter(function(e){return e.ok}).length,simCron:sims.filter(function(s){return s.cron}).length,essays:essays.length,goalsHit:goalsHit()};
+}
+function checkBadges(){
+  var c=badgeCtx(),fresh=[];
+  BADGES.forEach(function(b){if(!badges[b.id]&&b.f(c)){badges[b.id]=tk();fresh.push(b)}});
+  if(fresh.length){save('badges',badges);toast(fresh.length===1?'Conquista desbloqueada: '+fresh[0].n:fresh.length+' conquistas desbloqueadas')}
+}
+function devPanel(){
+  var all=areaCoverage(null,'dev');
+  var h='<div class="panel"><h3>Trilha Dev por área</h3><div class="split">';
+  DEV_SYLLABUS.forEach(function(a){var c=areaCoverage(a.id);h+='<div><div class="row"><span>'+esc(a.nome)+'</span><span>'+c.studied+'/'+c.total+(c.mastered?' · '+c.mastered+' dominados':'')+'</span></div><div class="progress" style="margin:0"><i style="width:'+pctOf(c)+'%;background:var('+a.cor+')"></i></div></div>'});
+  return h+'</div><p class="hint" style="margin:10px 0 0">'+all.studied+' de '+all.total+' tópicos estudados.</p></div>';
+}
+function badgesPanel(){
+  var on=BADGES.filter(function(b){return badges[b.id]}).length;
+  var h='<div class="panel" style="margin-top:16px"><h3>Conquistas <small style="font-size:14px;color:var(--ink-soft)">'+on+' de '+BADGES.length+'</small></h3><div class="badges">';
+  BADGES.forEach(function(b){
+    var d=badges[b.id];
+    h+='<div class="badge '+(d?'on':'off')+'"><b>'+(d?'✓ ':'')+esc(b.n)+'</b><span>'+(d?'Desde '+shortDate(d):esc(b.d))+'</span></div>';
+  });
+  return h+'</div></div>';
+}
+function metasSubmit(f,fd){
+  if(f.id!=='goalForm')return false;
+  var h=parseFloat(String(fd.get('h')).replace(',','.')),t=clamp(fd.get('t'),1,100),r=clamp(fd.get('r'),1,200);
+  if(!(h>=0.5)||t==null||r==null){toast('Confira os valores das metas');return true}
+  goals={h:Math.min(80,Math.round(h*2)/2),t:t,r:r};save('goals',goals);render();toast('Metas salvas');return true;
+}
+
+/* =========================================================
+   HÁBITOS: ÁGUA E HÁBITO A LARGAR
+   Água sincroniza como o resto da rotina.
+   O registro do hábito fica só neste aparelho, a menos que a pessoa ative a sincronização.
+   ========================================================= */
+var WATER_QUICK=[200,300,500];
+function waterGoalMl(){var g=parseInt(waterGoal,10);return g>=500&&g<=6000?g:2000}
+function waterMl(k){var x=water[k];return x&&x.ml>0?x.ml:0}
+function fmtMl(ml){ml=Math.round(ml);return ml>=1000?(Math.round(ml/100)/10).toLocaleString('pt-BR')+' L':ml+' ml'}
+function waterAdd(ml){
+  ml=parseInt(ml,10);if(!(ml>=50&&ml<=2000))return false;
+  var k=tk(),x=water[k];if(!x||!x.adds)x=water[k]={ml:0,adds:[]};
+  x.ml+=ml;x.adds.push(ml);save('water',water);return true;
+}
+function waterUndo(){
+  var k=tk(),x=water[k];if(!x||!x.adds||!x.adds.length)return false;
+  x.ml-=x.adds.pop();if(!x.adds.length||x.ml<=0)delete water[k];
+  save('water',water);return true;
+}
+function waterHit(k){return waterMl(k)>=waterGoalMl()}
+function waterStreak(){
+  var d=today(),n=0;
+  if(!waterHit(dkey(d)))d=addDays(d,-1);          // hoje ainda pode bater a meta
+  while(waterHit(dkey(d))){n++;d=addDays(d,-1)}
+  return n;
+}
+function waterBestRun(){
+  var ks=Object.keys(water).filter(waterHit).sort(),best=0,run=0,prev=null;
+  ks.forEach(function(k){run=prev&&daysBetween(pk(prev),pk(k))===1?run+1:1;if(run>best)best=run;prev=k});
+  return best;
+}
+function waterPanel(full){
+  var g=waterGoalMl(),k=tk(),ml=waterMl(k),p=Math.min(100,Math.round(ml/g*100)),x=water[k];
+  var h='<div class="panel"><h3>Água de hoje</h3>';
+  h+='<p class="bignum">'+fmtMl(ml)+' <small>de '+fmtMl(g)+' · '+p+'%</small></p>';
+  h+='<div class="progress" role="progressbar" aria-label="Água de hoje" aria-valuenow="'+p+'" aria-valuemin="0" aria-valuemax="100" style="margin-bottom:12px"><i style="width:'+p+'%;background:var(--est)"></i></div>';
+  if(ml>=g)h+='<div class="allgood">Meta de água de hoje batida.</div>';
+  h+='<div class="chips" role="group" aria-label="Registrar água">'+WATER_QUICK.map(function(v){return '<button class="chip" data-act="w-add" data-ml="'+v+'">+ '+v+' ml</button>'}).join('');
+  if(x&&x.adds&&x.adds.length)h+='<button class="chip" data-act="w-undo">Desfazer último</button>';
+  h+='</div>';
+  if(!full)return h+'<button class="link no-print" data-act="go" data-v="habitos" style="margin-top:10px">Histórico e meta de água</button></div>';
+
+  h+='<form class="form" id="waterForm" style="margin-top:12px"><div class="row2"><label class="f">Outra quantidade (ml)<input type="number" name="ml" inputmode="numeric" min="50" max="2000" step="10" placeholder="Ex.: 350" required></label><div style="align-self:end"><button class="btn sm" type="submit">Adicionar</button></div></div></form>';
+  var mx=g,sum=0,days=0,i;
+  for(i=0;i<7;i++){var v0=waterMl(dkey(addDays(today(),-i)));if(v0>mx)mx=v0;if(v0){sum+=v0;days++}}
+  h+='<h4 class="sub">Últimos 7 dias</h4><div class="bars" style="height:150px" role="img" aria-label="Água por dia nos últimos 7 dias">';
+  for(i=6;i>=0;i--){
+    var d=addDays(today(),-i),v=waterMl(dkey(d));
+    h+='<div class="bar'+(v>=g?' cur':'')+'"><b>'+(v?fmtMl(v):'')+'</b><i style="height:'+Math.max(2,Math.round(v/mx*62))+'%"></i><small>'+SHORT[dayIdx(d)]+'</small></div>';
+  }
+  h+='</div><p class="hint" style="margin:8px 0 0">Barra verde é dia com a meta batida.</p>';
+  h+='<div class="split" style="margin-top:12px"><div class="row"><span>Dias seguidos com a meta</span><span>'+waterStreak()+'</span></div>';
+  h+='<div class="row"><span>Média nos dias registrados (7 dias)</span><span>'+(days?fmtMl(sum/days):'sem registros')+'</span></div></div>';
+  h+='<form class="form" id="waterGoalForm" style="margin-top:14px"><div class="row2"><label class="f">Meta diária (ml)<input type="number" name="goal" inputmode="numeric" min="500" max="6000" step="50" value="'+g+'" required></label><div style="align-self:end"><button class="btn sm ghost" type="submit">Salvar meta</button></div></div></form>';
+  h+='<p class="hint" style="margin:10px 0 0">2 L é só um ponto de partida. A necessidade de água varia de pessoa para pessoa; em caso de dúvida, converse com um profissional de saúde.</p>';
+  return h+'</div>';
+}
+
+/* ---- Hábito a largar (registro privado) ---- */
+var HAB_GATILHOS=['Tédio','Cansaço','Estresse ou ansiedade','Noite','Celular ou redes sociais','Conteúdo adulto','Outro'];
+var HAB_MARCOS=[3,7,14,30,60,90,180,365];
+var HAB_PLANO=['Beber um copo de água','Sair do lugar e andar 5 minutos','Fazer um foco de 25 minutos de estudo','Falar com alguém de confiança'];
+function habNome(){return habit&&habit.name?habit.name:'Hábito a largar'}
+function habSave(){save('habit',habit)}
+function habFix(){
+  if(!habit)return;
+  habit.rel=habit.rel||[];habit.urges=habit.urges||{};
+  habit.rel.forEach(function(r){if(r.date<habit.start)habit.start=r.date});
+}
+function habRel(){return (habit&&habit.rel||[]).slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0})}
+function habRef(){var r=habRel(),ref=habit.start;if(r.length&&r[r.length-1].date>ref)ref=r[r.length-1].date;return ref}
+function habDays(){return Math.max(0,daysBetween(pk(habRef()),today()))}
+function habBest(){
+  var pts=[habit.start].concat(habRel().map(function(r){return r.date})),best=0;
+  for(var i=1;i<pts.length;i++)best=Math.max(best,daysBetween(pk(pts[i-1]),pk(pts[i])));
+  return Math.max(best,habDays());
+}
+function habCount(from,to){
+  return habRel().filter(function(r){var a=daysBetween(pk(r.date),today());return a>=from&&a<=to}).length;
+}
+function habTriggers(){
+  var c={};habRel().forEach(function(r){(r.g||[]).forEach(function(g){c[g]=(c[g]||0)+1})});
+  return sortedCounts(c);
+}
+function habPlan(){return habit&&habit.plan&&habit.plan.length?habit.plan:HAB_PLANO}
+function habUrges30(){
+  var n=0,u=habit.urges||{};
+  for(var i=0;i<30;i++)n+=u[dkey(addDays(today(),-i))]||0;
+  return n;
+}
+function syncHabitKey(){
+  var i=KEYS.indexOf('habit'),on=load('habitSync',false)===true;
+  if(on&&i<0)KEYS.push('habit');
+  if(!on&&i>=0)KEYS.splice(i,1);
+}
+
+function habOnboard(){
+  var h='<form class="panel form" id="habStartForm"><h3>Hábito a largar</h3>';
+  h+='<p class="hint" style="margin:0">Um registro privado para acompanhar os dias sem recaída, os gatilhos e as vontades que você deixou passar. Fica salvo só neste aparelho: não entra no backup comum, não vai para a nuvem e não aparece no Hoje, no Progresso nem nas conquistas.</p>';
+  h+='<label class="f">Nome que aparece na tela (opcional)<input name="name" maxlength="40" placeholder="Hábito a largar"></label>';
+  h+='<label class="f">Começar a contar em<input type="date" name="start" value="'+tk()+'" max="'+tk()+'" required></label>';
+  return h+'<div><button class="btn" type="submit">Começar a contar</button></div></form>';
+}
+function habCounterPanel(){
+  var d=habDays(),best=habBest(),uToday=(habit.urges||{})[tk()]||0,nx=0;
+  HAB_MARCOS.some(function(m){if(m>d){nx=m;return true}return false});
+  var h='<div class="panel"><h3>'+esc(habNome())+'</h3>';
+  h+='<p class="bignum">'+d+' <small>'+(d===1?'dia sem recaída':'dias sem recaída')+'</small></p>';
+  if(nx){
+    var pc=Math.round(d/nx*100);
+    h+='<div class="progress thin" role="progressbar" aria-label="Caminho até a próxima marca" aria-valuenow="'+pc+'" aria-valuemin="0" aria-valuemax="100"><i style="width:'+pc+'%"></i></div>';
+    h+='<p class="hint" style="margin:8px 0 0">'+(d===0?'A contagem recomeça hoje. ':'')+'Próxima marca: '+nx+' dias (faltam '+(nx-d)+').</p>';
+  }else h+='<p class="hint" style="margin:8px 0 0">Você passou de todas as marcas, até 1 ano.</p>';
+  var got=HAB_MARCOS.filter(function(m){return m<=best});
+  if(got.length)h+='<p style="margin:12px 0 0">'+got.map(function(m){return '<span class="tag ok">'+m+' dias</span>'}).join('')+'</p>';
+  h+='<div class="split" style="margin-top:14px"><div class="row"><span>Melhor sequência</span><span>'+best+(best===1?' dia':' dias')+'</span></div>';
+  h+='<div class="row"><span>Recaídas nos últimos 30 dias</span><span>'+habCount(0,29)+'</span></div>';
+  h+='<div class="row"><span>Vontades que passaram (30 dias)</span><span>'+habUrges30()+'</span></div></div>';
+  h+='<div class="row" style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="h-urge">Resisti a uma vontade</button>';
+  if(uToday)h+='<button class="btn ghost" data-act="h-urge-undo">Desfazer</button>';
+  h+='</div><p class="hint" style="margin:10px 0 0">'+(uToday?'Hoje: '+uToday+(uToday===1?' vontade que passou.':' vontades que passaram.'):'Toda vez que a vontade vier e passar sem recaída, registre aqui. Isso também conta.')+'</p></div>';
+  return h;
+}
+function habRelapsePanel(){
+  var h='<form class="panel form" id="habRelForm"><h3>Registrar uma recaída</h3>';
+  h+='<p class="hint" style="margin:0">Uma recaída não apaga seu histórico. Registrar o que estava acontecendo ajuda a enxergar o padrão.</p>';
+  h+='<label class="f">Data<input type="date" name="date" value="'+tk()+'" max="'+tk()+'" required></label>';
+  h+='<div><span class="lbl" style="font-size:13px;font-weight:700;color:var(--ink-soft)">O que estava por trás? (opcional)</span><div class="chips" style="margin-top:6px">';
+  HAB_GATILHOS.forEach(function(g){h+='<label class="chip"><input type="checkbox" name="g" value="'+esc(g)+'">'+esc(g)+'</label>'});
+  h+='</div></div><label class="f">Anotação (opcional)<textarea name="n" rows="2" maxlength="300" placeholder="O que ajudaria da próxima vez?"></textarea></label>';
+  h+='<div><button class="btn ghost" type="submit">Registrar</button></div>';
+  var rec=habRel().reverse().slice(0,5);
+  if(rec.length){
+    h+='<h4 class="sub">Últimos registros</h4><ul class="errlist" style="margin-top:4px">';
+    rec.forEach(function(r){
+      h+='<li><div><b>'+shortDate(r.date)+'</b>'+((r.g||[]).length?' '+r.g.map(function(g){return '<span class="tag">'+esc(g)+'</span>'}).join(''):'')+(r.n?'<div class="errnote">'+esc(r.n)+'</div>':'')+'</div>';
+      h+='<div class="acts"><button type="button" class="btn sm ghost" data-act="h-delrel" data-id="'+esc(r.id)+'">Apagar</button></div></li>';
+    });
+    h+='</ul>';
+  }
+  return h+'</form>';
+}
+function habPatternsPanel(){
+  var h='<div class="panel"><h3>Padrões</h3>',rel=habRel();
+  if(!rel.length)return h+'<p class="empty">Nenhuma recaída registrada. Se acontecer, os gatilhos que você marcar aparecem aqui.</p></div>';
+  var a=habCount(0,29),span=daysBetween(pk(habit.start),today());
+  h+='<div class="split"><div class="row"><span>Últimos 30 dias</span><span>'+a+(a===1?' recaída':' recaídas')+'</span></div>';
+  if(span>=60){          // só compara quando já existem 60 dias de histórico
+    var b=habCount(30,59);
+    h+='<div class="row"><span>30 dias anteriores</span><span>'+b+(b===1?' recaída':' recaídas')+'</span></div></div>';
+    h+='<p class="hint" style="margin:8px 0 0">'+(a<b?'Menos recaídas que no período anterior.':a===b?'Mesmo número do período anterior.':'Mais recaídas que no período anterior. Isso acontece; olhe os gatilhos abaixo.')+'</p>';
+  }else h+='</div>';
+  var tg=habTriggers();
+  if(tg.length){
+    h+='<h4 class="sub">Gatilhos mais frequentes</h4>'+tg.slice(0,5).map(function(p){
+      return '<div class="mrow"><span>'+esc(p[0])+'</span><div class="meter"><i style="width:'+Math.round(p[1]/tg[0][1]*100)+'%"></i></div><b style="min-width:28px">'+p[1]+'</b></div>';
+    }).join('');
+  }
+  return h+'</div>';
+}
+function habHeatPanel(){
+  var rd={};habRel().forEach(function(r){rd[r.date]=(rd[r.date]||0)+1});
+  var t=today(),start=addDays(mondayOf(t),-77);
+  var h='<div class="panel"><h3>Últimas 12 semanas</h3><div class="heat" role="img" aria-label="Dias sem recaída e dias com recaída nas últimas 12 semanas">';
+  for(var k=0;k<84;k++){
+    var d=addDays(start,k),key=dkey(d),c='',tt=fmt(d,{weekday:'short',day:'numeric',month:'short'});
+    if(d>t||key<habit.start)c='fut';
+    else if(rd[key]){c='rel';tt+=' · recaída'}
+    else{c='l3';tt+=' · sem recaída'}
+    h+='<div class="'+c+'" title="'+tt+'"></div>';
+  }
+  return h+'</div><p class="hint" style="margin:8px 0 0">Cada linha é uma semana, de segunda a domingo. Verde é dia sem recaída; vermelho com × é dia com recaída.</p></div>';
+}
+function habPlanPanel(){
+  var h='<div class="panel"><h3>Quando bater a vontade</h3>';
+  h+='<p class="hint" style="margin:0 0 8px">Muitas vezes a vontade perde força quando você muda de ambiente e de atividade. Escolha uma destas:</p>';
+  h+='<ul class="plan">'+habPlan().map(function(p){return '<li>'+esc(p)+'</li>'}).join('')+'</ul>';
+  h+='<div class="row" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" data-act="h-water">Beber água (+ 200 ml)</button><button class="btn sm ghost" data-act="h-focus">Foco de 25 min</button></div>';
+  h+='<details class="grp" style="margin-top:12px"><summary><span class="t">Editar este plano</span></summary><form class="form" id="habPlanForm" style="margin-top:8px"><label class="f">Uma ação por linha (até 8)<textarea name="plan" rows="5" maxlength="700">'+esc(habPlan().join('\n'))+'</textarea></label><div><button class="btn sm" type="submit">Salvar plano</button></div></form></details>';
+  h+='<p class="hint" style="margin:12px 0 0">Se a vontade estiver pesando, atrapalhando o sono ou os estudos, conversar com um profissional de saúde pode ajudar.</p></div>';
+  return h;
+}
+function habSettingsPanel(){
+  var on=load('habitSync',false)===true;
+  var h='<div class="panel"><details class="grp" style="border-top:0;padding:0"><summary><span class="t">Configurações deste registro</span></summary>';
+  h+='<form class="form" id="habCfgForm" style="margin-top:10px"><label class="f">Nome que aparece na tela<input name="name" maxlength="40" placeholder="Hábito a largar" value="'+esc(habit.name||'')+'"></label>';
+  h+='<label class="f">Data de início da contagem<input type="date" name="start" value="'+esc(habit.start)+'" max="'+tk()+'" required></label>';
+  h+='<div><button class="btn sm" type="submit">Salvar</button></div></form>';
+  h+='<h4 class="sub">Privacidade</h4>';
+  if(on){
+    h+='<p class="hint" style="margin:0 0 8px">Sincronização ativada: este registro é salvo na sua conta e aparece nos seus outros aparelhos. Quem administra o banco de dados do site consegue ler esses dados.</p>';
+    h+='<button class="btn sm ghost" data-act="h-sync" data-on="0">Desativar e manter só neste aparelho</button>';
+  }else{
+    h+='<p class="hint" style="margin:0 0 8px">Hoje este registro fica só neste aparelho: não entra no backup comum nem na nuvem. Se limpar os dados do navegador, ele se perde.</p>';
+    h+='<button class="btn sm ghost" data-act="h-sync" data-on="1">Ativar sincronização com a minha conta</button>';
+  }
+  h+='<h4 class="sub">Apagar</h4><button class="btn sm danger" data-act="h-del">Apagar todo o registro do hábito</button>';
+  return h+'</details></div>';
+}
+function renderHabitos(){
+  var h='<div class="statsgrid">'+waterPanel(true);
+  if(!habit)return h+habOnboard()+'</div>';
+  return h+habCounterPanel()+habRelapsePanel()+habPatternsPanel()+habHeatPanel()+habPlanPanel()+habSettingsPanel()+'</div>';
+}
+
+function habAction(a,b){
+  if(a==='w-add'||a==='h-water'){
+    var ml=a==='h-water'?200:+b.dataset.ml,g=waterGoalMl(),was=waterMl(tk());
+    if(waterAdd(ml)){render();toast(was<g&&waterMl(tk())>=g?'Meta de água de hoje batida!':'+ '+ml+' ml de água')}
+    return true;
+  }
+  if(a==='w-undo'){waterUndo();render();return true}
+  if(a==='h-focus'){startTimer('Foco: deixando a vontade passar','');toast('Foco de 25 minutos iniciado');return true}
+  if(!/^h-/.test(a))return false;
+  if(a==='h-sync'){
+    var on=b.dataset.on==='1';
+    if(on&&!confirm('Ativar a sincronização envia este registro para a sua conta, junto com o resto da rotina. Quem administra o banco de dados do site consegue ler esses dados.\n\nContinuar?'))return true;
+    save('habitSync',on);syncHabitKey();
+    if(on&&habit)markDirty();
+    render();toast(on?'Sincronização do hábito ativada':'Este registro voltou a ficar só neste aparelho');return true;
+  }
+  if(a==='h-del'){
+    if(!habit||!confirm('Apagar todo o registro deste hábito? Isso não pode ser desfeito.'))return true;
+    habit=null;try{localStorage.removeItem(PREFIX+'habit')}catch(err){}
+    if(KEYS.indexOf('habit')>=0)markDirty();
+    render();toast('Registro apagado');return true;
+  }
+  if(!habit)return true;
+  if(a==='h-urge'){
+    var k=tk();habit.urges[k]=(habit.urges[k]||0)+1;habSave();render();toast('Mais uma vontade que passou');return true;
+  }
+  if(a==='h-urge-undo'){
+    var k2=tk();if(habit.urges[k2]){habit.urges[k2]--;if(habit.urges[k2]<=0)delete habit.urges[k2];habSave();render()}return true;
+  }
+  if(a==='h-delrel'){
+    if(!confirm('Apagar este registro?'))return true;
+    habit.rel=habit.rel.filter(function(r){return r.id!==b.dataset.id});habSave();render();return true;
+  }
+  return true;
+}
+function habSubmit(f,fd){
+  if(f.id==='waterForm'){
+    var ml=parseInt(fd.get('ml'),10);
+    if(!(ml>=50&&ml<=2000)){toast('Informe de 50 a 2000 ml');return true}
+    var g=waterGoalMl(),was=waterMl(tk());waterAdd(ml);render();
+    toast(was<g&&waterMl(tk())>=g?'Meta de água de hoje batida!':'+ '+ml+' ml de água');return true;
+  }
+  if(f.id==='waterGoalForm'){
+    var gl=parseInt(fd.get('goal'),10);
+    if(!(gl>=500&&gl<=6000)){toast('Informe uma meta entre 500 e 6000 ml');return true}
+    waterGoal=Math.round(gl/50)*50;save('waterGoal',waterGoal);render();toast('Meta de água salva');return true;
+  }
+  if(f.id==='habStartForm'){
+    var st=String(fd.get('start')||'');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(st)||st>tk()){toast('Escolha uma data de hoje ou anterior');return true}
+    habit={name:String(fd.get('name')||'').trim().slice(0,40),start:st,rel:[],urges:{},plan:null};
+    habSave();render();toast('Contagem iniciada');return true;
+  }
+  if(!habit)return false;
+  if(f.id==='habRelForm'){
+    var dt=String(fd.get('date')||'');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)||dt>tk()){toast('Escolha uma data de hoje ou anterior');return true}
+    var gs=fd.getAll('g').filter(function(x){return HAB_GATILHOS.indexOf(x)>=0});
+    habit.rel.push({id:uid(),date:dt,g:gs,n:String(fd.get('n')||'').trim().slice(0,300)});
+    habFix();habSave();render();toast('Registrado. Uma recaída não apaga o que você já construiu.');return true;
+  }
+  if(f.id==='habPlanForm'){
+    var lines=String(fd.get('plan')||'').split('\n').map(function(s){return s.trim().slice(0,80)}).filter(Boolean).slice(0,8);
+    habit.plan=lines.length?lines:null;habSave();render();toast('Plano salvo');return true;
+  }
+  if(f.id==='habCfgForm'){
+    var s2=String(fd.get('start')||'');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(s2)||s2>tk()){toast('Escolha uma data de hoje ou anterior');return true}
+    habit.name=String(fd.get('name')||'').trim().slice(0,40);habit.start=s2;
+    habFix();habSave();render();toast('Salvo');return true;
+  }
+  return false;
+}
 
 /* =========================================================
    EVENTOS
@@ -1519,15 +2481,17 @@ main.addEventListener('click',function(e){
     if(!was&&dayComplete(d)&&dkey(d)===tk())toast('Dia concluído! Sequência: '+streakNow()+' dias');
     keepFocus('[data-act="toggle"][data-id="'+blk.id+'"][data-date="'+b.dataset.date+'"]');
   }
-  else if(a==='focus')startTimer(b.dataset.label);
+  else if(a==='focus')startTimer(b.dataset.label,b.dataset.subj);
   else if(a==='go')go(b.dataset.v);
   else if(a==='rev-ok'||a==='rev-no'){reviewTopic(b.dataset.t,a==='rev-ok');render();toast(a==='rev-ok'?(topics[b.dataset.t].s===3?'Tópico dominado!':'Próxima revisão em '+shortDate(topics[b.dataset.t].next)):'Volta para revisão amanhã')}
   else if(a==='cycle'){cycleTopic(b.dataset.t);render();keepFocus('[data-act="cycle"][data-t="'+b.dataset.t+'"]')}
   else if(a==='cf'){contentFilter=b.dataset.f;render()}
-  else if(a==='trail'){trailSel=b.dataset.m;trailEdit=false;rawSave('trailSel',trailSel);contentFilter='todos';render();window.scrollTo(0,0)}
+  else if(a==='trail'){setSel(b.dataset.k||(MATERIA[b.dataset.m]?MATERIA[b.dataset.m].trilha:'enem'),b.dataset.m);trailEdit=false;contentFilter='todos';render();window.scrollTo(0,0)}
   else if(a==='tmode'){save('trailMode',b.dataset.v);render()}
   else if(a==='today-new')addTopicFromToday(b.dataset.b,b.dataset.date);
   else if(trailAction(a,b)){}
+  else if(praticaAction(a,b)){}
+  else if(habAction(a,b)){}
   else if(a==='wk'){weekOffset=b.dataset.d==='0'?0:weekOffset+(+b.dataset.d);render()}
   else if(a==='print'){document.querySelectorAll('details').forEach(function(x){x.open=true});window.print()}
   else if(a==='resetweek'){
@@ -1570,6 +2534,7 @@ main.addEventListener('input',function(e){
 });
 main.addEventListener('change',function(e){
   var el=e.target;
+  if(praticaChange(el))return;
   if(el.dataset.pick&&el.value==='__new'){addTopicFromToday(el.dataset.pick,el.dataset.date);return}
   if(el.dataset.pick){var k=el.dataset.date;picks[k]=picks[k]||{};picks[k][el.dataset.pick]={t:el.value,auto:false};save('picks',picks);render();keepFocus('[data-pick="'+el.dataset.pick+'"]');return}
   if(el.id==='examDate'){exam=el.value;save('exam',exam);renderStats();return}
@@ -1579,6 +2544,9 @@ main.addEventListener('submit',function(e){
   e.preventDefault();var f=e.target,fd=new FormData(f);
   if(f.id==='aiForm'){if(!aiBusy)generatePlan(f);return}
   if(trailSubmit(f))return;
+  if(praticaSubmit(f,fd))return;
+  if(metasSubmit(f,fd))return;
+  if(habSubmit(f,fd))return;
   if(f.id==='essayForm'){
     essays.push({id:uid(),date:fd.get('date'),tema:String(fd.get('tema')).trim(),c:[0,1,2,3,4].map(function(i){return +fd.get('c'+i)})});
     save('essays',essays);render();toast('Redação salva');
@@ -1612,6 +2580,7 @@ document.getElementById('importFile').addEventListener('change',function(e){
       var d=JSON.parse(rd.result);if(d.app!=='minha-rotina')throw 0;
       if(d.versao===1){d['routine.v2']=null}            // backup antigo: mantém a rotina nova, importa marcações
       if(!confirm('Substituir os dados deste aparelho pelo backup?'))return;
+      if(d.habitSync===true){rawSave('habitSync',true);syncHabitKey()}
       KEYS.forEach(function(k){if(d[k]!=null)save(k,d[k])});
       location.reload();
     }catch(err){toast('Arquivo inválido. Use um backup baixado por este site.')}
@@ -1622,7 +2591,7 @@ document.getElementById('importFile').addEventListener('change',function(e){
 /* =========================================================
    CRONÔMETRO DE FOCO (25/5, pausa longa a cada 4)
    ========================================================= */
-var T={mode:'foco',end:0,left:25*60,running:false,label:'',int:null,count:0};
+var T={mode:'foco',end:0,left:25*60,running:false,label:'',subj:'',skipRec:false,int:null,count:0};
 var DUR={foco:25*60,pausa:5*60,longa:15*60};
 var tEl=document.getElementById('timer');
 function tDraw(){
@@ -1635,12 +2604,17 @@ function tDraw(){
   document.title=T.running?txt+' · Minha Rotina':'Minha Rotina';
   if(T.running&&s<=0)tFinish();
 }
-function startTimer(label){T.label=label;T.mode='foco';T.left=DUR.foco;T.running=true;T.end=Date.now()+T.left*1000;tEl.hidden=false;tTick();tDraw()}
+function focusElapsed(){
+  if(T.mode!=='foco')return 0;
+  var left=T.running?Math.max(0,(T.end-Date.now())/1000):T.left;
+  return Math.max(0,Math.round((DUR.foco-left)/60));
+}
+function startTimer(label,subj){T.label=label;T.subj=subj||'';T.mode='foco';T.left=DUR.foco;T.running=true;T.end=Date.now()+T.left*1000;tEl.hidden=false;tTick();tDraw()}
 function tTick(){clearInterval(T.int);T.int=setInterval(tDraw,500)}
 function beep(){try{var c=new (window.AudioContext||window.webkitAudioContext)();[0,.25,.5].forEach(function(t){var o=c.createOscillator(),g=c.createGain();o.frequency.value=880;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.2,c.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+t+.2);o.start(c.currentTime+t);o.stop(c.currentTime+t+.22)})}catch(e){}}
 function tFinish(){
   beep();
-  if(T.mode==='foco'){T.count++;var k=tk();focus[k]=(focus[k]||0)+25;save('focus',focus);T.mode=T.count%4===0?'longa':'pausa';toast('Foco concluído. Hora da pausa.')}
+  if(T.mode==='foco'){T.count++;var k=tk();if(T.skipRec)T.skipRec=false;else recordFocus(25);T.mode=T.count%4===0?'longa':'pausa';toast('Foco concluído. Hora da pausa.')}
   else{T.mode='foco';toast('Pausa encerrada. Bora pro próximo foco.')}
   T.left=DUR[T.mode];T.end=Date.now()+T.left*1000;
 }
@@ -1649,9 +2623,9 @@ document.getElementById('tPlay').onclick=function(){
   else{T.end=Date.now()+T.left*1000;T.running=true;tTick()}
   tDraw();
 };
-document.getElementById('tSkip').onclick=function(){T.running=true;T.end=Date.now();tDraw()};
-document.getElementById('tReset').onclick=function(){T.left=DUR[T.mode];T.running=false;tDraw()};
-document.getElementById('tClose').onclick=function(){clearInterval(T.int);T.running=false;tEl.hidden=true;document.title='Minha Rotina'};
+document.getElementById('tSkip').onclick=function(){if(T.mode==='foco'){recordFocus(focusElapsed());T.skipRec=true}T.running=true;T.end=Date.now();tDraw()};
+document.getElementById('tReset').onclick=function(){if(T.mode==='foco')recordFocus(focusElapsed());T.left=DUR[T.mode];T.running=false;tDraw()};
+document.getElementById('tClose').onclick=function(){if(T.mode==='foco')recordFocus(focusElapsed());T.left=DUR[T.mode];clearInterval(T.int);T.running=false;tEl.hidden=true;document.title='Minha Rotina'};
 
 /* =========================================================
    SINCRONIZAÇÃO COM O SUPABASE
@@ -1691,6 +2665,7 @@ function hasLocalData(){
 }
 function adopt(r){
   var d=r.dados||{};
+  rawSave('habitSync',d.habitSync===true);syncHabitKey();     // a nuvem decide se o registro do hábito acompanha a conta
   KEYS.forEach(function(k){if(d[k]!=null)rawSave(k,d[k]);else{try{localStorage.removeItem(PREFIX+k)}catch(e){}}});
   setMeta('at',r.atualizado_em);setMeta('dirty',false);
   reloadState();render();setSync('ok');
