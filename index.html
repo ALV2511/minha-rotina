@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Minha Rotina</title>
 <meta name="theme-color" content="#FBFBF7">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rotina">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -368,7 +374,7 @@ h4.sub{font-size:13px;color:var(--ink-soft);margin:16px 0 4px;font-weight:800}
 .bignum small{font-size:15px;color:var(--ink-soft);font-weight:700}
 .heat .rel{background:var(--bad);border-color:var(--bad);display:flex;align-items:center;justify-content:center;color:var(--paper);font-size:12px;font-weight:800;line-height:1}
 .heat .rel::after{content:'×'}
-ul.plan{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-weight:600}
+ul.plan,ol.plan{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-weight:600}
 label.chip{display:inline-flex;align-items:center;cursor:pointer;gap:6px}
 label.chip input[type=checkbox]{width:auto;flex:none;margin:0;padding:0;accent-color:var(--ink)}
 label.chip:has(input:checked){background:var(--ink);color:var(--paper);border-color:var(--ink)}
@@ -2741,7 +2747,16 @@ function renderConta(){
     h+='<label class="f">Senha<input type="password" name="pw" minlength="6" autocomplete="current-password" required></label>';
     h+='<div class="row"><button class="btn" type="submit">Entrar</button><button class="btn ghost" type="button" data-act="signup">Criar conta</button><button class="link" type="button" data-act="forgot">Esqueci a senha</button></div></form><div id="authMsg"></div></div>';
   }
+  h+=installPanel();
   return h+'</div>';
+}
+function isStandalone(){return window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)}
+function installPanel(){
+  var h='<div class="panel" id="installPanel"><h3>Instalar no iPhone</h3>';
+  if(isStandalone())return h+'<p class="hint" style="margin:0">Você está usando o app instalado. Mantenha o login ativo acima para os dados sincronizarem com seus outros aparelhos.</p></div>';
+  h+='<ol class="plan"><li>Abra este site no <b>Safari</b>.</li><li>Toque em <b>Compartilhar</b> (o quadrado com a seta) e depois em <b>Adicionar à Tela de Início</b>. Em alguns iOS essa opção fica em "Ver mais".</li><li>Abra o app pelo ícone novo, não pelo Safari.</li></ol>';
+  h+='<p class="hint" style="margin:12px 0 0">O app instalado guarda os dados <b>separados do Safari</b>. Entre na sua conta dentro dele para a rotina sincronizar. O registro do hábito não sincroniza por padrão: ative a sincronização em Hábitos, Configurações deste registro, ou comece o registro direto no app instalado.</p></div>';
+  return h;
 }
 function authMsg(t,ok){var m=document.getElementById('authMsg');if(m)m.innerHTML='<div class="msg '+(ok?'ok':'err')+'">'+esc(t)+'</div>'}
 function authErr(e){
@@ -2799,6 +2814,11 @@ applyTheme();
 render();
 initSync();
 drawSync();
+// PWA: abre sem internet (veja sw.js). Só em http/https; no arquivo local (file://) não registra.
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){
+  var regSW=function(){navigator.serviceWorker.register('sw.js').catch(function(){})};
+  if(document.readyState==='complete')regSW();else window.addEventListener('load',regSW);
+}
 })();
 </script>
 </body>

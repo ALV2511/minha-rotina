@@ -1,0 +1,65 @@
+/* Service worker do Minha Rotina.
+   Objetivo: o app abrir mesmo sem internet. Os dados ficam no aparelho (localStorage),
+   então o que precisa de cache é só o código da página.
+   Estratégia: REDE PRIMEIRO. Com internet, sempre vem a versão mais nova do site
+   (um deploy novo aparece sem precisar limpar nada). Sem internet, usa a última cópia guardada.
+   Para forçar a limpeza dos caches antigos, aumente o número de CACHE. */
+var CACHE = 'rotina-v1';
+var PRECACHE = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
+var REDE_MS = 4000; // se a rede demorar mais que isso, usa a cópia guardada
+
+self.addEventListener('install', function (e) {
+  e.waitUntil(
+    caches.open(CACHE).then(function (c) {
+      // addAll falharia tudo se um arquivo faltasse, por isso um a um
+      return Promise.all(PRECACHE.map(function (u) { return c.add(u).catch(function () {}); }));
+    }).then(function () { return self.skipWaiting(); })
+  );
+});
+
+self.addEventListener('activate', function (e) {
+  e.waitUntil(
+    caches.keys().then(function (ks) {
+      return Promise.all(ks.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); }));
+    }).then(function () { return self.clients.claim(); })
+  );
+});
+
+function guarda(req, res) {
+  if (res && (res.ok || res.type === 'opaque')) {
+    var copia = res.clone();
+    caches.open(CACHE).then(function (c) { c.put(req, copia); });
+  }
+  return res;
+}
+
+function redePrimeiro(req) {
+  return new Promise(function (resolve) {
+    var feito = false;
+    var timer = setTimeout(function () {
+      caches.match(req, { ignoreSearch: true }).then(function (c) { if (c && !feito) { feito = true; resolve(c); } });
+    }, REDE_MS);
+    fetch(req).then(function (res) {
+      clearTimeout(timer);
+      if (!feito) { feito = true; resolve(guarda(req, res)); } else { guarda(req, res); }
+    }).catch(function () {
+      clearTimeout(timer);
+      caches.match(req, { ignoreSearch: true }).then(function (c) {
+        if (feito) return;
+        feito = true;
+        if (c) return resolve(c);
+        if (req.mode === 'navigate') return caches.match('index.html').then(function (i) { resolve(i || Response.error()); });
+        resolve(Response.error());
+      });
+    });
+  });
+}
+
+self.addEventListener('fetch', function (e) {
+  var req = e.request;
+  if (req.method !== 'GET') return;                       // envios (login, IA) vão direto para a rede
+  var u = new URL(req.url);
+  if (u.origin === location.origin && u.pathname.indexOf('/api/') === 0) return; // função da IA nunca vem do cache
+  if (u.hostname.indexOf('supabase.co') >= 0) return;     // chamadas ao banco nunca vêm do cache
+  e.respondWith(redePrimeiro(req));                       // site, fontes e biblioteca do Supabase
+});
