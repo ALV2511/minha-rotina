@@ -398,6 +398,56 @@ label.chip:has(input:checked){background:var(--ink);color:var(--paper);border-co
 h3.areahead{display:flex;align-items:center;gap:8px;margin:24px 0 10px;font-size:22px}
 h3.areahead .sw{width:14px;height:14px;border-radius:4px;flex:none}
 h3.areahead small{font-size:14px;color:var(--ink-soft);font-weight:700}
+/* Inglês */
+ul.plan.mission,ul.plan.hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+ul.plan.hist{margin-top:8px;gap:6px}
+.mission li{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper)}
+.mission li.done{background:var(--ok-bg);border-color:transparent}
+.mission .mk{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--ok);flex:none;font-size:13px}
+.mission li.done .mk{border-color:var(--ok)}
+.mission .mt{flex:1;min-width:0;font-weight:700;line-height:1.3}
+.words,.sug,.errs,.hist{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.words li,.sug li{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper)}
+.words li.known{opacity:.78}
+.wmain,.sw2{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 220px}
+.sw2{display:block}
+.wmain small,.sw2 small{color:var(--ink-soft);font-weight:700}
+.wmain .wt{font-weight:600}
+.wt.miss{color:var(--ink-soft);font-style:italic}
+.wmain em,.sw2 em{color:var(--ink-soft)}
+.hist li{display:flex;justify-content:space-between;gap:10px;font-weight:600;flex-wrap:wrap}
+.errs li{padding:8px 10px;border-radius:10px;background:var(--paper);border:1.5px solid var(--line);line-height:1.45}
+.errs li.done{opacity:.6}
+.bad{color:var(--bad);font-weight:700;text-decoration:line-through;text-decoration-thickness:1.5px}
+.good{color:var(--ok);font-weight:700}
+.why{color:var(--ink-soft);font-size:14px}
+.txt{margin:8px 0;padding:10px 14px;border-left:4px solid var(--a-ling);background:var(--paper);border-radius:0 10px 10px 0;line-height:1.55;white-space:pre-wrap}
+.iex{padding:12px;border:1.5px solid var(--line);border-radius:14px;background:var(--paper)}
+.iex.ok{border-color:var(--ok);background:var(--ok-bg)}
+.iex.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--card))}
+.iex.rev{border-color:var(--warn);background:var(--warn-bg)}
+.iex .q{margin:0 0 8px;font-weight:700;line-height:1.4}
+.opts{display:grid;gap:6px}
+label.opt{display:flex;gap:8px;align-items:center;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);font-weight:600;cursor:pointer}
+label.opt input{width:auto;flex:none;margin:0;padding:0}
+label.opt:has(input:checked){border-color:var(--ink);background:var(--est-bg)}
+.fb{margin:8px 0 4px;font-weight:600;line-height:1.4}
+.scorebox{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 14px;font-weight:800;margin:12px 0}
+.aiwait{margin:8px 0 0;padding:10px 12px;border-radius:12px;background:var(--est-bg);color:var(--est);font-weight:700}
+.flash{text-align:center}
+.card-front,.card-back{display:flex;flex-direction:column;gap:6px;align-items:center;padding:18px 8px}
+.card-back{border-top:1.5px dashed var(--line)}
+.big{font-size:26px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
+.bubbles{display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow:auto;padding:4px}
+.bub{max-width:88%;padding:10px 12px;border-radius:16px;line-height:1.45}
+.bub p{margin:0}
+.bub.ai{align-self:flex-start;background:var(--est-bg);border-bottom-left-radius:4px}
+.bub.me{align-self:flex-end;background:var(--off-bg);border-bottom-right-radius:4px}
+.bub .tr{color:var(--ink-soft);font-style:italic;margin-top:4px}
+.fix{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.okmsg{color:var(--ok);font-weight:700}
+.chatform{display:flex;gap:6px;margin-top:10px}
+.chatform input{flex:1;width:auto}
 </style>
 </head>
 <body>
@@ -415,6 +465,7 @@ h3.areahead small{font-size:14px;color:var(--ink-soft);font-weight:700}
     <button class="tab" data-view="semana">Semana</button>
     <button class="tab" data-view="conteudo">Trilha ENEM</button>
     <button class="tab" data-view="dev">Trilha Dev</button>
+    <button class="tab" data-view="ingles">Inglês</button>
     <button class="tab" data-view="pratica">Prática</button>
     <button class="tab" data-view="habitos">Hábitos</button>
     <button class="tab" data-view="treinos">Treinos</button>
@@ -523,9 +574,6 @@ var SYLLABUS=[
   {id:'lit',nome:'Literatura',desc:'Em ordem cronológica, porque cada escola reage à anterior. O ENEM cobra mais o Modernismo e a leitura do texto literário.',mods:[
    {nome:'Literatura colonial e século XIX',t:[['lit-quinh','Quinhentismo e Barroco',1],['lit-arcad','Arcadismo',1],['lit-rom','Romantismo'],['lit-real','Realismo e Naturalismo (Machado de Assis)'],['lit-parnas','Parnasianismo e Simbolismo',1]]},
    {nome:'Século XX e hoje',t:[['lit-premod','Pré-Modernismo'],['lit-vang','Vanguardas europeias'],['lit-mod1','Semana de 22 e 1ª fase modernista',3],['lit-mod2','2ª fase modernista: Drummond e romance de 30',3],['lit-mod3','3ª fase: Clarice Lispector, Guimarães Rosa e João Cabral'],['lit-contemp','Literatura contemporânea e periférica']]}
-  ]},
-  {id:'ing',nome:'Inglês',desc:'São 5 questões de interpretação. Estratégia de leitura vale mais que gramática.',mods:[
-   {nome:'Leitura em inglês',t:[['ing-skim','Skimming e scanning',3],['ing-cognatos','Cognatos e falsos cognatos'],['ing-contexto','Inferência de vocabulário pelo contexto',3],['ing-generos','Gêneros: charges, tirinhas, poemas, letras de música e notícias'],['ing-conect','Conectivos e marcadores do discurso']]}
   ]},
   {id:'art',nome:'Artes e Educação Física',desc:'Questões curtas e frequentes, quase sempre resolvidas com leitura atenta do texto e da imagem.',mods:[
    {nome:'Artes',t:[['art-classica','Arte clássica, medieval e Renascimento',1],['art-moderna','Arte moderna e vanguardas'],['art-brasil','Arte brasileira: Modernismo e Tropicália'],['art-contemp','Arte contemporânea, performance e intervenção urbana',3],['art-musica','Música, dança e teatro'],['art-patrim','Patrimônio cultural e cultura popular']]},
@@ -778,19 +826,163 @@ var DEV_SYLLABUS=[
   dm("livre","Projetos e estudos livres","Espaço para o que você quiser estudar e que não cabe nas outras matérias. Use Editar trilha para adicionar tópicos.",[])
  ]}
 ];
+/* =========================================================
+   TRILHA INGLÊS: DO ZERO AO NÍVEL NATIVO
+   área → matéria (assunto) → etapa → tópico. Peso: 3 essencial, 2 normal, 1 avançado.
+   Formato do tópico: "id|Nome|peso". O id final é en-<matéria>-<id> e não pode mudar,
+   porque o progresso fica guardado nele.
+   A matéria "ing" (Inglês para o ENEM) mantém os ids antigos ing-*, então o progresso é preservado.
+   ========================================================= */
+function em(slug,nome,desc,mods){
+  return {id:"en-"+slug,nome:nome,desc:desc,mods:mods.map(function(md){
+    return {nome:md[0],t:md[1].split(";").map(function(x){var p=x.split("|");return ["en-"+slug+"-"+p[0].trim(),p[1].trim(),+p[2]||2]})};
+  })};
+}
+var ING_SYLLABUS=[
+ {id:"e-som",nome:"Pronúncia e som",cor:"--a-ling",trilha:"ing",materias:[
+  em("fon","Fonética e pronúncia","Falar de forma clara e natural começa por ouvir e produzir os sons certos.",[
+   ["Sons básicos","alf|Alfabeto e soletrar nomes|3; ipa|Alfabeto fonético (IPA) para ler o dicionário|3; vogcurt|Vogais curtas e longas (ship e sheep)|3; dit|Ditongos (face, go, price)|2; cons|Consoantes que não existem no português|3; th|Som do TH (think e this)|3; r|O R americano|3; h|O H aspirado|2; ed|Terminações -ed (3 pronúncias)|3; s|Terminações -s e -es (3 pronúncias)|3; mudas|Letras mudas (knife, island)|2"],
+   ["Ritmo e entonação","acento|Acento da palavra (sílaba tônica)|3; schwa|O schwa e as vogais reduzidas|3; acfrase|Acento da frase: palavras de conteúdo x função|3; ritmo|O ritmo do inglês (stress-timed)|2; entona|Entonação de perguntas e afirmações|3; link|Ligações entre palavras (linking)|3; reduc|Reduções: gonna, wanna, gotta, kinda|3; flap|Flap T e T mudo (water, button)|2; fracas|Formas fracas (can, to, of, for)|2; contr|Contrações e fala rápida|3"],
+   ["Refinando o sotaque","minimos|Pares mínimos|2; sotaque|Escolher e treinar um sotaque-alvo|3; usuk|Sotaque americano x britânico|2; gravar|Gravar a própria voz e comparar com nativos|3; shadow|Shadowing de áudios curtos|3; enfase|Ênfase e emoção na fala|2; trava|Trava-línguas|1"]
+  ]),
+  em("orto","Ortografia e leitura em voz alta","A grafia do inglês não é fonética, mas segue padrões.",[
+   ["Letras e sons","phonics|Relação entre letras e sons (phonics)|3; regras|Regras de ortografia (plural, -ing, -ed)|3; homof|Homófonos (their, there, they're)|3; confus|Palavras confundidas (affect e effect)|3; brit|Ortografia americana x britânica|2; abrev|Abreviações e siglas comuns|2; pontu|Pontuação e maiúsculas|2"]
+  ])
+ ]},
+ {id:"e-gram",nome:"Gramática",cor:"--a-hum",trilha:"ing",materias:[
+  em("gram","Gramática do zero ao avançado","Cada etapa é um nível (A1 a C2). Se você já domina um nível, use \"Já domino esta etapa\".",[
+   ["A1: sobrevivência","be|Verbo to be|3; pron|Pronomes pessoais e possessivos|3; art|Artigos a, an e the|3; plural|Plural dos substantivos|3; dem|This, that, these e those|2; thereis|There is e there are|3; ps|Present simple|3; psq|Present simple: perguntas e negativas|3; cont|Substantivos contáveis e incontáveis (some e any)|3; can|Can e can't|3; imp|Imperativo|2; prep1|Preposições de lugar e tempo (in, on, at)|3; wh|Perguntas com Wh- (what, where, when)|3; adj|Adjetivos e sua posição|2; freq|Advérbios de frequência|2; num|Números, datas e horas|3"],
+   ["A2: básico","pc|Present continuous|3; pspc|Present simple x continuous|3; past|Past simple regular|3; irr|Past simple irregular|3; pastq|Past simple: perguntas e negativas|3; comp|Comparativos e superlativos|3; fut|Going to, will e present continuous para futuro|3; poss|Genitivo 's e of|2; obj|Pronomes objeto|2; howmuch|How much, how many e a lot of|3; must|Must, have to e should|3; like|Verbos + -ing (like, love, hate)|2; advm|Advérbios de modo|2; prep2|Preposições de movimento|2; conj|Conjunções: and, but, so, because e or|3; pastc|Past continuous|2"],
+   ["B1: intermediário","pp|Present perfect: experiência e resultado|3; ppps|Present perfect x past simple|3; forsince|For, since, already, yet e just|3; used|Used to e would|2; c1|Primeira condicional|3; c2|Segunda condicional|3; pass|Voz passiva (presente e passado)|3; rel|Orações relativas (who, which, that)|3; rep|Discurso indireto básico|3; geri|Gerúndio ou infinitivo (stop doing x stop to do)|3; quant|Quantificadores (few, little, enough, too)|2; mprob|Modais de possibilidade (may, might, could)|3; phr1|Phrasal verbs essenciais|3; tag|Question tags|2; sodo|So do I e Neither do I|2; art2|Artigos: uso e ausência|2"],
+   ["B2: intermediário avançado","ppc|Present perfect continuous|3; pastp|Past perfect|3; c3|Terceira condicional|3; cmix|Condicionais mistas e alternativas (unless, as long as)|2; pass2|Passiva avançada e causativa (have something done)|2; mded|Modais de dedução (must have, can't have)|3; wish|Wish e if only|3; rep2|Discurso indireto avançado|2; relred|Orações relativas reduzidas|2; futc|Futuro contínuo e futuro perfeito|2; contr|Contraste e concessão (although, despite)|3; inv1|Inversão com negativas (never have I)|1; geri2|Gerúndios e infinitivos: casos difíceis|2; clef1|Ênfase com do e cleft sentences simples|2; part|Orações participiais|2; thethe|Comparativos duplos (the more, the more)|2"],
+   ["C1: avançado","subj|Subjuntivo e modo hipotético|2; inv2|Inversão para ênfase|2; cleft|Cleft sentences (It was, What I need is)|2; elip|Elipse e substituição|2; nom|Nominalização e estilo formal|2; hedge|Hedging e modalização (it seems, tends to)|3; front|Ordem marcada e topicalização|1; modn|Nuances de modais (shall, ought to, need)|2; disc|Marcadores do discurso|3; compo|Adjetivos compostos e ordem avançada|1"],
+   ["C2: quase nativo","regis|Registro formal, neutro e informal|3; nuan|Nuances entre quase-sinônimos|3; colo|Gramática da fala coloquial|3; arc|Formas literárias e arcaicas (lest, whence)|1; ret|Estilo e retórica|2; vari|Variação regional da gramática|2"]
+  ]),
+  em("erros","Erros típicos de brasileiros","Os deslizes que mais denunciam um falante brasileiro, e como eliminá-los.",[
+   ["Armadilhas comuns","suj|Sujeito obrigatório (it is raining)|3; do|Do e does nas perguntas|3; ter|Terceira pessoa com -s|3; prep|Preposições que o português confunde|3; fc|Falsos cognatos mais comuns|3; calq|Calques do português (make x do, take x make)|3; muito|Muito: much, many, a lot of e very|3; ppbr|Present perfect para quem pensa em português|3; ger|Gerúndio no lugar do infinitivo|2; dneg|Dupla negação|2; ordem|Ordem das palavras em perguntas|3; adjpos|Posição do adjetivo|2; cond|Condicionais com would e if|2"]
+  ])
+ ]},
+ {id:"e-voc",nome:"Vocabulário",cor:"--a-nat",trilha:"ing",materias:[
+  em("freq","Palavras mais frequentes","As palavras mais usadas dão o maior retorno. Use o Banco de palavras para registrar e revisar.",[
+   ["Faixas de frequência","f500|As primeiras 500 palavras|3; f1000|De 500 a 1.000 palavras|3; f2000|De 1.000 a 2.000 palavras|3; f3000|De 2.000 a 3.000 palavras|3; f5000|De 3.000 a 5.000 palavras|2; f8000|De 5.000 a 8.000 palavras|2; f10000|De 8.000 a 10.000 palavras|1"],
+   ["Método","ctx|Aprender palavras em contexto, não em lista solta|3; srs|Revisão espaçada diária no Banco de palavras|3; frase|Cartões com frases completas|2; tipos|Registrar também a classe e a pronúncia|2; ativo|Vocabulário ativo x passivo|2"]
+  ]),
+  em("tema","Vocabulário por tema","Temas do mundo real, do café da manhã ao noticiário.",[
+   ["Dia a dia","fam|Família e relacionamentos|3; casa|Casa e rotina|3; comida|Comida, restaurantes e receitas|3; roupas|Roupas e compras|2; corpo|Corpo e saúde|3; cidade|Cidade, transporte e direções|3; viagem|Viagens, aeroporto e hotel|3; clima|Clima e natureza|2; emoc|Emoções e personalidade|3; esp|Esportes e academia|2; tec|Tecnologia e internet|3; din|Dinheiro e bancos|2"],
+   ["Vida adulta","trab|Trabalho e carreira|3; educ|Educação|2; midia|Mídia, notícias e política|2; lei|Lei e sociedade|1; cien|Ciência e meio ambiente|2; arte|Arte, música e cinema|2"]
+  ]),
+  em("phr","Phrasal verbs","Os verbos com partícula são o coração do inglês falado.",[
+   ["Essenciais","get|Phrasal verbs com get|3; take|Phrasal verbs com take|3; make|Phrasal verbs com make e do|3; put|Phrasal verbs com put|2; go|Phrasal verbs com go e come|3; look|Phrasal verbs com look|3; turn|Phrasal verbs com turn|2; set|Phrasal verbs com set e break|2"],
+   ["Por situação","trab|Phrasal verbs no trabalho|2; relac|Phrasal verbs em relacionamentos|2; fala|Phrasal verbs na conversa informal|3; sep|Separáveis e inseparáveis|3"],
+   ["Avançado","tres|Phrasal verbs de três partes (look forward to)|1; nuan|Phrasal verb ou verbo formal?|2"]
+  ]),
+  em("idi","Idioms e expressões","Expressões que não se traduzem palavra por palavra.",[
+   ["Do dia a dia","bas|Idioms mais comuns (piece of cake, break a leg)|3; tempo|Idioms sobre tempo e dinheiro|2; emo|Idioms de emoções|2; trab|Idioms de trabalho|2"],
+   ["Avançado","prov|Provérbios e ditados|1; metaf|Metáforas comuns (time is money)|2; orig|Origem das expressões|1"],
+   ["Uso","quando|Quando não usar idioms|2; reg|Idioms britânicos e americanos|1"]
+  ]),
+  em("col","Collocations e blocos prontos","O que faz o inglês soar natural são as combinações certas de palavras.",[
+   ["Combinações naturais","vsub|Verbo + substantivo (make a decision, take a break)|3; adjsub|Adjetivo + substantivo (heavy rain)|3; advadj|Advérbio + adjetivo (highly likely)|2; chunk|Blocos prontos de conversa (by the way, as far as I know)|3; conec|Conectores e frases de transição|3; prepdep|Preposições dependentes (depend on, good at)|3"]
+  ]),
+  em("form","Formação de palavras","Prefixos, sufixos e raízes multiplicam o vocabulário.",[
+   ["Raízes e afixos","pref|Prefixos (un-, re-, over-, mis-)|3; suf|Sufixos (-tion, -ness, -able)|3; raiz|Raízes latinas e gregas|2; conv|Conversão: substantivo e verbo (a run, to run)|2; comp|Palavras compostas|2; cogn|Cognatos e falsos cognatos|3; fam|Famílias de palavras|2"]
+  ]),
+  em("giria","Gírias e inglês informal","Como as pessoas realmente falam e escrevem.",[
+   ["Informal","giria|Gírias americanas atuais|3; net|Linguagem da internet (lol, idk, tbh)|3; abrev|Abreviações de mensagens|3; brit|Gírias britânicas|2; reg|Gírias regionais dos EUA|1; pal|Palavrões: como entender e quando não usar|1"],
+   ["Cuidados","ctx|Quando a gíria soa estranha|2"]
+  ]),
+  em("acad","Vocabulário acadêmico e formal","O vocabulário de artigos, provas e textos formais.",[
+   ["Registro formal","awl|Academic Word List|3; verb|Verbos acadêmicos (analyze, demonstrate)|2; liga|Conectores acadêmicos|3; formal|Formal x informal: equivalentes|2"]
+  ])
+ ]},
+ {id:"e-ouvir",nome:"Compreensão auditiva",cor:"--a-mat",trilha:"ing",materias:[
+  em("list","Listening","Ouvir muito, em níveis crescentes, é o que treina o ouvido para a fala real.",[
+   ["Fundamentos","input|Input compreensível: o que é e por que funciona|3; passiva|Escuta passiva x escuta ativa|3; reduc|Perceber reduções e ligações|3; ditado|Ditado (dictation)|3; vel|Lidar com a velocidade da fala|2"],
+   ["Níveis de áudio","a1|Áudios para iniciantes (A1 e A2)|3; b1|Podcasts para intermediários (B1)|3; b2|Podcasts e vídeos sem adaptação (B2)|3; c1|Palestras, debates e entrevistas rápidas (C1)|2; c2|Conversas nativas sem legenda (C2)|2"],
+   ["Fontes","musica|Música e letras|2; series|Séries e filmes com legendas em inglês|3; noticia|Noticiários (BBC, NPR, CNN)|2; ted|Palestras e conferências (TED)|2; yt|YouTube: vlogs e canais de nativos|3; audio|Audiolivros|2"],
+   ["Sotaques","us|Inglês americano|3; uk|Inglês britânico|2; au|Australiano e neozelandês|1; glob|Indiano e outros sotaques globais|2"]
+  ])
+ ]},
+ {id:"e-falar",nome:"Conversação",cor:"--a-hum",trilha:"ing",materias:[
+  em("fala","Speaking","Falar é um treino físico: precisa de repetição, de voz alta e de situações reais.",[
+   ["Primeiros passos","apres|Apresentar-se e falar de si|3; small|Small talk|3; pedir|Pedir informações e ajuda|3; mono|Monólogo em voz alta (falar sozinha em inglês)|3"],
+   ["Fluência","fill|Pausas naturais e filler words (well, you know)|3; hist|Contar histórias e experiências|3; opin|Dar opinião e discordar com educação|3; circ|Explicar quando falta a palavra (circumlocution)|3; descr|Descrever pessoas, lugares e imagens|2; deb|Debates e discussões|2"],
+   ["Situações reais","tel|Telefonemas e chamadas de vídeo|2; entr|Entrevistas de emprego|3; apre|Apresentações e palestras|2; reun|Negociação e reuniões|2; viag|Viajar e se virar|3"],
+   ["Prática","tutor|Aulas com tutor|3; troca|Troca de idiomas (language exchange)|3; ia|Conversar com IA em inglês|3; grav|Gravar-se falando e revisar|3"]
+  ])
+ ]},
+ {id:"e-ler",nome:"Leitura",cor:"--a-nat",trilha:"ing",materias:[
+  em("leit","Reading","Ler bastante, em nível confortável, constrói vocabulário e gramática sem esforço.",[
+   ["Estratégias","ext|Leitura extensiva x intensiva|3; infer|Ler sem parar no dicionário: inferir pelo contexto|3; anot|Anotar e revisar palavras novas|2"],
+   ["Graded readers","gr1|Graded readers A1 e A2|3; gr2|Graded readers B1 e B2|3"],
+   ["Fontes","not|Notícias (BBC, NYT, The Guardian)|3; blog|Blogs e newsletters|2; hq|HQs, quadrinhos e mangás em inglês|2; liv|Livros contemporâneos|3; ya|Ficção jovem (young adult)|2; clas|Clássicos (Austen, Orwell)|1; nf|Não ficção e divulgação científica|2"],
+   ["Textos técnicos","art|Artigos acadêmicos|2; doc|Documentação técnica|2; jur|Contratos e textos jurídicos|1"]
+  ])
+ ]},
+ {id:"e-esc",nome:"Escrita",cor:"--a-red",trilha:"ing",materias:[
+  em("esc","Writing","Escrever com correção frequente é o jeito mais rápido de achar e consertar seus erros.",[
+   ["Fundamentos","frase|Frases completas e pontuação|3; par|Parágrafos: tópico, desenvolvimento e conclusão|3; conec|Conectivos de coesão|3"],
+   ["Gêneros","email|E-mails formais e informais|3; msg|Mensagens e chats|3; diar|Diário em inglês (5 minutos por dia)|3; opin|Texto de opinião|2; ens|Ensaio argumentativo|2; res|Resumos|2; cv|Currículo, carta de apresentação e LinkedIn|3"],
+   ["Revisão","corr|Correção de textos com IA|3; reesc|Reescrever usando o feedback|3; est|Estilo: clareza e concisão|2; reg|Registro formal e informal|3"]
+  ])
+ ]},
+ {id:"e-nativo",nome:"Naturalidade e cultura",cor:"--a-ling",trilha:"ing",materias:[
+  em("nat","Soar como nativo","O que separa o inglês correto do inglês natural.",[
+   ["Naturalidade","pens|Pensar em inglês, sem traduzir|3; hum|Humor, ironia e sarcasmo|3; cult|Referências culturais (filmes, esportes, festas)|2; pol|Polidez e indireção (could you possibly)|3; reac|Reações naturais (really, no way, seriously)|3; inter|Interjeições e sons de conversa (uh-huh, hmm)|2; trat|Nomes, apelidos e formas de tratamento|1"],
+   ["Mídia","stand|Stand-up comedy|2; film|Filmes sem legenda|3; pod|Podcasts de nativos|3; meme|Memes e cultura da internet|1"],
+   ["Diferenças","usuk|Diferenças entre inglês americano e britânico|2; reg|Regionalismos|1; tabu|Assuntos delicados e tabus|2"]
+  ])
+ ]},
+ {id:"e-prof",nome:"Inglês profissional",cor:"--a-tec",trilha:"ing",materias:[
+  em("biz","Business English","O inglês do trabalho: claro, educado e eficiente.",[
+   ["Dia a dia","mail|E-mails profissionais|3; reun|Reuniões|3; pres|Apresentações|3; call|Chamadas e vídeo|2; neg|Negociação|2; small|Small talk profissional|3"],
+   ["Carreira","cv|CV e LinkedIn|3; entr|Entrevistas comportamentais|3; rel|Relatórios e propostas|2"],
+   ["Vocabulário","biz|Vocabulário de negócios|3; fin|Finanças básicas|1"]
+  ])
+ ]},
+ {id:"e-prova",nome:"Provas e certificações",cor:"--a-red",trilha:"ing",materias:[
+  {id:"ing",nome:"Inglês para o ENEM",desc:"São 5 questões de interpretação. Estratégia de leitura vale mais que gramática.",mods:[
+   {nome:"Leitura em inglês",t:[["ing-skim","Skimming e scanning",3],["ing-cognatos","Cognatos e falsos cognatos"],["ing-contexto","Inferência de vocabulário pelo contexto",3],["ing-generos","Gêneros: charges, tirinhas, poemas, letras de música e notícias"],["ing-conect","Conectivos e marcadores do discurso"]]}
+  ]},
+  em("toefl","TOEFL iBT","Prova de inglês acadêmico aceita por universidades no exterior.",[
+   ["Preparação","form|Formato, seções e pontuação|3; read|Reading: estratégias por tipo de questão|3; list|Listening: palestras e conversas de campus|3; speak|Speaking: tarefas independentes e integradas|3; write|Writing: ensaio integrado e de discussão|3; tempo|Gestão de tempo na prova|2; simu|Simulados completos|3"]
+  ]),
+  em("ielts","IELTS","Prova muito aceita para estudo, trabalho e imigração.",[
+   ["Preparação","form|Formato, módulos e banda|3; list|Listening: os 4 blocos|3; read|Reading: tipos de questão|3; w1|Writing Task 1: gráficos e cartas|3; w2|Writing Task 2: ensaio|3; speak|Speaking: as 3 partes|3; simu|Simulados completos|3"]
+  ]),
+  em("camb","Cambridge (B2 First, C1 Advanced e C2 Proficiency)","Certificados vitalícios com foco em uso real da língua.",[
+   ["Preparação","form|Escolher o exame certo para o seu nível|3; uoe|Use of English|3; read|Reading|3; list|Listening|3; write|Writing|3; speak|Speaking|3; simu|Simulados completos|3"]
+  ]),
+  em("det","Duolingo English Test","Teste online curto e aceito por muitas universidades.",[
+   ["Preparação","form|Formato e tipos de questão|3; adap|Como funciona o teste adaptativo|2; speak|Questões de fala e escrita|3; simu|Treino completo|2"]
+  ]),
+  em("nivel","Nível e metas (CEFR)","Saber onde você está é o primeiro passo para chegar onde quer.",[
+   ["Diagnóstico","teste|Fazer um teste de nível|3; grade|Grade de autoavaliação do CEFR|3; metas|Definir metas por nível e por habilidade|3; refaz|Refazer o teste a cada 3 meses|2"]
+  ])
+ ]},
+ {id:"e-metodo",nome:"Método e hábitos",cor:"--a-mat",trilha:"ing",materias:[
+  em("met","Rotina e imersão","Fluência vem de volume, constância e imersão no dia a dia.",[
+   ["Rotina","plan|Plano semanal de estudo de inglês|3; diaria|Hábito diário de 30 minutos|3; srs|Revisão diária de palavras|3; reg|Registrar minutos por habilidade|3; input|Meta semanal de horas de input|3"],
+   ["Imersão em casa","cel|Celular, redes e serviços em inglês|3; midia|Consumir séries, canais e podcasts em inglês|3; dia|Dias 100% em inglês|2; pens|Narrar o dia em inglês|2"],
+   ["Ferramentas","dic|Dicionários monolíngues (Cambridge, Oxford)|3; ipa|Dicionários com áudio e IPA|2; ia|Usar IA como tutor|3; erro|Caderno de erros de inglês|3; apps|Aplicativos e ferramentas úteis|2"],
+   ["Constância","mot|Manter a motivação e superar platôs|2; plat|O platô do intermediário|2; comp|Comparar-se consigo mesma, não com os outros|1"]
+  ])
+ ]}
+];
+
 var AREA_OF_SUBJECT={mat:'mat',fis:'nat',qui:'nat',bio:'nat',nat:'nat',ling:'ling',port:'ling',lit:'ling',ing:'ling',hum:'hum',hist:'hum',geo:'hum',filo:'hum',soc:'hum',red:'red',rep:'red',redsim:'red'};
 var RISK_AREAS_BASE=['mat','nat','ling','hum','red'];
 /* Monta a trilha final: base acima + personalizações do usuário
    (tópicos e matérias criados, nomes trocados, ocultos e nova ordem). */
 var TOPICS={},TOPIC_LIST=[],MATERIAS=[],MATERIA={},BASE_TOPIC={},BASE_MAT={};
-SYLLABUS.concat(DEV_SYLLABUS).forEach(function(a){a.materias.forEach(function(m){BASE_MAT[m.id]=[];m.mods.forEach(function(md){md.t.forEach(function(t){BASE_TOPIC[t[0]]={nome:t[1],p:t[2]||2,materia:m.id,mod:md.nome};BASE_MAT[m.id].push(t[0])})})})});
+SYLLABUS.concat(DEV_SYLLABUS,ING_SYLLABUS).forEach(function(a){a.materias.forEach(function(m){BASE_MAT[m.id]=[];m.mods.forEach(function(md){md.t.forEach(function(t){BASE_TOPIC[t[0]]={nome:t[1],p:t[2]||2,materia:m.id,mod:md.nome};BASE_MAT[m.id].push(t[0])})})})});
 var CUSTOM_AREA={id:'out',nome:'Outras matérias',cor:'--ink-soft',materias:[]};
 var custom={topics:[],materias:[],hidden:{},renamed:{},order:{}};
 function normCustom(c){c=c&&typeof c==='object'?c:{};['topics','materias'].forEach(function(k){if(!Array.isArray(c[k]))c[k]=[]});['hidden','renamed','order'].forEach(function(k){if(!c[k]||typeof c[k]!=='object')c[k]={}});return c}
 function buildSyllabus(){
   TOPICS={};TOPIC_LIST=[];MATERIAS=[];MATERIA={};
   Object.keys(SUBJECTS).forEach(function(k){if(SUBJECTS[k].custom)delete SUBJECTS[k]});
-  var areas=SYLLABUS.concat(custom.materias.some(function(x){return x.area==='out'})?[CUSTOM_AREA]:[],DEV_SYLLABUS);
+  var areas=SYLLABUS.concat(custom.materias.some(function(x){return x.area==='out'})?[CUSTOM_AREA]:[],DEV_SYLLABUS,ING_SYLLABUS);
   areas.forEach(function(a){
     var mats=a.materias.map(function(m){return {base:m,id:m.id,nome:m.nome,desc:m.desc}})
       .concat(custom.materias.filter(function(x){return x.area===a.id}).map(function(x){return {base:null,id:x.id,nome:x.nome,desc:x.desc||'Matéria criada por você.',custom:true}}));
@@ -816,7 +1008,7 @@ function buildSyllabus(){
     });
   });
 }
-function areaById(id){var all=SYLLABUS.concat(DEV_SYLLABUS);for(var i=0;i<all.length;i++)if(all[i].id===id)return all[i]}
+function areaById(id){var all=SYLLABUS.concat(DEV_SYLLABUS,ING_SYLLABUS);for(var i=0;i<all.length;i++)if(all[i].id===id)return all[i]}
 
 /* Ids da versão anterior do conteúdo, para não perder o progresso */
 var OLD_IDS={
@@ -878,7 +1070,8 @@ var SUBJECTS={
  ling:{n:'Linguagens (todas)',area:'ling'},
  port:{n:'Língua Portuguesa',m:'port'},
  lit:{n:'Literatura',m:'lit'},
- ing:{n:'Inglês',m:'ing'},
+ ing:{n:'Inglês para o ENEM (leitura)',m:'ing'},
+ ingt:{n:'Inglês (toda a Trilha Inglês)',trilha:'ing'},
  hum:{n:'Ciências Humanas (todas)',area:'hum'},
  hist:{n:'História',m:'hist'},
  geo:{n:'Geografia',m:'geo'},
@@ -897,6 +1090,17 @@ var SUBJECTS={
  'd-sec':{n:'Dev: Segurança',area:'d-sec'},
  'd-arq':{n:'Dev: Arquitetura e system design',area:'d-arq'},
  'd-car':{n:'Dev: Carreira e profissão',area:'d-car'},
+ 'e-som':{n:'Inglês: Pronúncia e som',area:'e-som'},
+ 'e-gram':{n:'Inglês: Gramática',area:'e-gram'},
+ 'e-voc':{n:'Inglês: Vocabulário',area:'e-voc'},
+ 'e-ouvir':{n:'Inglês: Compreensão auditiva',area:'e-ouvir'},
+ 'e-falar':{n:'Inglês: Conversação',area:'e-falar'},
+ 'e-ler':{n:'Inglês: Leitura',area:'e-ler'},
+ 'e-esc':{n:'Inglês: Escrita',area:'e-esc'},
+ 'e-nativo':{n:'Inglês: Naturalidade e cultura',area:'e-nativo'},
+ 'e-prof':{n:'Inglês: Inglês profissional',area:'e-prof'},
+ 'e-prova':{n:'Inglês: Provas e certificações',area:'e-prova'},
+ 'e-metodo':{n:'Inglês: Método e hábitos',area:'e-metodo'},
  rev:{n:'Revisões programadas'},
  rep:{n:'Banco de repertórios'},
  redsim:{n:'Redação simulada (registrar nota)'}
@@ -928,14 +1132,14 @@ var DEFAULT=[
    ========================================================= */
 var PREFIX='minha-rotina:';
 // Dados que vão para a nuvem e para o backup
-var KEYS=['routine.v2','progress','notes','focus','topics','picks','essays','reps','sims','exam','best','trailMode','custom','errors','hours','goals','badges','daylog','water','waterGoal','habitSync','workouts','wlog'];
+var KEYS=['routine.v2','progress','notes','focus','topics','picks','essays','reps','sims','exam','best','trailMode','custom','errors','hours','goals','badges','daylog','water','waterGoal','habitSync','workouts','wlog','ingCfg','vocab','ingEx','ingErr','ingLog','ingWr'];
 // O registro do hábito (chave 'habit') só entra aqui quando a pessoa ativa a sincronização, veja syncHabitKey()
 function load(k,d){try{var v=localStorage.getItem(PREFIX+k);return v?JSON.parse(v):d}catch(e){return d}}
 function rawSave(k,v){try{localStorage.setItem(PREFIX+k,JSON.stringify(v))}catch(e){}}
 function save(k,v){rawSave(k,v);if(KEYS.indexOf(k)>=0&&typeof markDirty==='function')markDirty()}
 function clone(o){return JSON.parse(JSON.stringify(o))}
 
-var routine,progress,notes,focus,topics,picks,essays,reps,sims,exam,errs,hoursBy,goals,badges,daylog,water,waterGoal,habit,workouts,wlog;
+var routine,progress,notes,focus,topics,picks,essays,reps,sims,exam,errs,hoursBy,goals,badges,daylog,water,waterGoal,habit,workouts,wlog,ingCfg,vocab,ingEx,ingErr,ingLog,ingWr;
 function reloadState(){
   routine=load('routine.v2',clone(DEFAULT));
   progress=load('progress',{});  // {data:{bloco:true}}
@@ -956,6 +1160,12 @@ function reloadState(){
   waterGoal=load('waterGoal',2000);
   workouts=load('workouts',[]);  // treinos e exercícios
   wlog=load('wlog',[]);          // treinos registrados
+  ingCfg=load('ingCfg',null);    // nível, alvo, meta semanal e sotaque do inglês
+  vocab=load('vocab',[]);        // banco de palavras
+  ingEx=load('ingEx',[]);        // listas de exercícios feitas
+  ingErr=load('ingErr',[]);      // caderno de erros de inglês
+  ingLog=load('ingLog',[]);      // minutos de imersão por habilidade
+  ingWr=load('ingWr',[]);        // textos corrigidos
   habit=load('habit',null);      // hábito a largar: fica só neste aparelho, salvo se a pessoa ativar a sincronização
   custom=normCustom(load('custom',null));
   if(migrateCustomTec(custom))save('custom',custom);
@@ -1032,7 +1242,7 @@ function pickFor(dateKey,b){
   return suggestTopic(b.subject);
 }
 function areaCoverage(areaId,kind){
-  var list=TOPIC_LIST.filter(function(t){return areaId?t.area===areaId:t.trilha===(kind||'enem')});
+  var list=TOPIC_LIST.filter(function(t){return areaId?(t.area===areaId||(areaId==='ling'&&t.materia==='ing')):(t.trilha===(kind||'enem')||(!kind&&t.materia==='ing'))});
   var st=0,dom=0;list.forEach(function(t){var s=tstate(t.id).s;if(s>=1)st++;if(s===3)dom++});
   return {total:list.length,studied:st,mastered:dom};
 }
@@ -1124,12 +1334,12 @@ function blockHTML(b,date,opts){
       if(cur){
         focusLabel=TOPICS[cur].nome;focusSubj=TOPICS[cur].materia;
         h+='<div class="topicbox"><label class="lbl" for="pk-'+b.id+'">Tópico de hoje</label><select id="pk-'+b.id+'" data-pick="'+b.id+'" data-date="'+k+'">';
-        var grp=list.length&&list[0].trilha==='dev',lastM='';
+        var grp=list.length&&list[0].trilha!=='enem',lastM='';
         list.forEach(function(t){
           var s=tstate(t.id).s;
           if(s===3&&t.id!==cur)return;
           if(grp&&t.materia!==lastM){if(lastM)h+='</optgroup>';h+='<optgroup label="'+esc(t.areaNome+' · '+t.materiaNome)+'">';lastM=t.materia}
-          h+='<option value="'+t.id+'"'+(t.id===cur?' selected':'')+'>'+(SUBJECTS[b.subject].m||b.subject==='mat'||b.subject==='red'||grp?'':t.materiaNome+' · ')+esc(t.nome)+(s?' ('+STATUS[s].toLowerCase()+')':'')+(t.hot?(t.trilha==='dev'?' · essencial':' · cai muito'):'')+'</option>';
+          h+='<option value="'+t.id+'"'+(t.id===cur?' selected':'')+'>'+(SUBJECTS[b.subject].m||b.subject==='mat'||b.subject==='red'||grp?'':t.materiaNome+' · ')+esc(t.nome)+(s?' ('+STATUS[s].toLowerCase()+')':'')+(t.hot?(t.trilha!=='enem'?' · essencial':' · cai muito'):'')+'</option>';
         });
         if(grp&&lastM)h+='</optgroup>';
         h+='<option value="__new">+ Outro tópico (adicionar à trilha)</option></select></div>';
@@ -1181,6 +1391,7 @@ function renderHoje(){
   if(AL.length)h+='<div class="panel"><h3>Alertas</h3>'+alertsHTML(AL.slice(0,2))+'<button class="link" data-act="go" data-v="diagnostico" style="margin-top:8px">Ver diagnóstico completo</button></div>';
   h+=reviewsPanel();
   h+=waterPanel(false);
+  h+=ingTodayPanel();
   h+='<div class="panel"><h3>Anotações do dia</h3><label class="sr" for="note">Anotações de hoje</label><textarea id="note" data-date="'+tk()+'" placeholder="O que estudou, dúvidas para revisar, cargas do treino...">'+esc(notes[tk()]||'')+'</textarea></div>';
   var tm=addDays(d,1),ti=dayIdx(tm);
   h+='<div class="panel next"><h3>Amanhã · '+DAYS[ti]+'</h3><div class="list">'+(routine[ti].length?routine[ti].map(function(b){return blockHTML(b,tm)}).join(''):'<p class="empty">Nada planejado.</p>')+'</div></div>';
@@ -1212,9 +1423,9 @@ function renderSemana(){
 /* =========================================================
    TELA: TRILHA DO ENEM
    ========================================================= */
-var trailSel=load('trailSel',''),devSel=load('devSel','');
-function getSel(k){return k==='dev'?devSel:trailSel}
-function setSel(k,id){if(k==='dev'){devSel=id;rawSave('devSel',id)}else{trailSel=id;rawSave('trailSel',id)}}
+var trailSel=load('trailSel',''),devSel=load('devSel',''),ingSel=load('ingSel','');
+function getSel(k){return k==='dev'?devSel:k==='ing'?ingSel:trailSel}
+function setSel(k,id){if(k==='dev'){devSel=id;rawSave('devSel',id)}else if(k==='ing'){ingSel=id;rawSave('ingSel',id)}else{trailSel=id;rawSave('trailSel',id)}}
 function trailOrder(ids){
   var list=ids.map(function(id){return TOPICS[id]});
   if(load('trailMode','didatica')==='prioridade')list=list.slice().sort(function(a,b){return b.p-a.p||a.ord-b.ord});
@@ -1227,7 +1438,7 @@ function nextStep(ids){
   return null;
 }
 function matCoverage(m){var st=0,dom=0;m.ids.forEach(function(id){var s=tstate(id).s;if(s>=1)st++;if(s===3)dom++});return {total:m.ids.length,studied:st,mastered:dom}}
-function pill(t){var d=t.trilha==='dev';return t.p===3?'<span class="hot">'+(d?'essencial':'cai muito')+'</span>':t.p===1?'<span class="low">'+(d?'avançado':'cai pouco')+'</span>':''}
+function pill(t){var d=t.trilha!=='enem';return t.p===3?'<span class="hot">'+(d?'essencial':'cai muito')+'</span>':t.p===1?'<span class="low">'+(d?'avançado':'cai pouco')+'</span>':''}
 function topicRow(t,num,dueSet,isNext,showMod){
   var st=tstate(t.id);
   var h='<li class="topic s'+st.s+(isNext?' next':'')+'">';
@@ -1262,13 +1473,15 @@ function editRow(t,num,md){
 function addTopicForm(m,mod){
   return '<form class="addrow" data-addtopic="'+m.id+'" data-mod="'+esc(mod)+'"><label class="sr" for="at-'+esc(m.id+mod)+'">Novo tópico em '+esc(mod)+'</label>'+
     '<input id="at-'+esc(m.id+mod)+'" name="nome" maxlength="120" placeholder="Novo tópico nesta etapa" required>'+
-    (m.trilha==='dev'?'<select name="p" aria-label="Prioridade"><option value="2">Prioridade normal</option><option value="3">Essencial</option><option value="1">Avançado</option></select>':'<select name="p" aria-label="Incidência"><option value="2">Incidência normal</option><option value="3">Cai muito</option><option value="1">Cai pouco</option></select>')+
+    (m.trilha!=='enem'?'<select name="p" aria-label="Prioridade"><option value="2">Prioridade normal</option><option value="3">Essencial</option><option value="1">Avançado</option></select>':'<select name="p" aria-label="Incidência"><option value="2">Incidência normal</option><option value="3">Cai muito</option><option value="1">Cai pouco</option></select>')+
     '<button class="btn sm" type="submit">Adicionar</button></form>';
 }
 /* Textos que mudam entre a Trilha ENEM e a Trilha Dev */
 var TK={
  enem:{hotL:'Cai muito',byP:'Por incidência no ENEM',ordP:'Mais cobrados primeiro',
   hint:function(all,n){return all.studied+' de '+all.total+' tópicos estudados em '+n+' matérias. Cada trilha segue a ordem em que vale estudar: primeiro a base que as etapas seguintes usam. Os blocos de estudo da sua rotina sugerem sempre o próximo passo da trilha. Perto da prova, use "Mais cobrados primeiro". Para mudar o que estudar, abra uma trilha e clique em "Editar trilha".'}},
+ ing:{hotL:'Essenciais',byP:'Por prioridade',ordP:'Essenciais primeiro',
+  hint:function(all,n){return all.studied+' de '+all.total+' tópicos estudados em '+n+' assuntos. A ordem vai do básico ao avançado: a Gramática segue os níveis A1 a C2, então use "Já domino esta etapa" para pular o que você já sabe. Os tópicos essenciais são o núcleo para falar com naturalidade. As outras abas desta área (Palavras, Exercícios, Escrita, Conversa, Erros e Imersão) praticam o que a trilha ensina.'}},
  dev:{hotL:'Essenciais',byP:'Por prioridade',ordP:'Essenciais primeiro',
   hint:function(all,n){return all.studied+' de '+all.total+' tópicos estudados em '+n+' assuntos. A ordem vai do básico ao avançado e os blocos de Programação da sua rotina sugerem sempre o próximo passo. Já domina algo? Abra o assunto e use "Já domino esta etapa" para pular para o que falta. Os tópicos essenciais são o núcleo de quem quer trabalhar como fullstack.'}}
 };
@@ -1280,9 +1493,9 @@ function matCard(x){
   return h+'<button class="btn sm ghost" data-act="trail" data-k="'+x.trilha+'" data-m="'+x.id+'">Abrir trilha</button></div>';
 }
 function addMatFormHTML(kind){
-  var dev=kind==='dev',areas=dev?DEV_SYLLABUS:SYLLABUS;
-  var h='<form class="panel matcard newmat" id="addMatForm"><h3>Criar '+(dev?'assunto':'matéria')+'</h3><p class="hint" style="margin:0">'+(dev?'Para estudar algo que não está na trilha, como uma linguagem ou ferramenta nova.':'Para estudar algo que não está aqui, como Espanhol ou um conteúdo de vestibular específico.')+'</p>';
-  h+='<label class="f">Nome<input name="nome" maxlength="60" required placeholder="'+(dev?'Ex.: Go ou Rust':'Ex.: Espanhol')+'"></label>';
+  var dev=kind!=='enem',areas=kind==='dev'?DEV_SYLLABUS:kind==='ing'?ING_SYLLABUS:SYLLABUS;
+  var h='<form class="panel matcard newmat" id="addMatForm"><h3>Criar '+(dev?'assunto':'matéria')+'</h3><p class="hint" style="margin:0">'+(kind==='ing'?'Para estudar algo que não está na trilha, como um sotaque específico ou um tema do seu trabalho.':dev?'Para estudar algo que não está na trilha, como uma linguagem ou ferramenta nova.':'Para estudar algo que não está aqui, como Espanhol ou um conteúdo de vestibular específico.')+'</p>';
+  h+='<label class="f">Nome<input name="nome" maxlength="60" required placeholder="'+(kind==='ing'?'Ex.: Inglês para medicina':dev?'Ex.: Go ou Rust':'Ex.: Espanhol')+'"></label>';
   h+='<label class="f">Área<select name="area">'+areas.map(function(a){return '<option value="'+a.id+'">'+esc(a.nome)+'</option>'}).join('')+(dev?'':'<option value="out">Outras matérias</option>')+'</select></label>';
   return h+'<button class="btn sm" type="submit">Criar e adicionar tópicos</button></form>';
 }
@@ -1291,7 +1504,7 @@ function renderTrail(kind){
   var mats=MATERIAS.filter(function(x){return x.trilha===kind});
   var m=MATERIA[getSel(kind)]||null;if(m&&m.trilha!==kind)m=null;if(!m)trailEdit=false;
   var h='';
-  var navMats=kind==='dev'?(m?mats.filter(function(x){return x.area===m.area}):[]):mats;
+  var navMats=kind!=='enem'?(m?mats.filter(function(x){return x.area===m.area}):[]):mats;
   if(kind==='enem'||m){
     h+='<div class="chips trailnav" role="group" aria-label="Escolher matéria"><button class="chip" data-act="trail" data-k="'+kind+'" data-m="" aria-pressed="'+(!m)+'">Visão geral</button>';
     navMats.forEach(function(x){var c=matCoverage(x);h+='<button class="chip" data-act="trail" data-k="'+kind+'" data-m="'+x.id+'" aria-pressed="'+(m===x)+'">'+esc(x.nome)+' <small>'+c.studied+'/'+c.total+'</small></button>'});
@@ -1314,12 +1527,12 @@ function renderTrail(kind){
   if(!m){
     var all=areaCoverage(null,kind);
     h+='<p class="hint">'+K.hint(all,mats.length)+'</p>';
-    if(kind==='dev'){
-      DEV_SYLLABUS.forEach(function(a){
+    if(kind!=='enem'){
+      (kind==='ing'?ING_SYLLABUS:DEV_SYLLABUS).forEach(function(a){
         var ms=mats.filter(function(x){return x.area===a.id}),ac=areaCoverage(a.id);
         h+='<h3 class="areahead"><span class="sw" style="background:var('+a.cor+')"></span>'+esc(a.nome)+' <small>'+ac.studied+'/'+ac.total+'</small></h3><div class="matgrid">'+ms.map(matCard).join('')+'</div>';
       });
-      return h+'<div class="matgrid" style="margin-top:22px">'+addMatFormHTML('dev')+'</div>';
+      return h+'<div class="matgrid" style="margin-top:22px">'+addMatFormHTML(kind)+'</div>';
     }
     h+='<div class="matgrid">'+mats.map(matCard).join('')+addMatFormHTML('enem')+'</div>';
     return h;
@@ -1369,7 +1582,7 @@ function renderTrail(kind){
         if(passFilter(t,dueSet))rows+=topicRow(t,k,dueSet,nx&&nx.id===t.id,false);
       });
       if(!rows)return;any=true;
-      h+='<div class="stage"><div class="stage-h"><h3>Etapa '+(mi+1)+': '+esc(md.nome)+'</h3><span>'+ms+'/'+md.ids.length+(kind==='dev'?' · <button class="link no-print" data-act="stage-dom" data-m="'+m.id+'" data-mi="'+mi+'">Já domino esta etapa</button>':'')+'</span></div><ol class="topics">'+rows+'</ol></div>';
+      h+='<div class="stage"><div class="stage-h"><h3>Etapa '+(mi+1)+': '+esc(md.nome)+'</h3><span>'+ms+'/'+md.ids.length+(kind!=='enem'?' · <button class="link no-print" data-act="stage-dom" data-m="'+m.id+'" data-mi="'+mi+'">Já domino esta etapa</button>':'')+'</span></div><ol class="topics">'+rows+'</ol></div>';
     });
   }else{
     var rows2=trailOrder(m.ids).filter(function(t){return passFilter(t,dueSet)}).map(function(t,i){return topicRow(t,i+1,dueSet,nx&&nx.id===t.id,true)}).join('');
@@ -1677,7 +1890,7 @@ function computeRisk(){
   dueReviews().forEach(function(id){due[id]=1});
   var since14=dkey(addDays(today(),-13));
   return RISK_AREAS.map(function(a){
-    var area=areaById(a),list=TOPIC_LIST.filter(function(t){return t.area===a});
+    var area=areaById(a),list=TOPIC_LIST.filter(function(t){return t.area===a||(a==='ling'&&t.materia==='ing')});
     var W=[0,.4,.7,1],ws=0,wd=0,studied=0,hotPending=[],overdue=0;
     list.forEach(function(t){var s=tstate(t.id).s,w=t.hot?2:1;ws+=w;wd+=w*W[s];if(s>=1)studied++;if(t.hot&&s===0)hotPending.push(t.nome);if(due[t.id])overdue++});
     var comp={},why={};
@@ -1717,7 +1930,7 @@ function computeAlerts(R){
     var days=daysBetween(today(),pk(exam));
     if(days>0){
       var cut=dkey(addDays(today(),-27)),remaining=0,recent=0;
-      TOPIC_LIST.forEach(function(t){if(t.trilha!=='enem')return;var s=topics[t.id];if(!s)remaining++;else if(s.at&&s.at>=cut)recent++});
+      TOPIC_LIST.forEach(function(t){if(t.trilha!=='enem'&&t.materia!=='ing')return;var s=topics[t.id];if(!s)remaining++;else if(s.at&&s.at>=cut)recent++});
       var pace=recent/4,weeks=days/7;
       if(remaining>0){
         if(pace===0)out.push({lv:'high',t:'Nenhum tópico novo nas últimas 4 semanas. Faltam '+remaining+' tópicos e '+Math.floor(weeks)+' semanas até a prova: '+Math.ceil(remaining/Math.max(weeks,1))+' por semana.'});
@@ -1839,7 +2052,7 @@ function renderStats(){
 function render(){
   checkBadges();
   document.querySelectorAll('.tab').forEach(function(t){if(t.dataset.view===view)t.setAttribute('aria-current','page');else t.removeAttribute('aria-current')});
-  var V={hoje:renderHoje,semana:renderSemana,conteudo:renderConteudo,redacao:renderRedacao,progresso:renderProgresso,editar:renderEditar,conta:renderConta,diagnostico:renderDiagnostico,pratica:renderPratica,dev:renderDev,habitos:renderHabitos,treinos:renderTreinos};
+  var V={hoje:renderHoje,semana:renderSemana,conteudo:renderConteudo,redacao:renderRedacao,progresso:renderProgresso,editar:renderEditar,conta:renderConta,diagnostico:renderDiagnostico,pratica:renderPratica,dev:renderDev,habitos:renderHabitos,treinos:renderTreinos,ingles:renderIngles};
   document.getElementById('main').innerHTML=(V[view]||renderHoje)();
   renderStats();
   if(view==='conta')document.getElementById('syncBtn').setAttribute('aria-current','page');else document.getElementById('syncBtn').removeAttribute('aria-current');
@@ -1863,7 +2076,7 @@ var MOTIVO_DICA={
 var praticaTab=load('praticaTab','erros'),errFilter={mat:'',mot:'',st:'pend'};
 function matLabel(id){return MATERIA[id]?MATERIA[id].nome:((SUBJECTS[id]&&SUBJECTS[id].n)||'Outros')}
 function hm(m){m=Math.round(m);return Math.floor(m/60)+'h'+pad(m%60)}
-function errMaterias(){return MATERIAS.filter(function(m){return m.trilha==='enem'&&m.area!=='red'})}
+function errMaterias(){return MATERIAS.filter(function(m){return (m.trilha==='enem'&&m.area!=='red')||m.id==='ing'})}
 function errTopicOptions(mat){
   var m=MATERIA[mat],h='<option value="">Sem tópico definido</option>';
   if(m)m.mods.forEach(function(md){h+='<optgroup label="'+esc(md.nome)+'">'+md.ids.map(function(id){return '<option value="'+id+'">'+esc(TOPICS[id].nome)+'</option>'}).join('')+'</optgroup>'});
@@ -2168,13 +2381,26 @@ var BADGES=[
  {id:'agua7',n:'Hidratação em dia',d:'Bater a meta de água por 7 dias seguidos',f:function(c){return c.waterBest>=7}},
  {id:'agua30',n:'Água todo dia',d:'Bater a meta de água por 30 dias seguidos',f:function(c){return c.waterBest>=30}},
  {id:'tr1',n:'Primeiro treino',d:'Registrar um treino',f:function(c){return c.treinos>=1}},
- {id:'tr12',n:'12 treinos',d:'Registrar 12 treinos',f:function(c){return c.treinos>=12}}
+ {id:'tr12',n:'12 treinos',d:'Registrar 12 treinos',f:function(c){return c.treinos>=12}},
+ {id:'en1',n:'Primeira palavra',d:'Adicionar a primeira palavra ao vocabulário',f:function(c){return c.ing.vocN>=1}},
+ {id:'en100',n:'100 palavras',d:'Chegar a 100 palavras no vocabulário',f:function(c){return c.ing.vocN>=100}},
+ {id:'en500',n:'500 palavras',d:'Chegar a 500 palavras no vocabulário',f:function(c){return c.ing.vocN>=500}},
+ {id:'en1000',n:'1.000 palavras',d:'Chegar a 1.000 palavras no vocabulário',f:function(c){return c.ing.vocN>=1000}},
+ {id:'entop20',n:'Inglês em rota',d:'Estudar 20 tópicos da Trilha Inglês',f:function(c){return c.ing.top>=20}},
+ {id:'entest',n:'Ponto de partida',d:'Fazer o teste de nível',f:function(c){return c.ing.teste}},
+ {id:'enex1',n:'Treino com IA',d:'Concluir uma lista de exercícios',f:function(c){return c.ing.exN>=1}},
+ {id:'enwr1',n:'Primeiro texto',d:'Receber a correção de um texto',f:function(c){return c.ing.wrN>=1}},
+ {id:'enchat1',n:'Primeira conversa',d:'Encerrar uma conversa em inglês',f:function(c){return c.ing.chatN>=1}},
+ {id:'ens7',n:'Inglês toda semana',d:'7 dias seguidos com 10 min de inglês',f:function(c){return c.ing.ingS>=7}},
+ {id:'ens30',n:'Imersão de verdade',d:'30 dias seguidos com 10 min de inglês',f:function(c){return c.ing.ingS>=30}},
+ {id:'enh10',n:'10 horas de inglês',d:'Registrar 10 horas de imersão',f:function(c){return c.ing.ingH>=10}},
+ {id:'enh100',n:'100 horas de inglês',d:'Registrar 100 horas de imersão',f:function(c){return c.ing.ingH>=100}}
 ];
 function badgeCtx(){
   var cov=areaCoverage(),revs=0,fm=0;
   Object.keys(daylog).forEach(function(k){revs+=daylog[k].r||0});
   Object.keys(focus).forEach(function(k){fm+=focus[k]||0});
-  return {studied:cov.studied,mastered:cov.mastered,devStudied:areaCoverage(null,'dev').studied,waterBest:waterBestRun(),treinos:wlog.length,streak:Math.max(load('best',0),streakNow()),revs:revs,focusH:fm/60,errs:errs.length,errFixed:errs.filter(function(e){return e.ok}).length,simCron:sims.filter(function(s){return s.cron}).length,essays:essays.length,goalsHit:goalsHit()};
+  return {ing:ingBadgeCtx(),studied:cov.studied,mastered:cov.mastered,devStudied:areaCoverage(null,'dev').studied,waterBest:waterBestRun(),treinos:wlog.length,streak:Math.max(load('best',0),streakNow()),revs:revs,focusH:fm/60,errs:errs.length,errFixed:errs.filter(function(e){return e.ok}).length,simCron:sims.filter(function(s){return s.cron}).length,essays:essays.length,goalsHit:goalsHit()};
 }
 function checkBadges(){
   var c=badgeCtx(),fresh=[];
@@ -2797,6 +3023,832 @@ function trChange(el){
 }
 
 /* =========================================================
+   TELA: INGLÊS (trilha + prática)
+   Painel, Trilha, Palavras, Exercícios, Escrita, Conversa, Erros e Imersão.
+   Guarda na nuvem: ingCfg, vocab, ingEx, ingErr, ingLog, ingWr.
+   Fica só neste aparelho: a conversa em andamento, a lista de exercícios aberta e rascunhos.
+   ========================================================= */
+var ING_NIV=['A1','A2','B1','B2','C1','C2'];
+var ING_NIV_TXT={A1:'Iniciante',A2:'Básico',B1:'Intermediário',B2:'Intermediário avançado',C1:'Avançado',C2:'Quase nativo'};
+// Referência da Cambridge: horas de aprendizado guiado, a partir do zero (valores aproximados)
+var ING_HORAS={A2:[180,200],B1:[350,400],B2:[500,600],C1:[700,800],C2:[1000,1200]};
+var ING_SK=[['o','Ouvir'],['f','Falar'],['l','Ler'],['e','Escrever'],['v','Vocabulário e gramática']];
+var ING_BOX=[1,2,4,8,16,35,70];
+var ING_MARCOS=[100,500,1000,2000,3000,5000,8000];
+var ING_TABS=[['painel','Painel'],['trilha','Trilha'],['palavras','Palavras'],['exercicios','Exercícios'],['escrita','Escrita'],['conversa','Conversa'],['erros','Erros'],['imersao','Imersão']];
+var ING_FOCOS=[['misto','Misto'],['vocabulario','Vocabulário'],['gramatica','Gramática'],['lacunas','Completar lacunas'],['compreensao','Compreensão de texto'],['listening','Compreensão auditiva (listening)'],['traducao','Tradução do português para o inglês'],['ordem','Ordenar palavras'],['erros','Corrigir frases com erro']];
+var ING_OBJ=['Diário','E-mail formal','Mensagem informal','Texto de opinião','Currículo ou LinkedIn','Livre'];
+var ING_CEN=['Conversa livre','Pedir comida em um restaurante','Entrevista de emprego','Aeroporto e viagem','Small talk com um colega novo','Consulta médica','Reunião de trabalho','Hotel e check-in','Comprar roupas'];
+var ingTab=load('ingTab','painel'),vocQ='',vocFilter='todas',vocLimit=40,vocSeq=0;
+var vocRev=null,vocSug=[],ierRev=null,ierFilter='todas';
+var iexSess=load('ingSess',null),iexForm={foco:'misto',tema:'',nivel:'',qtd:8,pal:true,err:false};
+var iwrRes=null,chat=load('ingChat',null),chatBusyMsg='';
+var ingBusy='',ingMsg='';
+
+function ingC(){
+  var c=ingCfg||{};
+  return {nivel:ING_NIV.indexOf(c.nivel)>=0?c.nivel:'A2',alvo:ING_NIV.indexOf(c.alvo)>=0?c.alvo:'C1',meta:c.meta>0?c.meta:210,sotaque:c.sotaque==='uk'?'uk':'us',chats:c.chats||0,teste:c.teste||''};
+}
+function ingCfgSave(patch){var c=ingC();Object.keys(patch).forEach(function(k){c[k]=patch[k]});ingCfg=c;save('ingCfg',c)}
+function ingNivIdx(n){return ING_NIV.indexOf(n)}
+
+/* ---------- voz (síntese do navegador) ---------- */
+function ingSay(txt,slow){
+  try{
+    if(!window.speechSynthesis||!txt)return false;
+    speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(String(txt).slice(0,1500)),lang=ingC().sotaque==='uk'?'en-GB':'en-US',vs=speechSynthesis.getVoices()||[],v=null;
+    u.lang=lang;u.rate=slow?.7:.95;
+    for(var i=0;i<vs.length&&!v;i++)if(vs[i].lang===lang||vs[i].lang.replace('_','-')===lang)v=vs[i];
+    for(var j=0;j<vs.length&&!v;j++)if(vs[j].lang.indexOf('en')===0)v=vs[j];
+    if(v)u.voice=v;
+    speechSynthesis.speak(u);return true;
+  }catch(e){return false}
+}
+function sayBtn(txt,label,slow){return '<button type="button" class="link no-print" data-act="ing-say" data-say="'+esc(txt)+'"'+(slow?' data-slow="1"':'')+'>'+(label||'Ouvir')+'</button>'}
+
+/* ---------- chamada à IA ---------- */
+async function ingCall(payload){
+  if(!sb||!user)throw new Error('Entre na sua conta (botão no menu) para usar a IA.');
+  var s=(await sb.auth.getSession()).data.session;
+  if(!s)throw new Error('Sua sessão expirou. Entre de novo na sua conta.');
+  var r=await fetch('/api/ingles',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.access_token},body:JSON.stringify(payload)});
+  var data=await r.json().catch(function(){return {}});
+  if(!r.ok)throw new Error(data.erro||(r.status===404?'A função /api/ingles não foi encontrada. Envie o arquivo api/ingles.js ao GitHub e espere o deploy terminar.':'Erro '+r.status+' na IA.'));
+  return data;
+}
+
+/* ---------- banco de palavras ---------- */
+function vocId(){return 'v'+Date.now().toString(36)+(vocSeq++).toString(36)+Math.random().toString(36).slice(2,4)}
+function vocNorm(w){return String(w||'').toLowerCase().replace(/[’‘]/g,"'").replace(/\s+/g,' ').trim()}
+function vocFind(w){var n=vocNorm(w);for(var i=0;i<vocab.length;i++)if(vocNorm(vocab[i].w)===n)return vocab[i];return null}
+function vocSave(){save('vocab',vocab)}
+function vocAdd(o,known){
+  var w=String(o.w||'').trim().slice(0,60);if(!w||vocFind(w))return null;
+  var x={i:vocId(),w:w,t:String(o.t||'').trim().slice(0,120),e:String(o.e||'').trim().slice(0,200),c:String(o.c||'').trim().slice(0,24),ipa:String(o.ipa||'').trim().slice(0,40),k:known?1:0,b:0,d:known?'':tk(),a:tk(),n:0,f:0};
+  vocab.push(x);return x;
+}
+function vocDue(){var t=tk();return vocab.filter(function(x){return x.k!==1&&(x.d||t)<=t}).sort(function(a,b){return (a.d||'')<(b.d||'')?-1:(a.d||'')>(b.d||'')?1:(a.b||0)-(b.b||0)})}
+function vocStats(){
+  var k=0,l=0,m=0,due=0,rev=0,t=tk();
+  vocab.forEach(function(x){if(x.k===1)k++;else{l++;if((x.b||0)>=4)m++;if((x.d||t)<=t)due++}if(x.l===t)rev++});
+  return {total:vocab.length,known:k,learning:l,mastered:m,due:due,revToday:rev,size:k+m};
+}
+function vocGrade(x,g){
+  x.n=(x.n||0)+1;x.l=tk();
+  if(g===0){x.f=(x.f||0)+1;x.b=Math.max(0,(x.b||0)-2);x.d=dkey(addDays(today(),1))}
+  else{x.b=Math.min(6,(x.b||0)+(g===2?2:1));x.d=dkey(addDays(today(),ING_BOX[Math.max(0,Math.min(6,x.b-1))]))}
+}
+function vocParse(txt){
+  var out=[],seen={};
+  String(txt||'').split(/\r?\n/).forEach(function(line){
+    line=line.trim();if(!line)return;
+    var sep=/\s+[-–—]\s+|\t|;|=|\s*->\s*|\s:\s/.exec(line);
+    var parts=[];
+    if(sep){parts.push({w:line.slice(0,sep.index),t:line.slice(sep.index+sep[0].length)})}
+    else if(line.indexOf(',')>=0&&line.split(',').length>1&&line.length<400){line.split(',').forEach(function(p){parts.push({w:p,t:''})})}
+    else parts.push({w:line,t:''});
+    parts.forEach(function(p){
+      var w=p.w.replace(/^\s*(?:[-*\u2022]\s+|\d+[.)]\s+)/,'').trim();
+      if(!w||w.length>60)return;
+      var n=vocNorm(w);if(seen[n])return;seen[n]=1;
+      out.push({w:w,t:p.t.trim()});
+    });
+  });
+  return out.slice(0,600);
+}
+
+/* ---------- caderno de erros ---------- */
+function ierId(){return 'x'+Date.now().toString(36)+(vocSeq++).toString(36)+Math.random().toString(36).slice(2,4)}
+function ierAdd(o){
+  var key=(String(o.p)+'|'+String(o.a)).toLowerCase().trim();
+  for(var i=0;i<ingErr.length;i++)if((ingErr[i].p+'|'+ingErr[i].a).toLowerCase().trim()===key)return false;
+  ingErr.push({i:ierId(),date:tk(),cat:String(o.cat||'geral').slice(0,40),p:String(o.p).slice(0,300),a:String(o.a).slice(0,300),y:String(o.y||'').slice(0,400),src:o.src||'',b:0,d:tk()});
+  return true;
+}
+function ierDue(){var t=tk();return ingErr.filter(function(e){return (e.b||0)<5&&(e.d||t)<=t})}
+function ierGrade(e,ok){
+  e.n=(e.n||0)+1;e.l=tk();
+  if(!ok){e.b=Math.max(0,(e.b||0)-2);e.d=dkey(addDays(today(),1))}
+  else{e.b=Math.min(6,(e.b||0)+1);e.d=dkey(addDays(today(),ING_BOX[Math.max(0,Math.min(6,e.b-1))]))}
+}
+function ierCats(){
+  var c={};ingErr.forEach(function(e){if((e.b||0)<5)c[e.cat]=(c[e.cat]||0)+1});
+  return Object.keys(c).map(function(k){return [k,c[k]]}).sort(function(a,b){return b[1]-a[1]});
+}
+
+/* ---------- imersão ---------- */
+function ingLogAdd(sk,min,nota,date){
+  min=clamp(min,1,600);if(!min||!ING_SK.some(function(s){return s[0]===sk}))return false;
+  ingLog.push({id:uid(),date:date||tk(),sk:sk,min:min,n:String(nota||'').trim().slice(0,100)});
+  save('ingLog',ingLog);return true;
+}
+function ingDayMap(){var m={};ingLog.forEach(function(e){m[e.date]=(m[e.date]||0)+e.min});return m}
+function ingStreak(){
+  var m=ingDayMap(),d=today(),n=0;
+  if((m[dkey(d)]||0)<10)d=addDays(d,-1);
+  while((m[dkey(d)]||0)>=10){n++;d=addDays(d,-1)}
+  return n;
+}
+function ingBestStreak(){
+  var m=ingDayMap(),ks=Object.keys(m).filter(function(k){return m[k]>=10}).sort(),best=0,run=0,prev=null;
+  ks.forEach(function(k){run=prev&&daysBetween(pk(prev),pk(k))===1?run+1:1;if(run>best)best=run;prev=k});
+  return best;
+}
+function ingRange(from,to){
+  var by={o:0,f:0,l:0,e:0,v:0},tot=0;
+  ingLog.forEach(function(e){if(e.date>=from&&e.date<=to){by[e.sk]=(by[e.sk]||0)+e.min;tot+=e.min}});
+  return {by:by,tot:tot};
+}
+function ingWeek(off){var mon=addDays(mondayOf(new Date()),(off||0)*7);return ingRange(dkey(mon),dkey(addDays(mon,6)))}
+function ingTotalH(){var s=0;ingLog.forEach(function(e){s+=e.min});return s/60}
+function ingBalance(){
+  var r=ingRange(dkey(addDays(today(),-13)),tk()),out=[];
+  if(r.tot<60)return out;
+  var dicas={o:'Ouvir é o que treina o ouvido para a fala real: coloque podcasts e séries em inglês.',f:'Falar só melhora falando: use a aba Conversa, grave a própria voz ou marque uma troca de idiomas.',l:'Ler em volume constrói vocabulário e gramática sem esforço: escolha textos que você entende em cerca de 95%.',e:'Escrever com correção é o jeito mais rápido de achar seus erros: use a aba Escrita.',v:'Falta estudo explícito de palavras e gramática: revise as palavras e avance na trilha.'};
+  ING_SK.forEach(function(s){
+    var p=r.by[s[0]]/r.tot;
+    if(p<.08)out.push({sk:s[0],t:'Você dedicou pouco tempo a "'+s[1].toLowerCase()+'" nas últimas 2 semanas ('+Math.round(r.by[s[0]])+' min de '+Math.round(r.tot)+'). '+dicas[s[0]]});
+  });
+  return out.slice(0,2);
+}
+
+/* ---------- próximo passo e missão de hoje ---------- */
+function ingNextTopic(){
+  var c=ingC(),g=MATERIA['en-gram'];
+  if(g){
+    var order=[],ni=ingNivIdx(c.nivel);
+    g.mods.forEach(function(md){var mi=ingNivIdx(md.nome.slice(0,2));order.push({md:md,d:mi<0?9:(mi<ni?100+(ni-mi):mi-ni)})});
+    order.sort(function(a,b){return a.d-b.d});
+    for(var i=0;i<order.length;i++){
+      var ids=order[i].md.ids;
+      for(var j=0;j<ids.length;j++)if(tstate(ids[j]).s===0)return TOPICS[ids[j]];
+    }
+  }
+  var rest=TOPIC_LIST.filter(function(t){return t.trilha==='ing'&&t.materia!=='ing'&&tstate(t.id).s===0});
+  return rest.length?rest[0]:null;
+}
+function ingStudiedToday(){var t=tk(),n=0;TOPIC_LIST.forEach(function(x){if(x.trilha==='ing'&&topics[x.id]&&topics[x.id].at===t)n++});return n}
+function ingMission(){
+  var t=tk(),vs=vocStats(),dayMin=ingDayMap()[t]||0,out=[],nx=ingNextTopic();
+  if(vs.due>0||vs.revToday>0)out.push({done:vs.due===0,txt:vs.due>0?'Revisar '+vs.due+(vs.due===1?' palavra':' palavras'):'Palavras revisadas hoje: '+vs.revToday,act:'ing-go',v:'palavras'});
+  var er=ierDue().length;
+  if(er>0)out.push({done:false,txt:'Revisar '+er+(er===1?' erro':' erros')+' do seu caderno',act:'ing-go',v:'erros'});
+  if(nx)out.push({done:ingStudiedToday()>0,txt:'Estudar na trilha: '+nx.nome,act:'ing-open-topic',v:nx.id});
+  out.push({done:ingEx.some(function(e){return e.date===t}),txt:'Fazer uma lista de exercícios com IA',act:'ing-go',v:'exercicios'});
+  if(!ingWr.some(function(e){return e.date>=dkey(addDays(today(),-2))}))out.push({done:false,txt:'Escrever 5 linhas e receber a correção',act:'ing-go',v:'escrita'});
+  var wk=ingWeek(0);
+  if(!wk.by.f)out.push({done:false,txt:'Praticar fala esta semana (conversa com IA ou voz alta)',act:'ing-go',v:'conversa'});
+  out.push({done:dayMin>=10,txt:dayMin>=10?'Imersão de hoje: '+dayMin+' min':'Registrar sua imersão de hoje (ouvir, ler, falar)',act:'ing-go',v:'imersao'});
+  return out;
+}
+
+/* ---------- telas ---------- */
+function ingBusyHTML(){return ingBusy?'<p class="aiwait" role="status">Trabalhando com a IA, isso leva alguns segundos...</p>':''}
+function ingErrHTML(){return ingMsg?'<div class="alerts"><ul class="alerts"><li class="crit" role="alert">'+esc(ingMsg)+'</li></ul></div>':''}
+function nivSelect(name,cur,withAuto){
+  return '<select name="'+name+'">'+(withAuto?'<option value="">Meu nível ('+ingC().nivel+')</option>':'')+ING_NIV.map(function(n){return '<option value="'+n+'"'+(n===cur?' selected':'')+'>'+n+' · '+ING_NIV_TXT[n]+'</option>'}).join('')+'</select>';
+}
+function renderIngles(){
+  if(ING_TABS.map(function(t){return t[0]}).indexOf(ingTab)<0)ingTab='painel';
+  var h='<div class="stack"><div class="chips" role="group" aria-label="Seções de inglês">'+ING_TABS.map(function(t){
+    var badge='';
+    if(t[0]==='palavras'){var d=vocStats().due;if(d)badge=' <small>'+d+'</small>'}
+    if(t[0]==='erros'){var e=ierDue().length;if(e)badge=' <small>'+e+'</small>'}
+    return '<button class="chip" data-act="ing-tab" data-v="'+t[0]+'" aria-pressed="'+(ingTab===t[0])+'">'+t[1]+badge+'</button>';
+  }).join('')+'</div>';
+  var f={painel:ingPainel,trilha:function(){return renderTrail('ing')},palavras:ingPalavras,exercicios:ingExercicios,escrita:ingEscrita,conversa:ingConversa,erros:ingErros,imersao:ingImersao}[ingTab];
+  return h+f()+'</div>';
+}
+
+/* Painel */
+function ingCfgForm(first){
+  var c=ingC();
+  var h='<form class="panel form" id="ingCfgForm"><h3>'+(first?'Vamos começar: seu ponto de partida':'Configurações do inglês')+'</h3>';
+  if(first)h+='<p class="hint" style="margin:0">Escolha o nível que você acha que tem hoje e a meta. Dá para mudar a qualquer momento. Sem certeza do nível? Salve e faça o teste de nível na aba Exercícios.</p>';
+  h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Nível atual'+nivSelect('nivel',c.nivel)+'</label><label class="f">Nível que quero alcançar'+nivSelect('alvo',c.alvo)+'</label></div>';
+  h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Meta semanal de imersão (minutos)<input type="number" name="meta" min="30" max="3000" step="10" inputmode="numeric" value="'+c.meta+'" required></label>';
+  h+='<label class="f">Sotaque da voz<select name="sotaque"><option value="us"'+(c.sotaque==='us'?' selected':'')+'>Americano</option><option value="uk"'+(c.sotaque==='uk'?' selected':'')+'>Britânico</option></select></label></div>';
+  return h+'<div><button class="btn sm" type="submit">'+(first?'Começar':'Salvar')+'</button></div></form>';
+}
+function ingPainel(){
+  var c=ingC(),vs=vocStats(),cov=areaCoverage(null,'ing'),wk=ingWeek(0),h='';
+  if(!ingCfg)h+=ingCfgForm(true);
+  var mi=ingMission();
+  h+='<div class="panel"><h3>Missão de hoje</h3><ul class="plan mission">'+mi.map(function(m){
+    return '<li class="'+(m.done?'done':'')+'"><span class="mk" aria-hidden="true">'+(m.done?'✓':'')+'</span><span class="mt">'+esc(m.txt)+'</span>'+(m.done?'<span class="sr">feito</span>':'<button class="btn sm ghost" data-act="'+m.act+'" data-v="'+esc(m.v)+'" aria-label="Abrir: '+esc(m.txt)+'">Abrir</button>')+'</li>';
+  }).join('')+'</ul><p class="hint" style="margin:8px 0 0">A missão se adapta ao seu dia. Não precisa fazer tudo: 30 minutos bem distribuídos entre ouvir, falar, ler e escrever valem mais que 3 horas de uma coisa só.</p></div>';
+  var bal=ingBalance();
+  if(bal.length)h+='<div class="alerts"><ul class="alerts">'+bal.map(function(b){return '<li class="high">⚠️ '+esc(b.t)+'</li>'}).join('')+'</ul></div>';
+  var tgt=ING_HORAS[c.alvo],hrs=ingTotalH();
+  h+='<div class="statsgrid"><div class="panel"><h3>Seu nível</h3><p class="bignum">'+c.nivel+' <small>→ '+c.alvo+'</small></p><p class="hint" style="margin:0 0 8px">'+ING_NIV_TXT[c.nivel]+' hoje. Meta: '+ING_NIV_TXT[c.alvo].toLowerCase()+'.</p>';
+  if(tgt){
+    var p=Math.min(100,Math.round(hrs/tgt[1]*100));
+    h+='<div class="progress" role="progressbar" aria-label="Horas registradas" aria-valuenow="'+p+'" aria-valuemin="0" aria-valuemax="100" style="margin-bottom:6px"><i style="width:'+p+'%;background:var(--a-ling)"></i></div>';
+    h+='<p class="hint" style="margin:0">'+hm(hrs*60)+' registradas. A Cambridge estima de '+tgt[0]+' a '+tgt[1]+' horas de estudo guiado, a partir do zero, para chegar ao '+c.alvo+'. É só uma referência: depende do método, da intensidade e do que você já sabe.</p>';
+  }
+  h+='<button class="link" data-act="ing-go" data-v="exercicios" style="margin-top:8px">Fazer o teste de nível</button>';
+  h+='</div><div class="panel"><h3>Esta semana</h3><p class="bignum">'+Math.round(wk.tot)+' <small>de '+c.meta+' min · '+Math.min(100,Math.round(wk.tot/c.meta*100))+'%</small></p>';
+  h+='<div class="progress" role="progressbar" aria-label="Meta semanal de imersão" aria-valuenow="'+Math.min(100,Math.round(wk.tot/c.meta*100))+'" aria-valuemin="0" aria-valuemax="100" style="margin-bottom:10px"><i style="width:'+Math.min(100,Math.round(wk.tot/c.meta*100))+'%;background:var(--est)"></i></div>';
+  h+='<div class="split"><div class="row"><span>Dias seguidos (10 min ou mais)</span><span>'+ingStreak()+'</span></div><div class="row"><span>Palavras que você conhece</span><span>'+vs.size+'</span></div><div class="row"><span>Tópicos da trilha estudados</span><span>'+cov.studied+'/'+cov.total+'</span></div><div class="row"><span>Erros no caderno</span><span>'+ingErr.filter(function(e){return (e.b||0)<5}).length+'</span></div></div></div></div>';
+  h+='<div class="panel"><h3>Como usar esta área</h3><ol class="plan"><li><b>Trilha:</b> o currículo completo, de A1 a C2. Marque o que você já domina para pular direto ao que falta.</li><li><b>Palavras:</b> registre o que você já conhece e o que está aprendendo. As palavras novas voltam para revisão no momento certo.</li><li><b>Exercícios:</b> a IA cria listas sob medida, com as suas palavras e os seus erros.</li><li><b>Escrita e Conversa:</b> a IA corrige o que você escreve e conversa com você em inglês.</li><li><b>Erros:</b> tudo que você erra vira cartão de revisão, sem esforço.</li><li><b>Imersão:</b> registre o tempo que você ouve, fala, lê e escreve. Fluência vem de volume e constância.</li></ol>';
+  h+='<p class="hint" style="margin:8px 0 0">As funções com IA precisam de login. O banco de palavras, a trilha, os erros e a imersão funcionam sem internet.</p></div>';
+  if(ingCfg)h+=ingCfgForm(false);
+  return h;
+}
+
+/* Palavras */
+function ingPalavras(){
+  var vs=vocStats(),h='';
+  var next=ING_MARCOS.filter(function(m){return m>vs.size})[0]||ING_MARCOS[ING_MARCOS.length-1],prev=ING_MARCOS.filter(function(m){return m<=vs.size}).pop()||0;
+  var pr=next>prev?Math.min(100,Math.round((vs.size-prev)/(next-prev)*100)):100;
+  h+='<div class="panel"><h3>Seu vocabulário</h3><p class="bignum">'+vs.size+' <small>palavras que você conhece</small></p>';
+  h+='<div class="progress" role="progressbar" aria-label="Próximo marco de vocabulário" aria-valuenow="'+pr+'" aria-valuemin="0" aria-valuemax="100" style="margin-bottom:6px"><i style="width:'+pr+'%;background:var(--a-nat)"></i></div>';
+  h+='<p class="hint" style="margin:0 0 10px">Próximo marco: '+next+' palavras.</p>';
+  h+='<div class="split"><div class="row"><span>Já conheço</span><span>'+vs.known+'</span></div><div class="row"><span>Aprendendo (dominadas: '+vs.mastered+')</span><span>'+vs.learning+'</span></div><div class="row"><span>Para revisar hoje</span><span>'+vs.due+'</span></div></div>';
+  h+='<p class="hint" style="margin:10px 0 0">Conta as palavras marcadas como "já conheço" mais as aprendidas e dominadas. Pesquisas de Paul Nation indicam cerca de 8.000 a 9.000 famílias de palavras para ler textos sem dicionário (98% de cobertura) e 6.000 a 7.000 para acompanhar a fala. Os números são aproximados, e uma família agrupa formas como run, runs e running.</p></div>';
+
+  /* revisão */
+  if(vocRev){h+=vocRevPanel()}
+  else{
+    h+='<div class="panel"><h3>Revisão de hoje</h3>';
+    if(vs.due){
+      h+='<p style="margin:0 0 10px">'+vs.due+(vs.due===1?' palavra espera':' palavras esperam')+' revisão.</p><div class="chips"><button class="btn sm" data-act="ing-voc-start" data-dir="en">Revisar (inglês → português)</button><button class="btn sm ghost" data-act="ing-voc-start" data-dir="pt">Lembrar em inglês (português → inglês)</button></div>';
+    }else h+='<p class="empty" style="margin:0">'+(vs.learning?'Nada para revisar hoje. Volte amanhã ou adicione palavras novas.':'Adicione palavras que você quer aprender para começar as revisões.')+'</p>';
+    h+='</div>';
+  }
+
+  /* adicionar */
+  h+='<div class="statsgrid"><form class="panel form" id="vocForm"><h3>Adicionar uma palavra</h3><div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Palavra ou expressão<input name="w" maxlength="60" required autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ex.: reliable"></label><label class="f">Tradução (opcional)<input name="t" maxlength="120" autocomplete="off" placeholder="Ex.: confiável"></label></div>';
+  h+='<label class="f">Frase de exemplo (opcional)<input name="e" maxlength="200" autocomplete="off" placeholder="Ex.: She is a reliable friend."></label>';
+  h+='<label class="f">Status<select name="modo"><option value="aprender">Quero aprender</option><option value="conheco">Já conheço</option></select></label><div><button class="btn sm" type="submit">Adicionar</button></div></form>';
+
+  h+='<form class="panel form" id="vocBulkForm"><h3>Adicionar várias de uma vez</h3><p class="hint" style="margin:0">Cole uma palavra por linha, ou no formato "palavra - tradução". Serve para registrar de uma vez tudo que você já conhece.</p>';
+  h+='<label class="f"><span class="sr">Lista de palavras</span><textarea name="lista" style="min-height:96px" placeholder="apple&#10;improve - melhorar&#10;get along with - dar-se bem com" required></textarea></label>';
+  h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Status<select name="modo"><option value="conheco">Já conheço</option><option value="aprender">Quero aprender</option></select></label><label class="f">Completar com IA<select name="ia"><option value="">Não</option><option value="1">Sim: tradução, exemplo e pronúncia</option></select></label></div>';
+  h+='<div><button class="btn sm" type="submit">Adicionar à lista</button></div></form></div>';
+
+  /* sugestões por IA */
+  h+='<div class="panel"><h3>Palavras sugeridas pela IA</h3><form class="form" id="vocSugForm"><div class="row2" style="grid-template-columns:2fr 1fr auto;align-items:end"><label class="f">Tema<input name="tema" maxlength="80" required placeholder="Ex.: viagem, trabalho, tecnologia, cozinha" value=""></label><label class="f">Nível'+nivSelect('nivel',ingC().nivel)+'</label><button class="btn sm" type="submit"'+(ingBusy?' disabled':'')+'>Sugerir</button></div></form>';
+  if(ingBusy==='sug')h+=ingBusyHTML();
+  if(ingTab==='palavras')h+=ingErrHTML();
+  if(vocSug.length){
+    h+='<ul class="sug">'+vocSug.map(function(s,i){
+      return '<li><div class="sw2"><b>'+esc(s.w)+'</b>'+(s.c?' <small>'+esc(s.c)+'</small>':'')+(s.ipa?' <small>'+esc(s.ipa)+'</small>':'')+'<br><span>'+esc(s.t)+'</span>'+(s.e?'<br><em>'+esc(s.e)+'</em>':'')+'</div><div class="chips">'+sayBtn(s.w)+'<button class="chip" data-act="ing-sug" data-i="'+i+'" data-v="learn">Quero aprender</button><button class="chip" data-act="ing-sug" data-i="'+i+'" data-v="know">Já conheço</button><button class="chip" data-act="ing-sug" data-i="'+i+'" data-v="skip">Pular</button></div></li>';
+    }).join('')+'</ul><div class="chips" style="margin-top:8px"><button class="btn sm ghost" data-act="ing-sug-all">Adicionar todas para aprender</button><button class="btn sm ghost" data-act="ing-sug-clear">Limpar sugestões</button></div>';
+  }else if(!ingBusy)h+='<p class="hint" style="margin:8px 0 0">Peça uma lista por tema e decida palavra por palavra: o que você já conhece vai direto para o seu vocabulário, o resto entra nas revisões.</p>';
+  h+='</div>';
+
+  /* lista */
+  var sem=vocab.filter(function(x){return !x.t}).length;
+  h+='<div class="panel"><h3>Minhas palavras <small style="font-size:14px;color:var(--ink-soft)">'+vocab.length+'</small></h3>';
+  h+='<div class="chips" role="group" aria-label="Filtrar palavras">'+[['todas','Todas'],['revisar','Para revisar'],['aprendendo','Aprendendo'],['conheco','Já conheço']].map(function(f){return '<button class="chip" data-act="ing-voc-filter" data-v="'+f[0]+'" aria-pressed="'+(vocFilter===f[0])+'">'+f[1]+'</button>'}).join('')+'</div>';
+  h+='<label class="sr" for="vocSearch">Buscar palavra</label><input id="vocSearch" type="search" placeholder="Buscar palavra ou tradução" value="'+esc(vocQ)+'" style="margin:10px 0" autocomplete="off">';
+  var t=tk(),q=vocNorm(vocQ);
+  var list=vocab.filter(function(x){
+    if(vocFilter==='revisar'&&!(x.k!==1&&(x.d||t)<=t))return false;
+    if(vocFilter==='aprendendo'&&x.k===1)return false;
+    if(vocFilter==='conheco'&&x.k!==1)return false;
+    if(q&&vocNorm(x.w).indexOf(q)<0&&vocNorm(x.t).indexOf(q)<0)return false;
+    return true;
+  }).reverse();
+  if(!list.length)h+='<p class="empty">'+(vocab.length?'Nenhuma palavra neste filtro.':'Seu banco ainda está vazio.')+'</p>';
+  else{
+    h+='<ul class="words">'+list.slice(0,vocLimit).map(function(x){
+      return '<li class="'+(x.k===1?'known':'')+'"><div class="wmain"><b>'+esc(x.w)+'</b>'+(x.c?' <small>'+esc(x.c)+'</small>':'')+(x.ipa?' <small>'+esc(x.ipa)+'</small>':'')+(x.t?'<span class="wt">'+esc(x.t)+'</span>':'<span class="wt miss">sem tradução</span>')+(x.e?'<em>'+esc(x.e)+'</em>':'')+'<small class="wst">'+(x.k===1?'Já conheço':'Aprendendo · nível '+((x.b||0)+1)+' de 7'+((x.d||t)<=t?' · para revisar':' · próxima '+shortDate(x.d)))+'</small></div><div class="chips">'+sayBtn(x.w)+'<button class="link no-print" data-act="ing-voc-toggle" data-id="'+esc(x.i)+'">'+(x.k===1?'Voltar a aprender':'Já conheço')+'</button><button class="link no-print" data-act="ing-voc-del" data-id="'+esc(x.i)+'">Apagar</button></div></li>';
+    }).join('')+'</ul>';
+    if(list.length>vocLimit)h+='<button class="btn sm ghost" data-act="ing-voc-more" style="margin-top:8px">Mostrar mais ('+(list.length-vocLimit)+')</button>';
+  }
+  if(sem)h+='<div style="margin-top:10px"><button class="btn sm ghost" data-act="ing-voc-fill"'+(ingBusy?' disabled':'')+'>Completar '+Math.min(sem,25)+' sem tradução com IA</button></div>';
+  return h+'</div>';
+}
+function vocRevPanel(){
+  var r=vocRev,id=r.q[r.i],x=vocab.filter(function(v){return v.i===id})[0];
+  if(!x||r.i>=r.q.length){
+    return '<div class="panel"><h3>Revisão concluída</h3><p class="bignum">'+r.ok+' <small>de '+r.done+' lembradas</small></p><p class="hint">Quem errou volta amanhã; quem acertou volta em intervalos cada vez maiores.</p><button class="btn sm" data-act="ing-voc-end">Fechar</button></div>';
+  }
+  var pt=r.dir==='pt',h='<div class="panel flash"><h3>Revisão <small style="font-size:14px;color:var(--ink-soft)">'+(r.i+1)+' de '+r.q.length+'</small></h3>';
+  h+='<div class="card-front">'+(pt?'<span class="wt big">'+esc(x.t||'(sem tradução: veja o exemplo)')+'</span>':'<b class="big">'+esc(x.w)+'</b>'+(x.ipa?'<small>'+esc(x.ipa)+'</small>':''))+'</div>';
+  if(!r.shown)h+='<div class="chips" style="justify-content:center">'+(pt?'':sayBtn(x.w))+'<button class="btn sm" data-act="ing-voc-show">Mostrar resposta</button></div>';
+  else{
+    h+='<div class="card-back">'+(pt?'<b class="big">'+esc(x.w)+'</b>'+(x.ipa?'<small>'+esc(x.ipa)+'</small>':''):'<span class="wt big">'+esc(x.t||'(sem tradução)')+'</span>')+(x.e?'<em>'+esc(x.e)+'</em>':'')+'</div>';
+    h+='<div class="chips" style="justify-content:center">'+sayBtn(x.w)+(x.e?sayBtn(x.e,'Ouvir exemplo'):'')+'</div>';
+    h+='<div class="chips" style="justify-content:center;margin-top:10px"><button class="btn sm danger" data-act="ing-voc-grade" data-g="0">Errei</button><button class="btn sm" data-act="ing-voc-grade" data-g="1">Acertei</button><button class="btn sm ghost" data-act="ing-voc-grade" data-g="2">Fácil</button></div>';
+  }
+  return h+'<div style="text-align:center;margin-top:10px"><button class="link" data-act="ing-voc-end">Encerrar revisão</button></div></div>';
+}
+
+/* Exercícios */
+function iexPrompt(it){
+  var p={mc:'',lacuna:'',traducao:'Traduza: ',ordem:'Ordene: ',corrigir:'Corrija: '}[it.tipo]||'';
+  return p+it.enunciado;
+}
+function ingExercicios(){
+  var h='';
+  if(iexSess)h+=iexSessionHTML();
+  else{
+    var c=ingC(),f=iexForm,learn=vocab.filter(function(x){return x.k!==1}).length,errs=ierCats().length;
+    h+='<form class="panel form" id="iexGenForm"><h3>Criar lista de exercícios com IA</h3><p class="hint" style="margin:0">A IA monta a lista na hora, no seu nível, e pode usar as palavras que você está aprendendo e reforçar os seus erros.</p>';
+    h+='<label class="f">Tipo de exercício<select name="foco">'+ING_FOCOS.map(function(x){return '<option value="'+x[0]+'"'+(f.foco===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select></label>';
+    var nx=ingNextTopic();
+    h+='<label class="f">Tema ou tópico'+(nx?' <button type="button" class="link" data-act="ing-ex-topic" data-v="'+esc(nx.nome)+'">usar meu próximo tópico da trilha</button>':'')+'<input name="tema" maxlength="120" placeholder="Ex.: present perfect, viagens, entrevista de emprego, phrasal verbs" value="'+esc(f.tema)+'"></label>';
+    h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Nível'+nivSelect('nivel',f.nivel||c.nivel)+'</label><label class="f">Quantidade<select name="qtd">'+[5,8,10,15].map(function(n){return '<option value="'+n+'"'+(+f.qtd===n?' selected':'')+'>'+n+' exercícios</option>'}).join('')+'</select></label></div>';
+    h+='<div class="chips"><label class="chip"><input type="checkbox" name="pal" value="1"'+(f.pal&&learn>=3?' checked':'')+(learn<3?' disabled':'')+'> Usar minhas palavras em aprendizado'+(learn<3?' (precisa de 3)':'')+'</label><label class="chip"><input type="checkbox" name="err" value="1"'+(f.err&&errs?' checked':'')+(errs?'':' disabled')+'> Reforçar meus erros'+(errs?'':' (nenhum ainda)')+'</label></div>';
+    h+='<div class="chips"><button class="btn" type="submit"'+(ingBusy?' disabled':'')+'>Gerar exercícios</button><button class="btn ghost" type="button" data-act="ing-ex-nivel"'+(ingBusy?' disabled':'')+'>Fazer o teste de nível (12 questões)</button></div>';
+    h+=ingBusyHTML()+(ingTab==='exercicios'?ingErrHTML():'')+'</form>';
+  }
+  var hist=ingEx.slice(-6).reverse();
+  if(hist.length&&!iexSess){
+    h+='<div class="panel"><h3>Últimas listas</h3><ul class="plan hist">'+hist.map(function(e){return '<li><span>'+shortDate(e.date)+' · '+esc(e.titulo)+(e.nivel?' · '+esc(e.nivel):'')+'</span><b>'+e.ok+'/'+e.total+'</b></li>'}).join('')+'</ul></div>';
+  }
+  return h;
+}
+function iexResult(){
+  var s=iexSess,ok=0,total=s.itens.length;
+  s.res.forEach(function(r){if(r==='ok')ok++});
+  return {ok:ok,total:total};
+}
+function iexLevelEst(){
+  var by={};ING_NIV.forEach(function(n){by[n]=[0,0]});
+  iexSess.itens.forEach(function(it,i){if(it.nivel&&by[it.nivel]){by[it.nivel][1]++;if(iexSess.res[i]==='ok')by[it.nivel][0]++}});
+  var reach=-1;
+  for(var i=0;i<ING_NIV.length;i++){var b=by[ING_NIV[i]];if(b[1]&&b[0]>=1)reach=i;else break}
+  return {by:by,reach:reach,sol:reach>=0&&by[ING_NIV[reach]][0]===by[ING_NIV[reach]][1]};
+}
+function iexSessionHTML(){
+  var s=iexSess,h='<form class="panel form" id="iexForm"><h3>'+esc(s.titulo)+'</h3><p class="hint" style="margin:0">'+(s.foco==='nivel'?'Teste de nível · 12 questões':'Nível '+esc(s.nivel)+(s.tema?' · '+esc(s.tema):''))+'</p>';
+  var listen=s.foco==='listening';
+  if(s.texto){
+    if(listen){
+      h+='<div class="chips">'+sayBtn(s.texto,'Ouvir o áudio')+sayBtn(s.texto,'Ouvir mais devagar',true)+'</div>';
+      h+=s.checked?'<blockquote class="txt">'+esc(s.texto)+'</blockquote>':'<p class="hint" style="margin:0">Ouça quantas vezes quiser e responda. O texto aparece depois da correção.</p>';
+    }else h+='<div class="chips">'+sayBtn(s.texto)+'</div><blockquote class="txt">'+esc(s.texto)+'</blockquote>';
+  }
+  s.itens.forEach(function(it,i){
+    var r=s.res[i],a=s.resp[i]||'';
+    h+='<div class="iex'+(r?' '+r:'')+'"><p class="q"><b>'+(i+1)+'.</b> '+esc({traducao:'Traduza para o inglês: ',ordem:'Ordene as palavras: ',corrigir:'Corrija a frase: '}[it.tipo]||'')+esc(it.enunciado)+'</p>';
+    if(it.tipo==='mc'){
+      h+='<div class="opts" role="radiogroup" aria-label="Alternativas da questão '+(i+1)+'">'+it.opcoes.map(function(o){return '<label class="opt"><input type="radio" name="q'+i+'" value="'+esc(o)+'" data-iex="'+i+'"'+(a===o?' checked':'')+(s.checked?' disabled':'')+'><span>'+esc(o)+'</span></label>'}).join('')+'</div>';
+    }else h+='<input type="text" name="a'+i+'" data-iex="'+i+'" value="'+esc(a)+'" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Resposta da questão '+(i+1)+'"'+(s.checked?' disabled':'')+' placeholder="'+(it.tipo==='lacuna'?'Palavra que falta':'Sua resposta em inglês')+'">';
+    if(s.checked){
+      h+='<p class="fb">'+(r==='ok'?'✓ Certo.':r==='rev'?'Compare com a resposta modelo:':'✗ Resposta: ')+(r==='ok'?'':'<b>'+esc(it.resposta)+'</b>')+(it.explicacao?' <span class="why">'+esc(it.explicacao)+'</span>':'')+(it.aceitas&&it.aceitas.length&&r!=='ok'?'<br><small>Também aceito: '+esc(it.aceitas.join(' · '))+'</small>':'')+'</p>';
+      if(r==='rev')h+='<div class="chips"><button type="button" class="btn sm" data-act="ing-ex-self" data-i="'+i+'" data-v="ok">Minha resposta estava certa</button><button type="button" class="btn sm danger" data-act="ing-ex-self" data-i="'+i+'" data-v="no">Errei</button></div>';
+      if(r!=='ok')h+=sayBtn(it.resposta);
+    }
+    h+='</div>';
+  });
+  if(!s.checked)h+='<div class="chips"><button class="btn" type="submit">Corrigir</button><button type="button" class="btn ghost" data-act="ing-ex-drop">Descartar</button></div>';
+  else{
+    var pend=s.res.indexOf('rev')>=0,R=iexResult();
+    if(pend)h+='<p class="hint">Avalie as traduções acima para fechar a nota.</p>';
+    else{
+      var pc=Math.round(R.ok/R.total*100);
+      h+='<div class="'+(pc>=70?'allgood':'scorebox')+'"><b>'+R.ok+' de '+R.total+' ('+pc+'%)</b>'+(pc>=70?' Bom trabalho.':' O que você errou já está no caderno de erros e volta para revisão.')+'</div>';
+      if(s.foco==='nivel'){
+        var L=iexLevelEst();
+        if(L.reach<0)h+='<p>Resultado: abaixo do A1. Comece pelo A1 da trilha de Gramática.</p>';
+        else{
+          var n=ING_NIV[L.reach];
+          h+='<p class="bignum">'+n+' <small>'+(L.sol?'sólido':'em formação')+'</small></p><p class="hint" style="margin:0 0 8px">'+ING_NIV.map(function(x){return x+': '+L.by[x][0]+'/'+L.by[x][1]}).join(' · ')+'. Doze questões dão só uma indicação. Para certificar, use uma prova oficial.</p><button type="button" class="btn sm" data-act="ing-ex-aplicar" data-v="'+n+'">Usar '+n+' como meu nível</button>';
+        }
+      }
+    }
+    h+='<div class="chips" style="margin-top:10px">'+(!pend&&s.res.indexOf('no')>=0&&s.foco!=='nivel'?'<button type="button" class="btn sm" data-act="ing-ex-redo">Refazer só o que errei</button>':'')+'<button type="button" class="btn sm ghost" data-act="ing-ex-drop">Nova lista</button></div>';
+  }
+  return h+'</form>';
+}
+
+/* Escrita */
+function ingEscrita(){
+  var h='<form class="panel form" id="iwrForm"><h3>Escrever e receber a correção</h3><p class="hint" style="margin:0">Escreva do seu jeito, sem consultar nada. A IA devolve o texto corrigido, uma versão mais natural e a explicação de cada erro. Os erros vão para o seu caderno.</p>';
+  h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Tipo de texto<select name="obj">'+ING_OBJ.map(function(o){return '<option>'+o+'</option>'}).join('')+'</select></label><label class="f">Nível alvo'+nivSelect('nivel',ingC().nivel)+'</label></div>';
+  var draft=load('ingdraft','');
+  h+='<label class="f">Seu texto em inglês<textarea name="texto" id="iwrText" style="min-height:150px" maxlength="3000" required placeholder="Ex.: Yesterday I went to the gym and then I met my friends for dinner...">'+esc(draft)+'</textarea></label>';
+  h+='<div class="chips"><button class="btn" type="submit"'+(ingBusy?' disabled':'')+'>Corrigir com IA</button></div>'+ingBusyHTML()+(ingTab==='escrita'?ingErrHTML():'')+'</form>';
+  if(iwrRes)h+=iwrResHTML();
+  var hs=ingWr.slice(-5).reverse();
+  if(hs.length)h+='<div class="panel"><h3>Seus últimos textos</h3><ul class="plan hist">'+hs.map(function(e){return '<li><span>'+shortDate(e.date)+' · '+esc(e.obj)+' · '+e.w+' palavras · '+e.n+(e.n===1?' erro':' erros')+'</span><b>'+esc(e.nivel||'')+'</b></li>'}).join('')+'</ul></div>';
+  return h;
+}
+function iwrResHTML(){
+  var r=iwrRes,h='<div class="panel"><h3>Correção</h3>';
+  h+='<p class="bignum">'+esc(r.nivelEstimado||'?')+' <small>nível que o texto mostra</small></p><p>'+esc(r.resumo)+'</p>';
+  if(r.erros.length){
+    h+='<h4 class="sub">Erros ('+r.erros.length+')</h4><ul class="errs">'+r.erros.map(function(e){return '<li><span class="bad">'+esc(e.trecho)+'</span> → <span class="good">'+esc(e.correcao)+'</span> <small>'+esc(e.categoria)+'</small><br><span class="why">'+esc(e.explicacao)+'</span></li>'}).join('')+'</ul>';
+  }else h+='<div class="allgood">Nenhum erro encontrado.</div>';
+  h+='<h4 class="sub">Versão corrigida</h4><blockquote class="txt">'+esc(r.versaoCorrigida)+'</blockquote><div class="chips">'+sayBtn(r.versaoCorrigida)+'</div>';
+  if(r.versaoNatural&&r.versaoNatural!==r.versaoCorrigida)h+='<h4 class="sub">Como um nativo diria</h4><blockquote class="txt">'+esc(r.versaoNatural)+'</blockquote><div class="chips">'+sayBtn(r.versaoNatural)+'</div>';
+  if(r.pontosFortes.length)h+='<h4 class="sub">O que você fez bem</h4><ul class="plan">'+r.pontosFortes.map(function(p){return '<li>'+esc(p)+'</li>'}).join('')+'</ul>';
+  if(r.palavras.length){
+    h+='<h4 class="sub">Palavras úteis para este assunto</h4><ul class="sug">'+r.palavras.map(function(p,i){return '<li><div class="sw2"><b>'+esc(p.w)+'</b><br><span>'+esc(p.t)+'</span>'+(p.e?'<br><em>'+esc(p.e)+'</em>':'')+'</div><div class="chips">'+sayBtn(p.w)+(vocFind(p.w)?'<small>já está no banco</small>':'<button class="chip" data-act="ing-wr-add" data-i="'+i+'">Adicionar ao banco</button>')+'</div></li>'}).join('')+'</ul>';
+  }
+  if(r.proximoPasso)h+='<h4 class="sub">Próximo passo</h4><p style="margin:0">'+esc(r.proximoPasso)+'</p>';
+  h+='<div class="chips" style="margin-top:12px"><button class="btn sm" data-act="ing-log-q" data-sk="e" data-min="10" data-n="Escrita com correção">Registrar 10 min de escrita</button><button class="btn sm ghost" data-act="ing-wr-clear">Fechar correção</button></div>';
+  return h+'</div>';
+}
+
+/* Conversa */
+function ingConversa(){
+  var h='';
+  if(!chat){
+    h+='<form class="panel form" id="chatStartForm"><h3>Conversar em inglês com a IA</h3><p class="hint" style="margin:0">Uma conversa de verdade, com personagem e situação. A cada fala sua a IA responde e mostra, em português, o que corrigir. Escreva ou use o microfone.</p>';
+    h+='<label class="f">Situação<select name="cen">'+ING_CEN.map(function(c){return '<option>'+c+'</option>'}).join('')+'<option value="__outra">Outra (escrever)</option></select></label><label class="f">Se escolheu "Outra", descreva<input name="outra" maxlength="160" placeholder="Ex.: pedir um reembolso por e-mail e depois por telefone"></label>';
+    h+='<label class="f">Nível'+nivSelect('nivel',ingC().nivel)+'</label><div><button class="btn" type="submit"'+(ingBusy?' disabled':'')+'>Começar conversa</button></div>'+ingBusyHTML()+(ingTab==='conversa'?ingErrHTML():'')+'</form>';
+    return h;
+  }
+  h+='<div class="panel chat"><h3>'+esc(chat.cen)+' <small style="font-size:14px;color:var(--ink-soft)">'+esc(chat.nivel)+'</small></h3><div class="bubbles" id="chatBox" role="log" aria-live="polite">';
+  chat.msgs.forEach(function(m,i){
+    if(m.r==='a'){
+      h+='<div class="bub ai"><p>'+esc(m.t)+'</p><div class="chips">'+sayBtn(m.t)+(m.tr?'<button class="link" data-act="ing-chat-tr" data-i="'+i+'">'+(m.show?'Esconder tradução':'Ver tradução')+'</button>':'')+'</div>'+(m.show&&m.tr?'<p class="tr">'+esc(m.tr)+'</p>':'')+'</div>';
+    }else{
+      h+='<div class="bub me"><p>'+esc(m.t)+'</p>';
+      if(m.corr&&m.corr.length)h+='<ul class="fix">'+m.corr.map(function(c){return '<li><span class="bad">'+esc(c.original)+'</span> → <span class="good">'+esc(c.corrigido)+'</span><br><small>'+esc(c.explicacao)+'</small></li>'}).join('')+'</ul>';
+      else if(m.ck)h+='<small class="okmsg">✓ Sem erros</small>';
+      h+='</div>';
+    }
+  });
+  h+='</div>';
+  var last=chat.msgs[chat.msgs.length-1];
+  if(ingBusy==='chat')h+=ingBusyHTML();
+  if(ingTab==='conversa')h+=ingErrHTML();
+  if(last&&last.r==='a'&&chat.sug)h+='<p class="hint" style="margin:8px 0 0">Ideia de resposta: <em>'+esc(chat.sug)+'</em> '+sayBtn(chat.sug)+'</p>';
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  h+='<form class="chatform" id="chatForm"><label class="sr" for="chatMsg">Sua mensagem em inglês</label><input id="chatMsg" name="msg" maxlength="500" autocomplete="off" autocapitalize="sentences" placeholder="Escreva em inglês..." required'+(ingBusy?' disabled':'')+'>'+(SR?'<button type="button" class="btn ghost sm" data-act="ing-mic" aria-label="Falar no microfone">Falar</button>':'')+'<button class="btn sm" type="submit"'+(ingBusy?' disabled':'')+'>Enviar</button></form>';
+  var mins=Math.max(1,Math.min(45,Math.round((Date.now()-(chat.t0||Date.now()))/60000)));
+  h+='<div class="chips" style="margin-top:10px">'+(last&&last.r==='u'&&!ingBusy?'<button class="btn sm" data-act="ing-chat-retry">Reenviar última mensagem</button>':'')+'<button class="btn sm ghost" data-act="ing-chat-end">Encerrar e registrar '+mins+' min</button><button class="btn sm danger" data-act="ing-chat-drop">Descartar</button></div>';
+  h+='<p class="hint" style="margin:8px 0 0">Esta conversa fica só neste aparelho. Ao encerrar, o tempo entra na sua imersão.</p>';
+  return h+'</div>';
+}
+
+/* Erros */
+function ingErros(){
+  var h='',due=ierDue(),open=ingErr.filter(function(e){return (e.b||0)<5}).length;
+  h+='<div class="panel"><h3>Caderno de erros de inglês</h3><div class="split"><div class="row"><span>Erros em aberto</span><span>'+open+'</span></div><div class="row"><span>Dominados</span><span>'+(ingErr.length-open)+'</span></div><div class="row"><span>Para revisar hoje</span><span>'+due.length+'</span></div></div>';
+  h+='<p class="hint" style="margin:10px 0 0">Todo erro dos exercícios, das correções de texto e das conversas cai aqui sozinho. Cada um volta como cartão em intervalos crescentes até você acertar de forma consistente.</p></div>';
+  if(ierRev)h+=ierRevPanel();
+  else if(due.length)h+='<div class="panel"><h3>Revisão de hoje</h3><p style="margin:0 0 10px">'+due.length+(due.length===1?' erro espera':' erros esperam')+' revisão.</p><button class="btn sm" data-act="ing-err-start">Revisar erros</button></div>';
+  var cats=ierCats();
+  if(cats.length){
+    var mx=cats[0][1];
+    h+='<div class="panel"><h3>Onde você mais erra</h3>'+cats.slice(0,6).map(function(c){return '<div class="mrow"><span>'+esc(c[0])+'</span><div class="meter"><i style="width:'+Math.round(c[1]/mx*100)+'%"></i></div><b>'+c[1]+'</b></div>'}).join('')+'<p class="hint" style="margin:8px 0 0">Ataque primeiro as categorias do topo: elas indicam causas sistêmicas, não descuidos. Na aba Exercícios use "Reforçar meus erros".</p></div>';
+  }
+  h+='<form class="panel form" id="ierForm"><h3>Registrar um erro seu</h3><p class="hint" style="margin:0">Errou numa conversa, numa série ou no trabalho? Anote para não repetir.</p><div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">O que você disse ou escreveu<input name="p" maxlength="200" required placeholder="Ex.: I am agree with you"></label><label class="f">Como seria o certo<input name="a" maxlength="200" required placeholder="Ex.: I agree with you"></label></div><div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Categoria<input name="cat" maxlength="40" placeholder="Ex.: verbos, preposições" list="ierCatList"></label><label class="f">Por quê (opcional)<input name="y" maxlength="300" placeholder="Ex.: agree já é verbo, não usa to be"></label></div><datalist id="ierCatList">'+cats.map(function(c){return '<option value="'+esc(c[0])+'">'}).join('')+'</datalist><div><button class="btn sm" type="submit">Salvar no caderno</button></div></form>';
+  var cs=ierCats().map(function(c){return c[0]});
+  h+='<div class="panel"><h3>Todos os erros <small style="font-size:14px;color:var(--ink-soft)">'+ingErr.length+'</small></h3>';
+  if(cs.length)h+='<div class="chips" role="group" aria-label="Filtrar por categoria"><button class="chip" data-act="ing-err-filter" data-v="todas" aria-pressed="'+(ierFilter==='todas')+'">Todas</button>'+cs.map(function(c){return '<button class="chip" data-act="ing-err-filter" data-v="'+esc(c)+'" aria-pressed="'+(ierFilter===c)+'">'+esc(c)+'</button>'}).join('')+'</div>';
+  var L=ingErr.filter(function(e){return ierFilter==='todas'||e.cat===ierFilter}).slice().reverse();
+  if(!L.length)h+='<p class="empty">Nenhum erro registrado ainda.</p>';
+  else h+='<ul class="errs" style="margin-top:10px">'+L.slice(0,60).map(function(e){return '<li class="'+((e.b||0)>=5?'done':'')+'"><span class="bad">'+esc(e.p.replace(/^(Corrija|Traduza|Ordene): /,''))+'</span> → <span class="good">'+esc(e.a)+'</span> <small>'+esc(e.cat)+((e.b||0)>=5?' · dominado':'')+'</small>'+(e.y?'<br><span class="why">'+esc(e.y)+'</span>':'')+' <button class="link no-print" data-act="ing-err-del" data-id="'+esc(e.i)+'">Apagar</button></li>'}).join('')+'</ul>';
+  return h+'</div>';
+}
+function ierRevPanel(){
+  var r=ierRev,id=r.q[r.i],e=ingErr.filter(function(x){return x.i===id})[0];
+  if(!e||r.i>=r.q.length)return '<div class="panel"><h3>Revisão concluída</h3><p class="bignum">'+r.ok+' <small>de '+r.done+' certos</small></p><button class="btn sm" data-act="ing-err-end">Fechar</button></div>';
+  var h='<div class="panel flash"><h3>Revisão de erros <small style="font-size:14px;color:var(--ink-soft)">'+(r.i+1)+' de '+r.q.length+'</small></h3><div class="card-front"><small>'+esc(e.cat)+'</small><b class="big">'+esc(e.p)+'</b></div>';
+  if(!r.shown)h+='<div class="chips" style="justify-content:center"><button class="btn sm" data-act="ing-err-show">Mostrar resposta</button></div>';
+  else{
+    h+='<div class="card-back"><b class="big good">'+esc(e.a)+'</b>'+(e.y?'<em>'+esc(e.y)+'</em>':'')+'</div><div class="chips" style="justify-content:center">'+sayBtn(e.a)+'</div><div class="chips" style="justify-content:center;margin-top:10px"><button class="btn sm danger" data-act="ing-err-grade" data-g="0">Errei</button><button class="btn sm" data-act="ing-err-grade" data-g="1">Acertei</button></div>';
+  }
+  return h+'<div style="text-align:center;margin-top:10px"><button class="link" data-act="ing-err-end">Encerrar revisão</button></div></div>';
+}
+
+/* Imersão */
+function ingImersao(){
+  var c=ingC(),wk=ingWeek(0),h='',pc=Math.min(100,Math.round(wk.tot/c.meta*100));
+  h+='<div class="statsgrid"><div class="panel"><h3>Esta semana</h3><p class="bignum">'+Math.round(wk.tot)+' <small>de '+c.meta+' min · '+pc+'%</small></p><div class="progress" role="progressbar" aria-label="Meta semanal" aria-valuenow="'+pc+'" aria-valuemin="0" aria-valuemax="100" style="margin-bottom:12px"><i style="width:'+pc+'%;background:var(--est)"></i></div>';
+  var mx=1;ING_SK.forEach(function(s){if(wk.by[s[0]]>mx)mx=wk.by[s[0]]});
+  ING_SK.forEach(function(s){h+='<div class="mrow"><span>'+s[1]+'</span><div class="meter"><i style="width:'+Math.round(wk.by[s[0]]/mx*100)+'%"></i></div><b>'+Math.round(wk.by[s[0]])+' min</b></div>'});
+  h+='<div class="split" style="margin-top:12px"><div class="row"><span>Dias seguidos (10 min ou mais)</span><span>'+ingStreak()+'</span></div><div class="row"><span>Melhor sequência</span><span>'+ingBestStreak()+'</span></div><div class="row"><span>Total registrado</span><span>'+hm(ingTotalH()*60)+'</span></div></div></div>';
+  var d0=tk();
+  h+='<form class="panel form" id="ingLogForm"><h3>Registrar imersão</h3><div class="chips" role="group" aria-label="Habilidade">'+ING_SK.map(function(s,i){return '<label class="chip"><input type="radio" name="sk" value="'+s[0]+'"'+(i===0?' checked':'')+'> '+s[1]+'</label>'}).join('')+'</div>';
+  h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Minutos<input type="number" name="min" min="1" max="600" inputmode="numeric" required placeholder="Ex.: 30"></label><label class="f">Data<input type="date" name="date" value="'+d0+'" max="'+d0+'"></label></div>';
+  h+='<label class="f">O que você fez (opcional)<input name="nota" maxlength="100" placeholder="Ex.: podcast da BBC, episódio de série, aula com tutor"></label><div class="chips"><button class="btn sm" type="submit">Registrar</button></div></form></div>';
+  var bal=ingBalance();
+  if(bal.length)h+='<div class="alerts"><ul class="alerts">'+bal.map(function(b){return '<li class="high">⚠️ '+esc(b.t)+'</li>'}).join('')+'</ul></div>';
+  var dm=ingDayMap(),mon=mondayOf(new Date());
+  h+='<div class="panel"><h3>Constância em 12 semanas</h3><div class="heat" role="img" aria-label="Minutos de inglês por dia nas últimas 12 semanas">';
+  for(var w=11;w>=0;w--)for(var i=0;i<7;i++){
+    var d=addDays(mon,-7*w+i),k=dkey(d),m=dm[k]||0,fut=d>today();
+    h+='<div class="'+(fut?'fut ':'')+(m>=60?'l3':m>=30?'l2':m>=10?'l1':'')+'" title="'+fmt(d,{day:'numeric',month:'short'})+': '+m+' min"></div>';
+  }
+  h+='</div><p class="hint" style="margin:8px 0 0">Cada quadrado é um dia, de segunda a domingo; as linhas são semanas. Mais escuro significa mais minutos (10, 30 ou 60).</p></div>';
+  var rec=ingLog.slice(-12).reverse();
+  h+='<div class="panel"><h3>Últimos registros</h3>';
+  if(!rec.length)h+='<p class="empty">Nada registrado ainda.</p>';
+  else h+='<ul class="plan hist">'+rec.map(function(e){var s=ING_SK.filter(function(x){return x[0]===e.sk})[0];return '<li><span>'+shortDate(e.date)+' · '+(s?s[1]:e.sk)+(e.n?' · '+esc(e.n):'')+'</span><span><b>'+e.min+' min</b> <button class="link no-print" data-act="ing-log-del" data-id="'+esc(e.id)+'">Apagar</button></span></li>'}).join('')+'</ul>';
+  return h+'</div>';
+}
+
+/* Painel pequeno na tela Hoje */
+function ingTodayPanel(){
+  var vs=vocStats(),t=tk(),m=ingDayMap()[t]||0,c=ingC(),wk=ingWeek(0);
+  var h='<div class="panel"><h3>Inglês hoje</h3><div class="split"><div class="row"><span>Palavras para revisar</span><span>'+vs.due+'</span></div><div class="row"><span>Imersão de hoje</span><span>'+m+' min</span></div><div class="row"><span>Meta da semana</span><span>'+Math.min(100,Math.round(wk.tot/c.meta*100))+'%</span></div></div>';
+  return h+'<button class="link no-print" data-act="go" data-v="ingles" style="margin-top:10px">Abrir a Trilha Inglês</button></div>';
+}
+
+/* ---------- correção automática dos exercícios ---------- */
+function exNorm(s){return String(s||'').toLowerCase().replace(/[’‘`´]/g,"'").replace(/[“”]/g,'"').replace(/[.,!?;:"]/g,'').replace(/\s+/g,' ').trim()}
+function exGrade(it,ans){
+  var a=exNorm(ans);if(!a)return 'no';
+  var ok=[it.resposta].concat(it.aceitas||[]).map(exNorm);
+  if(ok.indexOf(a)>=0)return 'ok';
+  return it.tipo==='traducao'?'rev':'no';
+}
+function iexWords(){return vocab.filter(function(x){return x.k!==1}).sort(function(a,b){return ((b.f||0)-(a.f||0))||((a.b||0)-(b.b||0))}).slice(0,10).map(function(x){return x.w})}
+function iexErrs(){return ingErr.filter(function(e){return (e.b||0)<5}).slice(-6).map(function(e){return e.cat+': '+e.p.replace(/^(Corrija|Traduza|Ordene): /,'')+' → '+e.a})}
+function iexCheck(){
+  var s=iexSess;if(!s||s.checked)return;
+  s.res=s.itens.map(function(it,i){return exGrade(it,s.resp[i])});
+  s.checked=true;
+  if(s.res.indexOf('rev')<0)iexFinalize();
+  rawSave('ingSess',s);render();window.scrollTo(0,0);
+}
+function iexFinalize(){
+  var s=iexSess;if(!s||s.fin)return;s.fin=true;
+  var R=iexResult(),added=0;
+  s.itens.forEach(function(it,i){if(s.res[i]==='no'&&ierAdd({cat:it.categoria||'geral',p:iexPrompt(it),a:it.resposta,y:it.explicacao,src:'ex'}))added++});
+  if(added)save('ingErr',ingErr);
+  ingEx.push({id:uid(),date:tk(),titulo:String(s.titulo).slice(0,60),foco:s.foco,nivel:s.nivel,ok:R.ok,total:R.total});
+  if(ingEx.length>40)ingEx=ingEx.slice(-40);
+  save('ingEx',ingEx);
+  if(s.foco==='nivel')ingCfgSave({teste:tk()});
+  toast(added?added+(added===1?' erro foi para o seu caderno':' erros foram para o seu caderno'):'Lista concluída');
+}
+async function ingGenEx(o){
+  ingBusy='ex';ingMsg='';render();
+  try{
+    var d=await ingCall({acao:'exercicios',foco:o.foco,tema:o.tema,nivel:o.nivel,qtd:o.qtd,palavras:o.palavras||[],erros:o.erros||[]});
+    iexSess={titulo:d.titulo,texto:d.texto||'',foco:o.foco,nivel:o.nivel,tema:o.tema,itens:d.itens,resp:d.itens.map(function(){return ''}),res:d.itens.map(function(){return null}),checked:false,fin:false};
+    rawSave('ingSess',iexSess);
+  }catch(e){ingMsg=(e&&e.message)||'Não foi possível gerar os exercícios.'}
+  ingBusy='';render();window.scrollTo(0,0);
+}
+
+/* ---------- IA: palavras ---------- */
+async function vocFillAI(words){
+  var list=words.filter(function(x){return !x.t}).slice(0,25);if(!list.length)return;
+  ingBusy='pal';ingMsg='';render();
+  try{
+    var d=await ingCall({acao:'palavras',palavras:list.map(function(x){return x.w})});
+    var n=0;
+    d.palavras.forEach(function(p,i){
+      var x=list[i];if(!x)return;
+      if(vocNorm(p.w)!==vocNorm(x.w)){var f=list.filter(function(y){return vocNorm(y.w)===vocNorm(p.w)})[0];if(!f)return;x=f}
+      if(!x.t){x.t=p.t;n++}if(!x.e)x.e=p.e||'';if(!x.c)x.c=p.c||'';if(!x.ipa)x.ipa=p.ipa||'';
+    });
+    vocSave();toast(n+(n===1?' palavra completada':' palavras completadas'));
+  }catch(e){ingMsg=(e&&e.message)||'Não foi possível completar as palavras.'}
+  ingBusy='';render();
+}
+
+/* ---------- conversa ---------- */
+async function chatTurn(){
+  ingBusy='chat';ingMsg='';render();
+  try{
+    var d=await ingCall({acao:'conversa',cenario:chat.cen,nivel:chat.nivel,msgs:chat.msgs.slice(-12).map(function(m){return {r:m.r,t:m.t}})});
+    var last=chat.msgs[chat.msgs.length-1];
+    if(last&&last.r==='u'){
+      last.corr=d.correcoes;last.ck=!d.correcoes.length;
+      var added=0;d.correcoes.forEach(function(c){if(ierAdd({cat:c.categoria||'conversa',p:'Corrija: '+c.original,a:c.corrigido,y:c.explicacao,src:'chat'}))added++});
+      if(added)save('ingErr',ingErr);
+    }
+    chat.msgs.push({r:'a',t:d.resposta,tr:d.traducao});
+    chat.sug=d.sugestao||'';
+    ingBusy='';rawSave('ingChat',chat);render();
+    var box=document.getElementById('chatBox');if(box)box.scrollTop=box.scrollHeight;
+    var inp=document.getElementById('chatMsg');if(inp&&!window.matchMedia('(pointer:coarse)').matches)inp.focus();
+    return;
+  }catch(e){ingMsg=(e&&e.message)||'Não foi possível falar com a IA.';if(!chat.msgs.length)chat=null}
+  ingBusy='';rawSave('ingChat',chat);render();
+}
+var ingRec=null;
+function ingMic(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('Seu navegador não tem reconhecimento de voz.');return}
+  try{
+    if(ingRec){ingRec.stop();ingRec=null;return}
+    var r=new SR();r.lang=ingC().sotaque==='uk'?'en-GB':'en-US';r.interimResults=false;r.maxAlternatives=1;
+    r.onresult=function(ev){var t=ev.results[0][0].transcript,inp=document.getElementById('chatMsg');if(inp)inp.value=(inp.value?inp.value+' ':'')+t;if(chat){chat.mic=true;rawSave('ingChat',chat)}};
+    r.onerror=function(){toast('Não consegui ouvir. Confira a permissão do microfone.')};
+    r.onend=function(){ingRec=null};
+    ingRec=r;r.start();
+  }catch(e){toast('Não foi possível usar o microfone.')}
+}
+
+/* ---------- ações ---------- */
+function ingAction(a,b){
+  if(!/^ing-/.test(a))return false;
+  var id=b.dataset.id;
+  if(a==='ing-tab'||a==='ing-go'){ingTab=b.dataset.v;rawSave('ingTab',ingTab);ingMsg='';trailEdit=false;render();window.scrollTo(0,0);return true}
+  if(a==='ing-open-topic'){var t=TOPICS[b.dataset.v];if(t){setSel('ing',t.materia);ingTab='trilha';rawSave('ingTab',ingTab);trailEdit=false;contentFilter='todos';render();window.scrollTo(0,0)}return true}
+  if(a==='ing-say'){if(!ingSay(b.dataset.say,!!b.dataset.slow))toast('Seu aparelho não tem voz em inglês disponível.');return true}
+
+  /* palavras */
+  if(a==='ing-voc-filter'){vocFilter=b.dataset.v;vocLimit=40;render();return true}
+  if(a==='ing-voc-more'){vocLimit+=40;render();return true}
+  if(a==='ing-voc-toggle'){
+    var x=vocab.filter(function(v){return v.i===id})[0];if(!x)return true;
+    if(x.k===1){x.k=0;x.b=0;x.d=tk()}else{x.k=1;x.d=''}
+    vocSave();render();return true;
+  }
+  if(a==='ing-voc-del'){
+    var y=vocab.filter(function(v){return v.i===id})[0];if(!y)return true;
+    if(!confirm('Apagar a palavra "'+y.w+'" do banco?'))return true;
+    vocab=vocab.filter(function(v){return v.i!==id});vocSave();render();return true;
+  }
+  if(a==='ing-voc-start'){
+    var q=vocDue().slice(0,20).map(function(v){return v.i});
+    if(!q.length)return true;
+    vocRev={q:q,i:0,shown:false,dir:b.dataset.dir==='pt'?'pt':'en',done:0,ok:0,req:{}};render();return true;
+  }
+  if(a==='ing-voc-show'){if(vocRev){vocRev.shown=true;render()}return true}
+  if(a==='ing-voc-grade'){
+    if(!vocRev)return true;
+    var vid=vocRev.q[vocRev.i],vx=vocab.filter(function(v){return v.i===vid})[0],g=+b.dataset.g;
+    if(vx){
+      vocGrade(vx,g);vocSave();vocRev.done++;if(g>0)vocRev.ok++;
+      if(g===0&&!vocRev.req[vid]){vocRev.req[vid]=1;vocRev.q.push(vid)}
+    }
+    vocRev.i++;vocRev.shown=false;render();return true;
+  }
+  if(a==='ing-voc-end'){vocRev=null;render();return true}
+  if(a==='ing-voc-fill'){vocFillAI(vocab.filter(function(v){return !v.t}));return true}
+  if(a==='ing-sug'){
+    var i=+b.dataset.i,s=vocSug[i],v=b.dataset.v;
+    if(s){if(v==='learn')vocAdd(s,false);else if(v==='know')vocAdd(s,true);vocSug.splice(i,1);vocSave();render()}
+    return true;
+  }
+  if(a==='ing-sug-all'){var n=0;vocSug.forEach(function(s){if(vocAdd(s,false))n++});vocSug=[];vocSave();render();toast(n+(n===1?' palavra adicionada':' palavras adicionadas'));return true}
+  if(a==='ing-sug-clear'){vocSug=[];render();return true}
+
+  /* exercícios */
+  if(a==='ing-ex-topic'){var inp=document.querySelector('#iexGenForm [name="tema"]');if(inp){inp.value=b.dataset.v;inp.focus()}return true}
+  if(a==='ing-ex-nivel'){if(!ingBusy)ingGenEx({foco:'nivel',tema:'',nivel:'B1',qtd:12});return true}
+  if(a==='ing-ex-self'){
+    if(!iexSess)return true;
+    iexSess.res[+b.dataset.i]=b.dataset.v;
+    if(iexSess.res.indexOf('rev')<0)iexFinalize();
+    rawSave('ingSess',iexSess);render();return true;
+  }
+  if(a==='ing-ex-drop'){iexSess=null;rawSave('ingSess',null);render();return true}
+  if(a==='ing-ex-redo'){
+    var s0=iexSess;if(!s0)return true;
+    var keep=s0.itens.filter(function(it,k){return s0.res[k]==='no'});
+    if(!keep.length)return true;
+    iexSess={titulo:'Refazendo: '+s0.titulo,texto:s0.texto,foco:s0.foco==='nivel'?'misto':s0.foco,nivel:s0.nivel,tema:s0.tema,itens:keep,resp:keep.map(function(){return ''}),res:keep.map(function(){return null}),checked:false,fin:false};
+    rawSave('ingSess',iexSess);render();window.scrollTo(0,0);return true;
+  }
+  if(a==='ing-ex-aplicar'){ingCfgSave({nivel:b.dataset.v});render();toast('Nível atualizado para '+b.dataset.v);return true}
+
+  /* escrita */
+  if(a==='ing-wr-add'){
+    var p=iwrRes&&iwrRes.palavras[+b.dataset.i];
+    if(p){if(vocAdd({w:p.w,t:p.t,e:p.e},false)){vocSave();toast('Palavra adicionada ao banco')}else toast('Essa palavra já está no banco');render()}
+    return true;
+  }
+  if(a==='ing-wr-clear'){iwrRes=null;render();return true}
+  if(a==='ing-log-q'){if(ingLogAdd(b.dataset.sk,b.dataset.min,b.dataset.n)){toast(b.dataset.min+' min registrados na imersão');render()}return true}
+
+  /* conversa */
+  if(a==='ing-chat-tr'){var m=chat&&chat.msgs[+b.dataset.i];if(m){m.show=!m.show;rawSave('ingChat',chat);render()}return true}
+  if(a==='ing-chat-retry'){if(chat&&!ingBusy)chatTurn();return true}
+  if(a==='ing-chat-drop'){if(confirm('Descartar esta conversa sem registrar o tempo?')){chat=null;rawSave('ingChat',null);ingMsg='';render()}return true}
+  if(a==='ing-chat-end'){
+    if(!chat)return true;
+    var mins=Math.max(1,Math.min(45,Math.round((Date.now()-(chat.t0||Date.now()))/60000)));
+    var r=prompt('Quantos minutos registrar na sua imersão?',String(mins));
+    if(r===null)return true;
+    var mm=clamp(r,1,600);
+    if(mm)ingLogAdd(chat.mic?'f':'e',mm,'Conversa com IA: '+chat.cen);
+    ingCfgSave({chats:ingC().chats+1});
+    chat=null;rawSave('ingChat',null);ingMsg='';render();toast(mm?mm+' min registrados':'Conversa encerrada');return true;
+  }
+  if(a==='ing-mic'){ingMic();return true}
+
+  /* erros */
+  if(a==='ing-err-start'){
+    var q2=ierDue().sort(function(x,y){return (x.b||0)-(y.b||0)}).slice(0,15).map(function(e){return e.i});
+    if(q2.length){ierRev={q:q2,i:0,shown:false,done:0,ok:0,req:{}};render()}
+    return true;
+  }
+  if(a==='ing-err-show'){if(ierRev){ierRev.shown=true;render()}return true}
+  if(a==='ing-err-grade'){
+    if(!ierRev)return true;
+    var eid=ierRev.q[ierRev.i],ex=ingErr.filter(function(e){return e.i===eid})[0],ok=b.dataset.g==='1';
+    if(ex){
+      ierGrade(ex,ok);save('ingErr',ingErr);ierRev.done++;if(ok)ierRev.ok++;
+      if(!ok&&!ierRev.req[eid]){ierRev.req[eid]=1;ierRev.q.push(eid)}
+    }
+    ierRev.i++;ierRev.shown=false;render();return true;
+  }
+  if(a==='ing-err-end'){ierRev=null;render();return true}
+  if(a==='ing-err-filter'){ierFilter=b.dataset.v;render();return true}
+  if(a==='ing-err-del'){ingErr=ingErr.filter(function(e){return e.i!==id});save('ingErr',ingErr);render();return true}
+
+  /* imersão */
+  if(a==='ing-log-del'){ingLog=ingLog.filter(function(e){return e.id!==id});save('ingLog',ingLog);render();return true}
+  return true;
+}
+
+/* ---------- formulários ---------- */
+function ingSubmit(f,fd){
+  var id=f.id;
+  if(id==='ingCfgForm'){
+    var meta=clamp(fd.get('meta'),30,3000);if(!meta){toast('Informe a meta semanal em minutos');return true}
+    ingCfgSave({nivel:fd.get('nivel'),alvo:fd.get('alvo'),meta:meta,sotaque:fd.get('sotaque')});
+    render();toast('Configurações salvas');return true;
+  }
+  if(id==='vocForm'){
+    var w=String(fd.get('w')||'').trim();
+    var x=vocAdd({w:w,t:fd.get('t'),e:fd.get('e')},fd.get('modo')==='conheco');
+    if(!x){toast(w?'Essa palavra já está no banco':'Escreva a palavra');return true}
+    vocSave();render();toast(x.k===1?'Palavra adicionada ao seu vocabulário':'Palavra adicionada às revisões');keepFocus('#vocForm input[name="w"]');return true;
+  }
+  if(id==='vocBulkForm'){
+    var rows=vocParse(fd.get('lista')),known=fd.get('modo')==='conheco',added=[],dup=0;
+    rows.forEach(function(r){var x=vocAdd(r,known);if(x)added.push(x);else dup++});
+    if(added.length)vocSave();
+    render();
+    toast(added.length+(added.length===1?' palavra adicionada':' palavras adicionadas')+(dup?' · '+dup+' já existiam':''));
+    if(fd.get('ia')&&added.length)vocFillAI(added);
+    return true;
+  }
+  if(id==='vocSugForm'){
+    if(ingBusy)return true;
+    var tema=String(fd.get('tema')||'').trim();if(!tema)return true;
+    ingBusy='sug';ingMsg='';render();
+    ingCall({acao:'palavras',tema:tema,nivel:fd.get('nivel'),qtd:10}).then(function(d){
+      vocSug=d.palavras.filter(function(p){return !vocFind(p.w)});
+      if(!vocSug.length)ingMsg='Todas as palavras sugeridas já estão no seu banco. Tente outro tema.';
+    }).catch(function(e){ingMsg=(e&&e.message)||'Não foi possível sugerir palavras.'}).then(function(){ingBusy='';render()});
+    return true;
+  }
+  if(id==='iexGenForm'){
+    if(ingBusy)return true;
+    var learn=vocab.filter(function(v){return v.k!==1}).length;
+    iexForm={foco:fd.get('foco'),tema:String(fd.get('tema')||'').trim(),nivel:fd.get('nivel'),qtd:+fd.get('qtd')||8,pal:!!fd.get('pal'),err:!!fd.get('err')};
+    ingGenEx({foco:iexForm.foco,tema:iexForm.tema,nivel:iexForm.nivel,qtd:iexForm.qtd,palavras:iexForm.pal&&learn>=3?iexWords():[],erros:iexForm.err?iexErrs():[]});
+    return true;
+  }
+  if(id==='iexForm'){iexCheck();return true}
+  if(id==='iwrForm'){
+    if(ingBusy)return true;
+    var texto=String(fd.get('texto')||'').trim();
+    if(texto.length<15){toast('Escreva um texto um pouco maior (pelo menos uma frase).');return true}
+    rawSave('ingdraft',texto);
+    ingBusy='corr';ingMsg='';render();
+    ingCall({acao:'corrigir',texto:texto,nivel:fd.get('nivel'),objetivo:fd.get('obj')}).then(function(d){
+      iwrRes=d;
+      var added=0;d.erros.forEach(function(e){if(ierAdd({cat:e.categoria||'escrita',p:'Corrija: '+e.trecho,a:e.correcao,y:e.explicacao,src:'wr'}))added++});
+      if(added)save('ingErr',ingErr);
+      ingWr.push({id:uid(),date:tk(),obj:String(fd.get('obj')).slice(0,30),nivel:d.nivelEstimado,w:texto.split(/\s+/).filter(Boolean).length,n:d.erros.length});
+      if(ingWr.length>30)ingWr=ingWr.slice(-30);
+      save('ingWr',ingWr);
+      toast(added?added+(added===1?' erro foi para o seu caderno':' erros foram para o seu caderno'):'Texto corrigido');
+    }).catch(function(e){ingMsg=(e&&e.message)||'Não foi possível corrigir o texto.'}).then(function(){ingBusy='';render();if(iwrRes&&!ingMsg){var p=document.querySelector('#iwrForm');if(p&&p.nextElementSibling)p.nextElementSibling.scrollIntoView({behavior:'smooth',block:'start'})}});
+    return true;
+  }
+  if(id==='chatStartForm'){
+    if(ingBusy)return true;
+    var cen=fd.get('cen')==='__outra'?String(fd.get('outra')||'').trim():String(fd.get('cen'));
+    if(!cen){toast('Descreva a situação da conversa');return true}
+    chat={cen:cen.slice(0,160),nivel:fd.get('nivel'),msgs:[],t0:Date.now(),mic:false,sug:''};
+    chatTurn();return true;
+  }
+  if(id==='chatForm'){
+    if(ingBusy||!chat)return true;
+    var msg=String(fd.get('msg')||'').trim();if(!msg)return true;
+    chat.msgs.push({r:'u',t:msg.slice(0,500)});chat.sug='';
+    chatTurn();return true;
+  }
+  if(id==='ierForm'){
+    var ok=ierAdd({cat:String(fd.get('cat')||'').trim()||'geral',p:'Corrija: '+String(fd.get('p')).trim(),a:String(fd.get('a')).trim(),y:fd.get('y'),src:'manual'});
+    if(ok){save('ingErr',ingErr);render();toast('Erro salvo no caderno')}else toast('Esse erro já está no caderno');
+    return true;
+  }
+  if(id==='ingLogForm'){
+    var d0=String(fd.get('date')||tk());if(d0>tk())d0=tk();
+    if(ingLogAdd(fd.get('sk'),fd.get('min'),fd.get('nota'),d0)){render();toast('Imersão registrada')}else toast('Informe os minutos');
+    return true;
+  }
+  return false;
+}
+function ingChange(el,type){
+  if(el.dataset&&el.dataset.iex!==undefined&&iexSess){iexSess.resp[+el.dataset.iex]=el.value;rawSave('ingSess',iexSess);return true}
+  if(el.id==='iwrText'){rawSave('ingdraft',el.value);return true}
+  if(el.id==='vocSearch'){
+    if(type==='input'){vocQ=el.value;vocLimit=40;var pos=el.selectionStart;render();var s=document.getElementById('vocSearch');if(s){s.focus();try{s.setSelectionRange(pos,pos)}catch(e){}}}
+    return true;
+  }
+  return false;
+}
+
+/* ---------- conquistas e Hoje ---------- */
+function ingBadgeCtx(){
+  return {vocN:vocStats().size,ingH:ingTotalH(),ingS:Math.max(ingBestStreak(),ingStreak()),exN:ingEx.length,wrN:ingWr.length,chatN:ingC().chats,top:areaCoverage(null,'ing').studied,teste:!!ingC().teste};
+}
+
+/* =========================================================
    EVENTOS
    ========================================================= */
 document.querySelector('.nav').addEventListener('click',function(e){var t=e.target.closest('.tab,[data-view-go]');if(t)go(t.dataset.view||t.dataset.viewGo)});
@@ -2823,6 +3875,7 @@ main.addEventListener('click',function(e){
   else if(praticaAction(a,b)){}
   else if(habAction(a,b)){}
   else if(trAction(a,b)){}
+  else if(ingAction(a,b)){}
   else if(a==='wk'){weekOffset=b.dataset.d==='0'?0:weekOffset+(+b.dataset.d);render()}
   else if(a==='print'){document.querySelectorAll('details').forEach(function(x){x.open=true});window.print()}
   else if(a==='resetweek'){
@@ -2856,6 +3909,7 @@ main.addEventListener('click',function(e){
 main.addEventListener('input',function(e){
   var el=e.target;
   if(trChange(el))return;          // guarda o rascunho do treino a cada tecla
+  if(ingChange(el,'input'))return; // respostas dos exercícios, rascunho de texto e busca de palavras
   if(el.id==='note'){var k=el.dataset.date;if(el.value.trim())notes[k]=el.value;else delete notes[k];save('notes',notes);return}
   if(el.id==='repSearch'){repSearch=el.value;var pos=el.selectionStart;render();var s=document.getElementById('repSearch');if(s){s.focus();s.setSelectionRange(pos,pos)}return}
   if(!el.dataset.f||el.tagName==='SELECT')return;
@@ -2868,6 +3922,7 @@ main.addEventListener('change',function(e){
   var el=e.target;
   if(praticaChange(el))return;
   if(trChange(el))return;
+  if(ingChange(el,'change'))return;
   if(el.dataset.pick&&el.value==='__new'){addTopicFromToday(el.dataset.pick,el.dataset.date);return}
   if(el.dataset.pick){var k=el.dataset.date;picks[k]=picks[k]||{};picks[k][el.dataset.pick]={t:el.value,auto:false};save('picks',picks);render();keepFocus('[data-pick="'+el.dataset.pick+'"]');return}
   if(el.id==='examDate'){exam=el.value;save('exam',exam);renderStats();return}
@@ -2881,6 +3936,7 @@ main.addEventListener('submit',function(e){
   if(metasSubmit(f,fd))return;
   if(habSubmit(f,fd))return;
   if(trSubmit(f,fd))return;
+  if(ingSubmit(f,fd))return;
   if(f.id==='essayForm'){
     essays.push({id:uid(),date:fd.get('date'),tema:String(fd.get('tema')).trim(),c:[0,1,2,3,4].map(function(i){return +fd.get('c'+i)})});
     save('essays',essays);render();toast('Redação salva');
@@ -2997,12 +4053,23 @@ function hasLocalData(){
     return typeof v==='object'?Object.keys(v).length>0:!!v;
   });
 }
-function adopt(r){
-  var d=r.dados||{};
+// Chaves que versões antigas do site não conhecem. Um aparelho com o site desatualizado envia a nuvem sem elas;
+// se a nuvem não tem a chave mas este aparelho tem dados, os dados são mantidos e reenviados (nunca apagados em silêncio).
+var ADITIVAS=['water','waterGoal','workouts','wlog','ingCfg','vocab','ingEx','ingErr','ingLog','ingWr'];
+function adopt(r,keepLocal){
+  var d=r.dados||{},kept=false;
   rawSave('habitSync',d.habitSync===true);syncHabitKey();     // a nuvem decide se o registro do hábito acompanha a conta
-  KEYS.forEach(function(k){if(d[k]!=null)rawSave(k,d[k]);else{try{localStorage.removeItem(PREFIX+k)}catch(e){}}});
+  KEYS.forEach(function(k){
+    if(d[k]!=null){rawSave(k,d[k]);return}
+    if(keepLocal&&ADITIVAS.indexOf(k)>=0){
+      var v=load(k,null);
+      if(v!=null&&(Array.isArray(v)?v.length:typeof v==='object'?Object.keys(v).length:true)){kept=true;return}
+    }
+    try{localStorage.removeItem(PREFIX+k)}catch(e){}
+  });
   setMeta('at',r.atualizado_em);setMeta('dirty',false);
   reloadState();render();setSync('ok');
+  if(kept)markDirty();
 }
 function newer(a,b){return new Date(a||0).getTime()>new Date(b||0).getTime()}
 async function push(){
@@ -3030,7 +4097,7 @@ async function reconcile(){
     }
     if(newer(r.atualizado_em,at)){
       if(dirty&&!confirm('Houve mudanças em outro aparelho e também neste.\n\nOK: ficar com a versão da nuvem.\nCancelar: ficar com a versão deste aparelho.')){await push();return}
-      adopt(r);return;
+      adopt(r,true);return;
     }
     if(dirty){await push();return}
     setSync('ok');

@@ -1,5 +1,6 @@
 {
   "functions": {
-    "api/plano.js": { "maxDuration": 60 }
+    "api/plano.js": { "maxDuration": 60 },
+    "api/ingles.js": { "maxDuration": 60 }
   }
 }
