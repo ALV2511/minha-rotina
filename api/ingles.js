@@ -6,9 +6,8 @@
 //   GEMINI_API_KEY  chave do Google AI Studio
 //   SUPABASE_URL    mesmo valor usado no index.html
 //   SUPABASE_KEY    mesma chave publishable/anon usada no index.html
-//   GEMINI_MODEL    opcional (padrão: gemini-2.5-flash)
+//   GEMINI_MODEL    opcional: modelo tentado primeiro (padrão: gemini-3.8-flash, com reserva em outros)
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const NIVEIS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const TIPOS_ITEM = ['mc', 'lacuna', 'traducao', 'ordem', 'corrigir'];
 const FOCOS = ['misto', 'vocabulario', 'gramatica', 'lacunas', 'compreensao', 'traducao', 'ordem', 'erros', 'listening', 'nivel'];
@@ -261,6 +260,75 @@ function limparPalavras(p) {
   };
 }
 
+// ---------- chamada ao Gemini (mesma lógica em plano.js e ingles.js) ----------
+// O Google limita o acesso aos modelos 2.5 a quem já os usava; chaves novas recebem erro 404
+// ("no longer available to new users"). Por isso a função tenta os modelos em ordem e lembra
+// o que funcionou. Para forçar um modelo, defina GEMINI_MODEL no Vercel (ele é tentado primeiro).
+const MODELOS = [...new Set([process.env.GEMINI_MODEL, 'gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-2.5-flash'].filter(Boolean))];
+let lembrado = null; // { modelo, fmt } que funcionou nesta instância
+
+function minuscula(s) {
+  if (Array.isArray(s)) return s.map(minuscula);
+  if (s && typeof s === 'object') {
+    const o = {};
+    for (const k of Object.keys(s)) o[k] = k === 'type' && typeof s[k] === 'string' ? s[k].toLowerCase() : minuscula(s[k]);
+    return o;
+  }
+  return s;
+}
+function montarCorpo(prompt, schema, modelo, fmt, temp, pensar) {
+  const cfg = {};
+  if (fmt === 'novo') {
+    cfg.responseFormat = { text: { mimeType: 'APPLICATION_JSON', schema: minuscula(schema) } };
+    cfg.thinkingConfig = { thinkingLevel: pensar || 'low' };
+  } else {
+    cfg.responseMimeType = 'application/json';
+    cfg.responseSchema = schema;
+    if (/^gemini-2/.test(modelo)) cfg.temperature = temp;
+  }
+  return { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: cfg };
+}
+function msgGemini(txt) {
+  try { return String(JSON.parse(txt).error.message || '').replace(/\s+/g, ' ').slice(0, 160); } catch (e) { return String(txt || '').replace(/\s+/g, ' ').slice(0, 120); }
+}
+// Devolve { texto } com o JSON bruto da IA ou { falha: { status, msg, limite } }
+async function chamarGemini(chave, prompt, schema, temp, pensar) {
+  const ordem = lembrado ? [lembrado.modelo, ...MODELOS.filter(m => m !== lembrado.modelo)] : MODELOS;
+  let ultimo = null, limite = false;
+  for (const modelo of ordem) {
+    const antigo = /^gemini-2/.test(modelo);
+    let fmts = antigo ? ['antigo'] : ['novo', 'antigo'];
+    if (!antigo && lembrado && lembrado.modelo === modelo) fmts = [lembrado.fmt, ...fmts.filter(f => f !== lembrado.fmt)];
+    for (const fmt of fmts) {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': chave },
+        body: JSON.stringify(montarCorpo(prompt, schema, modelo, fmt, temp, pensar))
+      });
+      if (r.ok) {
+        const data = await r.json();
+        lembrado = { modelo, fmt };
+        const parts = (((data.candidates || [])[0] || {}).content || {}).parts || [];
+        return { texto: parts.filter(p => !p.thought).map(p => p.text || '').join(''), modelo };
+      }
+      const txt = await r.text();
+      ultimo = { status: r.status, msg: msgGemini(txt), modelo };
+      console.error('Gemini', modelo, fmt, r.status, ultimo.msg);
+      if (r.status === 429) limite = true;
+      if (r.status === 400) continue; // formato recusado: tenta o outro formato do mesmo modelo
+      break;                          // 403, 404, 429 ou 5xx: passa para o próximo modelo
+    }
+  }
+  return { falha: { status: ultimo ? ultimo.status : 0, msg: ultimo ? ultimo.msg : '', limite } };
+}
+function erroGemini(f) {
+  const det = f.msg ? ` (Gemini: ${f.msg})` : '';
+  if (f.limite) return { s: 429, erro: 'Limite gratuito da IA atingido. Tente de novo em alguns minutos.' };
+  if (f.status === 404) return { s: 502, erro: `Nenhum modelo do Gemini está disponível para a sua chave. Em GEMINI_MODEL, no Vercel, informe um modelo que apareça no Google AI Studio.${det}` };
+  if (f.status === 400 || f.status === 403) return { s: 502, erro: `O Gemini recusou a chamada. Confira a GEMINI_API_KEY no Vercel e se a chave tem acesso aos modelos.${det}` };
+  return { s: 502, erro: 'A IA está indisponível agora. Tente de novo em instantes.' };
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -291,34 +359,17 @@ module.exports = async (req, res) => {
   if (e.acao === 'palavras' && !e.palavras.length && !e.tema.trim()) return res.status(400).json({ erro: 'Informe um tema ou uma lista de palavras.' });
 
   const cfg = {
-    exercicios: { prompt: promptExercicios, schema: SCHEMA_EX, temp: 0.7, ok: p => limparItens(p, e.foco) },
-    corrigir: { prompt: promptCorrigir, schema: SCHEMA_CORR, temp: 0.2, ok: limparCorrecao },
-    conversa: { prompt: promptConversa, schema: SCHEMA_CONV, temp: 0.8, ok: limparConversa },
-    palavras: { prompt: promptPalavras, schema: SCHEMA_PAL, temp: 0.3, ok: limparPalavras }
+    exercicios: { prompt: promptExercicios, schema: SCHEMA_EX, temp: 0.7, pensar: 'low', ok: p => limparItens(p, e.foco) },
+    corrigir: { prompt: promptCorrigir, schema: SCHEMA_CORR, temp: 0.2, pensar: 'medium', ok: limparCorrecao },
+    conversa: { prompt: promptConversa, schema: SCHEMA_CONV, temp: 0.8, pensar: 'low', ok: limparConversa },
+    palavras: { prompt: promptPalavras, schema: SCHEMA_PAL, temp: 0.3, pensar: 'low', ok: limparPalavras }
   }[e.acao];
 
   try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: cfg.prompt(e) }] }],
-        generationConfig: { temperature: cfg.temp, responseMimeType: 'application/json', responseSchema: cfg.schema }
-      })
-    });
-    if (!r.ok) {
-      const detalhe = (await r.text()).slice(0, 300);
-      console.error('Gemini', r.status, detalhe);
-      if (r.status === 429) return res.status(429).json({ erro: 'Limite gratuito da IA atingido. Tente de novo em alguns minutos.' });
-      if (r.status === 400 || r.status === 403) return res.status(502).json({ erro: 'O Gemini recusou a chamada. Confira a GEMINI_API_KEY no Vercel.' });
-      if (r.status === 404) return res.status(502).json({ erro: `O modelo ${MODEL} não está disponível. Defina outro em GEMINI_MODEL no Vercel.` });
-      return res.status(502).json({ erro: 'A IA está indisponível agora. Tente de novo em instantes.' });
-    }
-    const data = await r.json();
-    const parts = (((data.candidates || [])[0] || {}).content || {}).parts || [];
-    const texto = parts.map(p => p.text || '').join('');
+    const g = await chamarGemini(GEMINI_API_KEY, cfg.prompt(e), cfg.schema, cfg.temp, cfg.pensar);
+    if (g.falha) { const x = erroGemini(g.falha); return res.status(x.s).json({ erro: x.erro }); }
     let saida;
-    try { saida = JSON.parse(texto); } catch (err) {
+    try { saida = JSON.parse(g.texto); } catch (err) {
       return res.status(502).json({ erro: 'A IA devolveu um formato inesperado. Tente de novo.' });
     }
     const limpa = cfg.ok(saida);
