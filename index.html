@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Minha Rotina</title>
-<link rel="shortcut icon" href="minha-rotina.ico" type="image/x-icon">
 <meta name="theme-color" content="#FBFBF7">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -399,6 +398,25 @@ label.chip:has(input:checked){background:var(--ink);color:var(--paper);border-co
 h3.areahead{display:flex;align-items:center;gap:8px;margin:24px 0 10px;font-size:22px}
 h3.areahead .sw{width:14px;height:14px;border-radius:4px;flex:none}
 h3.areahead small{font-size:14px;color:var(--ink-soft);font-weight:700}
+/* Laboratório de estudo */
+.labtabs{margin-bottom:14px}
+pre.code{margin:8px 0;padding:10px 12px;border-radius:10px;background:var(--off-bg);border:1.5px solid var(--line);overflow:auto;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre;max-width:100%;tab-size:2}
+code{font:.9em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--off-bg);padding:1px 5px;border-radius:6px;overflow-wrap:anywhere}
+pre.code code{background:none;padding:0}
+textarea.codein{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre;overflow:auto;tab-size:2}
+label.opt.right{border-color:var(--ok);background:var(--ok-bg)}
+label.opt.wrong{border-color:var(--bad)}
+label.opt span{line-height:1.4}
+.bub.md p,.bub.md ul{margin:0 0 6px}
+.bub.md ul{padding-left:18px}
+.bub.md>:last-child{margin-bottom:0}
+.bub.md pre.code{margin:6px 0}
+.chatform textarea{flex:1;width:auto;min-height:64px}
+.pjet{list-style:none;margin:8px 0;padding:0;display:flex;flex-direction:column;gap:4px}
+.pjet li{display:flex;justify-content:space-between;gap:6px;align-items:center}
+.pjet li button.link{text-align:left}
+.pjet li.done button.link{text-decoration:line-through;color:var(--ink-soft)}
+.pj{margin-top:10px}
 /* Inglês */
 ul.plan.mission,ul.plan.hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 ul.plan.hist{margin-top:8px;gap:6px}
@@ -1133,14 +1151,14 @@ var DEFAULT=[
    ========================================================= */
 var PREFIX='minha-rotina:';
 // Dados que vão para a nuvem e para o backup
-var KEYS=['routine.v2','progress','notes','focus','topics','picks','essays','reps','sims','exam','best','trailMode','custom','errors','hours','goals','badges','daylog','water','waterGoal','habitSync','workouts','wlog','ingCfg','vocab','ingEx','ingErr','ingLog','ingWr'];
+var KEYS=['routine.v2','progress','notes','focus','topics','picks','essays','reps','sims','exam','best','trailMode','custom','errors','hours','goals','badges','daylog','water','waterGoal','habitSync','workouts','wlog','ingCfg','vocab','ingEx','ingErr','ingLog','ingWr','cards','labEx','labCfg','devBug','devProj'];
 // O registro do hábito (chave 'habit') só entra aqui quando a pessoa ativa a sincronização, veja syncHabitKey()
 function load(k,d){try{var v=localStorage.getItem(PREFIX+k);return v?JSON.parse(v):d}catch(e){return d}}
 function rawSave(k,v){try{localStorage.setItem(PREFIX+k,JSON.stringify(v))}catch(e){}}
 function save(k,v){rawSave(k,v);if(KEYS.indexOf(k)>=0&&typeof markDirty==='function')markDirty()}
 function clone(o){return JSON.parse(JSON.stringify(o))}
 
-var routine,progress,notes,focus,topics,picks,essays,reps,sims,exam,errs,hoursBy,goals,badges,daylog,water,waterGoal,habit,workouts,wlog,ingCfg,vocab,ingEx,ingErr,ingLog,ingWr;
+var routine,progress,notes,focus,topics,picks,essays,reps,sims,exam,errs,hoursBy,goals,badges,daylog,water,waterGoal,habit,workouts,wlog,ingCfg,vocab,ingEx,ingErr,ingLog,ingWr,cards,labEx,labCfg,devBug,devProj;
 function reloadState(){
   routine=load('routine.v2',clone(DEFAULT));
   progress=load('progress',{});  // {data:{bloco:true}}
@@ -1167,6 +1185,11 @@ function reloadState(){
   ingErr=load('ingErr',[]);      // caderno de erros de inglês
   ingLog=load('ingLog',[]);      // minutos de imersão por habilidade
   ingWr=load('ingWr',[]);        // textos corrigidos
+  cards=load('cards',[]);        // cartões de revisão das trilhas ENEM e Dev
+  labEx=load('labEx',[]);        // listas de questões, desafios e revisões feitos
+  labCfg=load('labCfg',null);    // linguagem, nível e conversas com o tutor
+  devBug=load('devBug',[]);      // diário de bugs
+  devProj=load('devProj',[]);    // projetos de portfólio
   habit=load('habit',null);      // hábito a largar: fica só neste aparelho, salvo se a pessoa ativar a sincronização
   custom=normCustom(load('custom',null));
   if(migrateCustomTec(custom))save('custom',custom);
@@ -1393,6 +1416,7 @@ function renderHoje(){
   h+=reviewsPanel();
   h+=waterPanel(false);
   h+=ingTodayPanel();
+  h+=labTodayPanel();
   h+='<div class="panel"><h3>Anotações do dia</h3><label class="sr" for="note">Anotações de hoje</label><textarea id="note" data-date="'+tk()+'" placeholder="O que estudou, dúvidas para revisar, cargas do treino...">'+esc(notes[tk()]||'')+'</textarea></div>';
   var tm=addDays(d,1),ti=dayIdx(tm);
   h+='<div class="panel next"><h3>Amanhã · '+DAYS[ti]+'</h3><div class="list">'+(routine[ti].length?routine[ti].map(function(b){return blockHTML(b,tm)}).join(''):'<p class="empty">Nada planejado.</p>')+'</div></div>';
@@ -1593,8 +1617,8 @@ function renderTrail(kind){
   h+='<p class="hint" style="margin:14px 0 0">Clique no status para avançar: não visto, estudado, revisado, dominado. Ao estudar um tópico, ele volta para revisão em 1, 7 e 30 dias.</p>';
   return h+'</section>';
 }
-function renderConteudo(){return renderTrail('enem')}
-function renderDev(){return renderTrail('dev')}
+function renderConteudo(){return renderLab('enem')}
+function renderDev(){return renderLab('dev')}
 
 /* Ações de personalização da trilha */
 function saveCustom(){save('custom',custom);buildSyllabus()}
@@ -1697,6 +1721,7 @@ var COMP=[['C1','Domínio da norma culta'],['C2','Compreensão da proposta e rep
 function essayTotal(e){return e.c.reduce(function(a,b){return a+b},0)}
 function renderRedacao(){
   var h='<div class="two"><div class="stack">';
+  h+=labRedPanel();
   // Estrutura
   h+='<div class="panel"><h3>Estrutura do texto dissertativo-argumentativo</h3><ol class="steps">';
   h+='<li><div><b>Introdução</b><span>Contextualização do tema e tese clara.</span></div></li>';
@@ -1719,7 +1744,7 @@ function renderRedacao(){
     var sorted=essays.slice().sort(function(a,b){return a.date<b.date?1:-1});
     h+='<div class="tblwrap"><table class="tbl"><thead><tr><th>Data</th><th>Tema</th>'+COMP.map(function(c){return '<th class="n">'+c[0]+'</th>'}).join('')+'<th class="n">Total</th><th></th></tr></thead><tbody>';
     sorted.forEach(function(e){
-      h+='<tr><td>'+shortDate(e.date)+'</td><td>'+esc(e.tema)+'</td>'+e.c.map(function(v){return '<td class="n">'+v+'</td>'}).join('')+'<td class="n"><b>'+essayTotal(e)+'</b></td><td><button class="del" data-act="del-essay" data-id="'+e.id+'" aria-label="Apagar redação">×</button></td></tr>';
+      h+='<tr><td>'+shortDate(e.date)+'</td><td>'+esc(e.tema)+(e.ia?' <small class="tag">IA</small>':'')+'</td>'+e.c.map(function(v){return '<td class="n">'+v+'</td>'}).join('')+'<td class="n"><b>'+essayTotal(e)+'</b></td><td><button class="del" data-act="del-essay" data-id="'+e.id+'" aria-label="Apagar redação">×</button></td></tr>';
     });
     h+='</tbody></table></div>';
   }
@@ -2401,7 +2426,7 @@ function badgeCtx(){
   var cov=areaCoverage(),revs=0,fm=0;
   Object.keys(daylog).forEach(function(k){revs+=daylog[k].r||0});
   Object.keys(focus).forEach(function(k){fm+=focus[k]||0});
-  return {ing:ingBadgeCtx(),studied:cov.studied,mastered:cov.mastered,devStudied:areaCoverage(null,'dev').studied,waterBest:waterBestRun(),treinos:wlog.length,streak:Math.max(load('best',0),streakNow()),revs:revs,focusH:fm/60,errs:errs.length,errFixed:errs.filter(function(e){return e.ok}).length,simCron:sims.filter(function(s){return s.cron}).length,essays:essays.length,goalsHit:goalsHit()};
+  return {ing:ingBadgeCtx(),lab:labBadgeCtx(),studied:cov.studied,mastered:cov.mastered,devStudied:areaCoverage(null,'dev').studied,waterBest:waterBestRun(),treinos:wlog.length,streak:Math.max(load('best',0),streakNow()),revs:revs,focusH:fm/60,errs:errs.length,errFixed:errs.filter(function(e){return e.ok}).length,simCron:sims.filter(function(s){return s.cron}).length,essays:essays.length,goalsHit:goalsHit()};
 }
 function checkBadges(){
   var c=badgeCtx(),fresh=[];
@@ -3850,6 +3875,1061 @@ function ingBadgeCtx(){
 }
 
 /* =========================================================
+   LABORATÓRIO DE ESTUDO: mecânicas das trilhas ENEM e Dev
+   Cartões com revisão espaçada, questões e desafios com IA, tutor, missão do dia.
+   Na Dev: desafios de código, revisão de código, diário de bugs e projetos.
+   Na Redação (ENEM): correção por competência com IA.
+   ========================================================= */
+var LAB_BOX=[1,2,4,8,16,35,70];
+var LAB_TABS={
+ enem:[['trilha','Trilha'],['missao','Missão'],['cartoes','Cartões'],['questoes','Questões'],['tutor','Tutor']],
+ dev:[['trilha','Trilha'],['missao','Missão'],['cartoes','Cartões'],['questoes','Questões'],['desafios','Desafios'],['revisao','Revisão de código'],['bugs','Bugs'],['projetos','Projetos'],['tutor','Tutor']]
+};
+var LAB_LANGS=['Python','JavaScript','TypeScript','Java','C#','C','C++','Go','SQL','PHP','Kotlin','Rust'];
+var LAB_NIV=[['iniciante','Iniciante'],['junior','Júnior'],['pleno','Pleno']];
+var LAB_TIPOS=[['implementar','Implementar do zero'],['bug','Achar e corrigir o bug'],['saida','Prever a saída'],['refatorar','Refatorar um código']];
+var LAB_DIFS=[['facil','Fácil'],['media','Média'],['dificil','Difícil']];
+var LAB_FOCOS=[['geral','Geral'],['seguranca','Segurança'],['desempenho','Desempenho'],['legibilidade','Legibilidade e boas práticas'],['testes','Testes']];
+var LAB_MODOS={
+ enem:[['explicar','Explicar do zero'],['socratico','Aprender por perguntas'],['questao','Resolver uma questão que eu colar'],['revisar','Resumo de véspera']],
+ dev:[['explicar','Explicar do zero'],['socratico','Aprender por perguntas'],['entrevista','Simular entrevista técnica'],['depurar','Depurar comigo']]
+};
+var LAB_NOME={enem:'ENEM',dev:'Dev'};
+var labTab=load('labTab',null)||{};if(!labTab.enem)labTab.enem='trilha';if(!labTab.dev)labTab.dev='trilha';
+var labSess=load('labSess',null)||{enem:null,dev:null};   // lista de questões em andamento (só neste aparelho)
+var labDes=load('labDes',null);                           // desafio de código em andamento (só neste aparelho)
+var labChat=load('labChat',null)||{enem:null,dev:null};   // conversa com o tutor (só neste aparelho)
+var labBusy='',labMsg='',labMsgK='';
+var labRev=null,labSug={enem:[],dev:[]},labSeq=0,labLimit=40,labBugRev=null;
+var labFilter={enem:{m:'',q:''},dev:{m:'',q:''}},labBugTag='todas';
+var labTmp={red:null,tema:null,rev:null,ideias:[]};      // resultados temporários da IA
+var labForm={
+ enem:{cm:'',ct:'',ctema:'',cnotas:'',cqtd:12,qm:'',qt:'',qdif:'media',qqtd:8,qerr:false},
+ dev:{cm:'',ct:'',ctema:'',cnotas:'',cqtd:12,qm:'',qt:'',qdif:'media',qqtd:8,qerr:false,dm:'',dt:'',dtipo:'implementar',pt:'',}
+};
+
+function labCfgGet(){
+  var c=labCfg||{};
+  return {lang:LAB_LANGS.indexOf(c.lang)>=0?c.lang:'Python',nivel:['iniciante','junior','pleno'].indexOf(c.nivel)>=0?c.nivel:'iniciante',tut:c.tut||0};
+}
+function labCfgSave(p){var c=labCfgGet();Object.keys(p).forEach(function(k){c[k]=p[k]});labCfg=c;save('labCfg',c)}
+function labId(){return 'l'+Date.now().toString(36)+(labSeq++).toString(36)+Math.random().toString(36).slice(2,4)}
+function labNorm(s){return String(s||'').toLowerCase().replace(/\s+/g,' ').trim()}
+function labTrim(s,n){return String(s==null?'':s).replace(/\r/g,'').trim().slice(0,n)}
+function labBusyHTML(){return labBusy?'<p class="aiwait" role="status">Trabalhando com a IA, isso leva alguns segundos...</p>':''}
+function labErrHTML(scope){return labMsg&&labMsgK===scope?'<div class="alerts"><ul class="alerts"><li class="crit" role="alert">'+esc(labMsg)+'</li></ul></div>':''}
+function labSetMsg(scope,m){labMsg=m||'';labMsgK=m?scope:''}
+function labMats(k){return MATERIAS.filter(function(m){return k==='dev'?m.trilha==='dev':(m.trilha==='enem'&&m.area!=='red')})}
+function labMatOptions(k,sel,first){
+  var h='<option value="">'+esc(first)+'</option>',last=null,open=false;
+  labMats(k).forEach(function(m){
+    var a=areaById(m.area),an=a?a.nome:'';
+    if(an!==last){if(open)h+='</optgroup>';open=!!an;if(an)h+='<optgroup label="'+esc(an)+'">';last=an}
+    h+='<option value="'+esc(m.id)+'"'+(m.id===sel?' selected':'')+'>'+esc(m.nome)+'</option>';
+  });
+  return h+(open?'</optgroup>':'');
+}
+function labTopicOptions(mat,sel,first){
+  var m=MATERIA[mat],h='<option value="">'+esc(first||'Qualquer tópico')+'</option>';
+  if(m)m.mods.forEach(function(md){h+='<optgroup label="'+esc(md.nome)+'">'+md.ids.map(function(id){return '<option value="'+esc(id)+'"'+(id===sel?' selected':'')+'>'+esc(TOPICS[id].nome)+'</option>'}).join('')+'</optgroup>'});
+  return h;
+}
+function labMatSelect(k,name,sel,first){return '<select name="'+name+'" data-lm="1">'+labMatOptions(k,sel,first)+'</select>'}
+function labDifSelect(name,cur){return '<select name="'+name+'">'+LAB_DIFS.map(function(d){return '<option value="'+d[0]+'"'+(d[0]===cur?' selected':'')+'>'+d[1]+'</option>'}).join('')+'</select>'}
+function labNextTopic(k){
+  var best=null;
+  TOPIC_LIST.forEach(function(t){
+    if(t.trilha!==k||tstate(t.id).s!==0)return;
+    if(k==='enem'&&t.area==='red')return;
+    if(!best||(t.p||2)>(best.p||2))best=t;
+  });
+  return best;
+}
+function labMatName(id){return MATERIA[id]?MATERIA[id].nome:''}
+function labTopName(id){return TOPICS[id]?TOPICS[id].nome:''}
+function labFindMat(k,name){
+  var n=labNorm(name);if(!n)return '';
+  var ms=MATERIAS.filter(function(m){return k==='dev'?m.trilha==='dev':m.trilha==='enem'||m.id==='ing'});
+  for(var i=0;i<ms.length;i++)if(labNorm(ms[i].nome)===n)return ms[i].id;
+  for(var j=0;j<ms.length;j++)if(n.indexOf(labNorm(ms[j].nome))>=0||labNorm(ms[j].nome).indexOf(n)>=0)return ms[j].id;
+  return '';
+}
+function mdInline(t){return esc(t).replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/`([^`\n]+)`/g,'<code>$1</code>')}
+function mdLite(s){
+  var parts=String(s||'').split('```'),h='';
+  parts.forEach(function(p,i){
+    if(i%2===1){var nl=p.indexOf('\n'),code=nl>=0&&/^[\w#+.-]*\s*$/.test(p.slice(0,nl))?p.slice(nl+1):p;h+='<pre class="code">'+esc(code.replace(/\n$/,''))+'</pre>';return}
+    p.split(/\n{2,}/).forEach(function(b){
+      b=b.trim();if(!b)return;
+      var ls=b.split('\n');
+      if(ls.every(function(l){return /^\s*[-*]\s+/.test(l)}))h+='<ul>'+ls.map(function(l){return '<li>'+mdInline(l.replace(/^\s*[-*]\s+/,''))+'</li>'}).join('')+'</ul>';
+      else h+='<p>'+ls.map(mdInline).join('<br>')+'</p>';
+    });
+  });
+  return h;
+}
+
+/* ---------- chamada à IA ---------- */
+async function labCall(payload){
+  if(!sb||!user)throw new Error('Entre na sua conta (botão no menu) para usar a IA.');
+  var s=(await sb.auth.getSession()).data.session;
+  if(!s)throw new Error('Sua sessão expirou. Entre de novo na sua conta.');
+  var r=await fetch('/api/estudo',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.access_token},body:JSON.stringify(payload)});
+  var data=await r.json().catch(function(){return {}});
+  if(!r.ok)throw new Error(data.erro||(r.status===404?'A função /api/estudo não foi encontrada. Envie o arquivo api/estudo.js ao GitHub e espere o deploy terminar.':'Erro '+r.status+' na IA.'));
+  return data;
+}
+
+/* ---------- atividade e sequência ---------- */
+function labBump(n){bumpLog('lab',n||1)}
+function labStreak(){
+  var d=today(),n=0;
+  if(!(daylog[dkey(d)]&&daylog[dkey(d)].lab))d=addDays(d,-1);
+  while(daylog[dkey(d)]&&daylog[dkey(d)].lab){n++;d=addDays(d,-1)}
+  return n;
+}
+function labBestStreak(){
+  var ks=Object.keys(daylog).filter(function(k){return daylog[k]&&daylog[k].lab}).sort(),best=0,run=0,prev=null;
+  ks.forEach(function(k){run=prev&&daysBetween(pk(prev),pk(k))===1?run+1:1;if(run>best)best=run;prev=k});
+  return best;
+}
+
+/* ---------- cartões com revisão espaçada ---------- */
+function cardFind(k,f){var n=labNorm(f);for(var i=0;i<cards.length;i++)if(cards[i].k===k&&labNorm(cards[i].f)===n)return cards[i];return null}
+function cardAdd(k,o){
+  var f=labTrim(o.f,200),v=labTrim(o.v,320);
+  if(!f||!v||cardFind(k,f))return null;
+  var c={i:labId(),k:k,m:o.m||'',top:o.top||'',f:f,v:v,x:labTrim(o.x,200),b:0,d:tk(),a:tk(),n:0,fl:0,src:o.src||''};
+  cards.push(c);return c;
+}
+function cardsSave(){save('cards',cards)}
+function cardsOf(k){return cards.filter(function(c){return c.k===k})}
+function cardDue(k){var t=tk();return cardsOf(k).filter(function(c){return (c.d||t)<=t}).sort(function(a,b){return (a.d||'')<(b.d||'')?-1:(a.d||'')>(b.d||'')?1:(a.b||0)-(b.b||0)})}
+function cardStats(k){
+  var all=cardsOf(k),t=tk(),m=0,due=0,rev=0;
+  all.forEach(function(c){if((c.b||0)>=4)m++;if((c.d||t)<=t)due++;if(c.l===t)rev++});
+  return {total:all.length,mastered:m,due:due,revToday:rev};
+}
+// Na reta final do ENEM os intervalos encurtam: todo cartão precisa voltar antes da prova
+function cardDays(k,box){
+  var base=LAB_BOX[Math.max(0,Math.min(6,box-1))];
+  if(k==='enem'&&exam){var left=daysBetween(today(),pk(exam));if(left>=1)return Math.max(1,Math.min(base,left-1))}
+  return base;
+}
+function cardGrade(c,g){
+  c.n=(c.n||0)+1;c.l=tk();
+  if(g===0){c.fl=(c.fl||0)+1;c.b=Math.max(0,(c.b||0)-2);c.d=dkey(addDays(today(),1))}
+  else{c.b=Math.min(6,(c.b||0)+(g===2?2:1));c.d=dkey(addDays(today(),cardDays(c.k,c.b)))}
+  bumpLog('cr',1);labBump(1);
+}
+function labParse(txt){
+  var out=[],seen={};
+  String(txt||'').split(/\r?\n/).forEach(function(line){
+    line=line.trim();if(!line)return;
+    var sep=/\s*(?:=>|->|→|;|\t)\s*|\s+[-–—]\s+/.exec(line);
+    if(!sep)return;
+    var f=line.slice(0,sep.index).replace(/^\s*(?:[-*•]\s+|\d+[.)]\s+)/,'').trim(),v=line.slice(sep.index+sep[0].length).trim();
+    if(!f||!v)return;
+    var n=labNorm(f);if(seen[n])return;seen[n]=1;
+    out.push({f:f,v:v});
+  });
+  return out.slice(0,300);
+}
+
+/* ---------- tela principal das duas trilhas ---------- */
+function renderLab(k){
+  var tabs=LAB_TABS[k],cur=labTab[k];
+  if(tabs.map(function(t){return t[0]}).indexOf(cur)<0)cur=labTab[k]='trilha';
+  var cs=cardStats(k),bd=k==='dev'?devBugDue().length:0;
+  var h='<div class="chips labtabs" role="group" aria-label="Seções da trilha '+LAB_NOME[k]+'">'+tabs.map(function(t){
+    var badge='';
+    if(t[0]==='cartoes'&&cs.due)badge=' <small>'+cs.due+'</small>';
+    if(t[0]==='bugs'&&bd)badge=' <small>'+bd+'</small>';
+    return '<button class="chip" data-act="lab-tab" data-k="'+k+'" data-v="'+t[0]+'" aria-pressed="'+(cur===t[0])+'">'+t[1]+badge+'</button>';
+  }).join('')+'</div>';
+  var F={trilha:function(){return renderTrail(k)},missao:labMissaoTab,cartoes:labCartoes,questoes:labQuestoes,tutor:labTutor,desafios:labDesafios,revisao:labRevisao,bugs:labBugs,projetos:labProjetos}[cur];
+  return h+F(k);
+}
+
+/* ---------- missão de hoje ---------- */
+function labExToday(k,tipo){var t=tk();return labEx.some(function(e){return e.date===t&&e.k===k&&(!tipo||e.tipo===tipo)})}
+function labMission(k){
+  var out=[],cs=cardStats(k),nx=labNextTopic(k),t=tk();
+  if(cs.due>0||cs.revToday>0)out.push({done:cs.due===0,txt:cs.due>0?'Revisar '+cs.due+(cs.due===1?' cartão':' cartões'):'Cartões revisados hoje: '+cs.revToday,act:'lab-tab',v:'cartoes'});
+  if(k==='enem'){
+    var rv=dueReviews().filter(function(id){return TOPICS[id]&&TOPICS[id].trilha==='enem'}).length;
+    if(rv>0)out.push({done:false,txt:'Fazer '+rv+(rv===1?' revisão':' revisões')+' de tópicos da trilha',act:'go',v:'hoje'});
+    var pend=errs.filter(function(e){return !e.ok}).length;
+    if(pend>0)out.push({done:false,txt:'Refazer '+pend+(pend===1?' questão':' questões')+' do caderno de erros',act:'go-err',v:''});
+  }else{
+    var bd=devBugDue().length;
+    if(bd>0)out.push({done:false,txt:'Revisar '+bd+(bd===1?' bug':' bugs')+' do seu diário',act:'lab-tab',v:'bugs'});
+  }
+  if(nx){
+    var studied=TOPIC_LIST.some(function(x){return x.trilha===k&&topics[x.id]&&topics[x.id].at===t});
+    out.push({done:studied,txt:'Estudar na trilha: '+nx.nome,act:'lab-open-topic',v:nx.id});
+  }
+  out.push({done:labExToday(k,'questoes'),txt:'Resolver uma lista de questões com IA',act:'lab-tab',v:'questoes'});
+  if(k==='enem'){
+    var lim=dkey(addDays(today(),-6));
+    out.push({done:essays.some(function(e){return e.date>=lim}),txt:'Escrever e corrigir uma redação nesta semana',act:'go',v:'redacao'});
+  }else{
+    out.push({done:labExToday('dev','desafio'),txt:'Resolver um desafio de código',act:'lab-tab',v:'desafios'});
+    var ps=devProj.filter(function(p){return p.st==='fazendo'});
+    if(ps.length){
+      var p0=ps[0],et=p0.et.filter(function(e){return !e.ok})[0];
+      out.push({done:false,txt:'Projeto '+p0.nome+(et?': '+et.t:': defina a próxima etapa'),act:'lab-tab',v:'projetos'});
+    }else if(!devProj.some(function(p){return p.st==='ideia'}))out.push({done:false,txt:'Escolher um projeto de portfólio para construir',act:'lab-tab',v:'projetos'});
+    var lim2=dkey(addDays(today(),-6));
+    if(!labEx.some(function(e){return e.tipo==='revisao'&&e.date>=lim2}))out.push({done:false,txt:'Pedir uma revisão de código do que você escreveu',act:'lab-tab',v:'revisao'});
+  }
+  return out;
+}
+function labMissaoTab(k){
+  var h='',mi=labMission(k),cs=cardStats(k),wk=labWeek(k);
+  h+='<div class="panel"><h3>Missão de hoje</h3><ul class="plan mission">'+mi.map(function(m){
+    return '<li class="'+(m.done?'done':'')+'"><span class="mk" aria-hidden="true">'+(m.done?'✓':'')+'</span><span class="mt">'+esc(m.txt)+'</span>'+(m.done?'<span class="sr">feito</span>':'<button class="btn sm ghost" data-act="'+m.act+'" data-k="'+k+'" data-v="'+esc(m.v)+'" aria-label="Abrir: '+esc(m.txt)+'">Abrir</button>')+'</li>';
+  }).join('')+'</ul><p class="hint" style="margin:8px 0 0">A missão se adapta ao seu dia. Não precisa fazer tudo: revisar o que vence e treinar um pouco todo dia vale mais que uma maratona.</p></div>';
+  if(k==='enem'&&exam){
+    var left=daysBetween(today(),pk(exam));
+    if(left>=0&&left<=70)h+='<div class="alerts"><ul class="alerts"><li class="'+(left<=14?'high':'')+'">'+(left===0?'A prova é hoje. Bom trabalho: confie no que você estudou.':'Faltam '+left+(left===1?' dia':' dias')+' para a prova. Nos cartões, os intervalos de revisão foram encurtados para tudo voltar antes do exame.')+'</li></ul></div>';
+  }
+  var cov=areaCoverage(null,k);
+  h+='<div class="statsgrid"><div class="panel"><h3>Seu ritmo</h3><p class="bignum">'+labStreak()+' <small>dias seguidos de prática</small></p><div class="split"><div class="row"><span>Melhor sequência</span><span>'+labBestStreak()+'</span></div><div class="row"><span>Questões respondidas (7 dias)</span><span>'+wk.q+'</span></div><div class="row"><span>Acertos nas questões (7 dias)</span><span>'+(wk.q?Math.round(wk.ok/wk.q*100)+'%':'–')+'</span></div>'+(k==='dev'?'<div class="row"><span>Desafios resolvidos (7 dias)</span><span>'+wk.d+'</span></div>':'')+'</div><p class="hint" style="margin:8px 0 0">Conta o dia em que você revisou cartões, resolveu questões ou desafios, usou o tutor ou registrou algo aqui.</p></div>';
+  h+='<div class="panel"><h3>Seu acervo</h3><div class="split"><div class="row"><span>Tópicos estudados</span><span>'+cov.studied+'/'+cov.total+'</span></div><div class="row"><span>Cartões (dominados: '+cs.mastered+')</span><span>'+cs.total+'</span></div><div class="row"><span>Cartões para revisar hoje</span><span>'+cs.due+'</span></div>';
+  if(k==='dev')h+='<div class="row"><span>Bugs no diário</span><span>'+devBug.length+'</span></div><div class="row"><span>Projetos entregues</span><span>'+devProj.filter(function(p){return p.st==='entregue'}).length+'</span></div>';
+  h+='</div></div></div>';
+  h+='<div class="panel"><h3>Como usar esta trilha</h3><ol class="plan"><li><b>Trilha:</b> o conteúdo na ordem certa, com revisões em 1, 7 e 30 dias.</li><li><b>Cartões:</b> o que você precisa lembrar (conceitos'+(k==='enem'?', fórmulas, datas':', sintaxe, comandos')+') volta no momento certo. Crie os seus ou peça à IA.</li><li><b>Questões:</b> a IA monta listas '+(k==='enem'?'no estilo do ENEM':'de programação')+' por matéria e dificuldade. Cada erro vira cartão'+(k==='enem'?' e entra no caderno de erros':'')+'.</li>';
+  if(k==='dev')h+='<li><b>Desafios e Revisão de código:</b> escreva código de verdade e receba a avaliação, os problemas e a versão melhorada.</li><li><b>Bugs:</b> documente causa raiz e prevenção de cada bug; o diário volta como revisão espaçada.</li><li><b>Projetos:</b> portfólio com etapas, status e links.</li>';
+  else h+='<li><b>Redação:</b> na aba Redação, a IA corrige por competência e mostra o que subir primeiro.</li>';
+  h+='<li><b>Tutor:</b> explica, pergunta, resolve '+(k==='enem'?'questões':'e simula entrevistas')+'. A conversa fica só neste aparelho.</li></ol><p class="hint" style="margin:8px 0 0">A IA pode errar, principalmente em contas e código. Confira a explicação e descarte o que não fizer sentido. As funções com IA precisam de login; o resto funciona sem internet.</p></div>';
+  return h;
+}
+function labWeek(k){
+  var lim=dkey(addDays(today(),-6)),q=0,ok=0,d=0;
+  labEx.forEach(function(e){if(e.k!==k||e.date<lim)return;if(e.tipo==='questoes'){q+=e.total||0;ok+=e.ok||0}if(e.tipo==='desafio')d++});
+  return {q:q,ok:ok,d:d};
+}
+
+/* ---------- cartões: tela ---------- */
+function labCardForms(k){
+  var f=labForm[k],h='';
+  h+='<form class="panel form" id="labGenCardsForm" data-k="'+k+'"><h3>Criar cartões com IA</h3><p class="hint" style="margin:0">Escolha um assunto ou cole as suas anotações. Você revisa a lista e adiciona só o que quiser.</p>';
+  h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">'+(k==='dev'?'Assunto':'Matéria')+labMatSelect(k,'lm',f.cm,'Escolha...')+'</label><label class="f">Tópico<select name="lt">'+labTopicOptions(f.cm,f.ct)+'</select></label></div>';
+  var nx=labNextTopic(k);
+  h+='<label class="f">Ou descreva o assunto'+(nx?' <button type="button" class="link" data-act="lab-use-next" data-k="'+k+'" data-f="labGenCardsForm">usar meu próximo tópico da trilha</button>':'')+'<input name="tema" maxlength="160" placeholder="'+(k==='dev'?'Ex.: closures em JavaScript, JOINs em SQL':'Ex.: leis de Newton, Revolução Industrial')+'" value="'+esc(f.ctema)+'"></label>';
+  h+='<label class="f">Suas anotações (opcional): a IA transforma em cartões<textarea name="notas" maxlength="3500" style="min-height:90px" placeholder="Cole aqui um resumo, uma aula ou um trecho de livro">'+esc(f.cnotas)+'</textarea></label>';
+  h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Quantidade<select name="qtd">'+[8,12,20].map(function(n){return '<option value="'+n+'"'+(+f.cqtd===n?' selected':'')+'>'+n+' cartões</option>'}).join('')+'</select></label></div>';
+  h+='<div><button class="btn" type="submit"'+(labBusy?' disabled':'')+'>Gerar cartões</button></div>'+(labBusy==='cards:'+k?labBusyHTML():'')+labErrHTML('cards:'+k)+'</form>';
+  var sg=labSug[k];
+  if(sg.length){
+    h+='<div class="panel"><h3>Cartões sugeridos <small style="font-size:14px;color:var(--ink-soft)">'+sg.length+'</small></h3><ul class="sug">'+sg.map(function(c,i){
+      return '<li><div class="sw2"><b>'+esc(c.f)+'</b><br><span>'+esc(c.v)+'</span>'+(c.x?'<br><em>'+esc(c.x)+'</em>':'')+'</div><div class="chips"><button class="chip" data-act="lab-sug-add" data-k="'+k+'" data-i="'+i+'">Adicionar</button><button class="chip" data-act="lab-sug-skip" data-k="'+k+'" data-i="'+i+'">Descartar</button></div></li>';
+    }).join('')+'</ul><div class="chips" style="margin-top:10px"><button class="btn sm" data-act="lab-sug-all" data-k="'+k+'">Adicionar todos</button><button class="btn sm ghost" data-act="lab-sug-clear" data-k="'+k+'">Limpar lista</button></div></div>';
+  }
+  h+='<form class="panel form" id="labCardForm" data-k="'+k+'"><h3>Criar um cartão</h3><div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">'+(k==='dev'?'Assunto':'Matéria')+labMatSelect(k,'lm','','Sem '+(k==='dev'?'assunto':'matéria'))+'</label><label class="f">Tópico<select name="lt">'+labTopicOptions('','')+'</select></label></div>';
+  h+='<label class="f">Frente (a pergunta)<input name="f" maxlength="200" required placeholder="'+(k==='dev'?'Ex.: Qual a diferença entre == e === em JavaScript?':'Ex.: Qual a fórmula da energia cinética?')+'"></label>';
+  h+='<label class="f">Verso (a resposta)<textarea name="v" maxlength="320" required style="min-height:70px" placeholder="'+(k==='dev'?'Ex.: == converte tipos antes de comparar; === compara valor e tipo.':'Ex.: Ec = m·v²/2, em joules, com m em kg e v em m/s.')+'"></textarea></label>';
+  h+='<div><button class="btn sm" type="submit">Salvar cartão</button></div></form>';
+  h+='<form class="panel form" id="labCardBulkForm" data-k="'+k+'"><h3>Colar vários cartões</h3><p class="hint" style="margin:0">Uma linha por cartão, com a pergunta e a resposta separadas por " - ", ponto e vírgula, tabulação ou "=>". Dá para colar direto de uma planilha.</p>';
+  h+='<label class="f">'+(k==='dev'?'Assunto':'Matéria')+' (opcional)'+labMatSelect(k,'lm','','Sem '+(k==='dev'?'assunto':'matéria'))+'</label>';
+  h+='<label class="f">Cartões<textarea name="lista" maxlength="30000" required style="min-height:100px" placeholder="Fotossíntese - Converte luz em energia química, produzindo glicose e O2&#10;Mitocôndria; Organela da respiração celular"></textarea></label><div><button class="btn sm" type="submit">Adicionar cartões</button></div></form>';
+  return h;
+}
+function labCardRevPanel(){
+  var r=labRev,id=r.q[r.i],c=cards.filter(function(x){return x.i===id})[0];
+  if(!c||r.i>=r.q.length){
+    return '<div class="panel"><h3>Revisão concluída</h3><p class="bignum">'+r.ok+' <small>de '+r.done+' lembrados</small></p><p class="hint">Quem errou volta amanhã; quem acertou volta em intervalos cada vez maiores.</p><button class="btn sm" data-act="lab-card-end" data-k="'+r.k+'">Fechar</button></div>';
+  }
+  var h='<div class="panel flash"><h3>Revisão <small style="font-size:14px;color:var(--ink-soft)">'+(r.i+1)+' de '+r.q.length+(c.m&&MATERIA[c.m]?' · '+esc(MATERIA[c.m].nome):'')+'</small></h3>';
+  h+='<div class="card-front"><b class="big" style="font-size:22px">'+esc(c.f)+'</b></div>';
+  if(!r.shown)h+='<div class="chips" style="justify-content:center"><button class="btn sm" data-act="lab-card-show" data-k="'+r.k+'">Mostrar resposta</button></div>';
+  else{
+    h+='<div class="card-back"><span class="big" style="font-size:20px;font-weight:700">'+esc(c.v)+'</span>'+(c.x?'<em>'+esc(c.x)+'</em>':'')+'</div>';
+    h+='<div class="chips" style="justify-content:center;margin-top:10px"><button class="btn sm danger" data-act="lab-card-grade" data-k="'+r.k+'" data-g="0">Errei</button><button class="btn sm" data-act="lab-card-grade" data-k="'+r.k+'" data-g="1">Acertei</button><button class="btn sm ghost" data-act="lab-card-grade" data-k="'+r.k+'" data-g="2">Fácil</button></div>';
+  }
+  return h+'<div style="text-align:center;margin-top:10px"><button class="link" data-act="lab-card-end" data-k="'+r.k+'">Encerrar revisão</button></div></div>';
+}
+function labCartoes(k){
+  var cs=cardStats(k),h='',due=cardDue(k);
+  if(labRev&&labRev.k===k)h+=labCardRevPanel();
+  else{
+    h+='<div class="panel"><h3>Seus cartões</h3><p class="bignum">'+cs.total+' <small>cartões · '+cs.mastered+' dominados</small></p><div class="split"><div class="row"><span>Para revisar hoje</span><span>'+cs.due+'</span></div><div class="row"><span>Revisados hoje</span><span>'+cs.revToday+'</span></div></div>';
+    h+=(cs.due?'<button class="btn" data-act="lab-card-start" data-k="'+k+'" style="margin-top:10px">Revisar agora ('+Math.min(cs.due,20)+')</button>':'<p class="hint" style="margin:10px 0 0">'+(cs.total?'Nada vence hoje. Volte amanhã ou crie mais cartões.':'Crie seu primeiro cartão abaixo ou peça à IA.')+'</p>')+'</div>';
+  }
+  h+=labCardForms(k);
+  var F=labFilter[k],q=labNorm(F.q);
+  var list=cardsOf(k).filter(function(c){return (!F.m||c.m===F.m)&&(!q||labNorm(c.f+' '+c.v).indexOf(q)>=0)}).slice().reverse();
+  h+='<div class="panel"><h3>Todos os cartões <small style="font-size:14px;color:var(--ink-soft)">'+cardsOf(k).length+'</small></h3>';
+  if(cardsOf(k).length){
+    h+='<div class="filters"><label class="f">'+(k==='dev'?'Assunto':'Matéria')+'<select data-lf="m" data-k="'+k+'"><option value="">Todos</option>'+labMats(k).filter(function(m){return cardsOf(k).some(function(c){return c.m===m.id})}).map(function(m){return '<option value="'+esc(m.id)+'"'+(F.m===m.id?' selected':'')+'>'+esc(m.nome)+'</option>'}).join('')+'</select></label><label class="f">Buscar<input id="labSearch" data-k="'+k+'" value="'+esc(F.q)+'" placeholder="Palavra da frente ou do verso"></label></div>';
+  }
+  if(!list.length)h+='<p class="empty">'+(cardsOf(k).length?'Nenhum cartão neste filtro.':'Nenhum cartão ainda.')+'</p>';
+  else{
+    var t=tk();
+    h+='<ul class="words">'+list.slice(0,labLimit).map(function(c){
+      var st=(c.b||0)>=4?'dominado':((c.d||t)<=t?'revisar hoje':'volta em '+shortDate(c.d));
+      return '<li><div class="wmain"><b>'+esc(c.f)+'</b><span class="wt">'+esc(c.v)+'</span><small>'+(c.m&&MATERIA[c.m]?esc(MATERIA[c.m].nome)+' · ':'')+st+'</small></div><button class="del" data-act="lab-card-del" data-k="'+k+'" data-id="'+esc(c.i)+'" aria-label="Apagar cartão">×</button></li>';
+    }).join('')+'</ul>';
+    if(list.length>labLimit)h+='<button class="btn sm ghost" data-act="lab-card-more" style="margin-top:10px">Mostrar mais</button>';
+  }
+  return h+'</div>';
+}
+
+/* ---------- questões com IA ---------- */
+function labErrPoints(k){
+  if(k==='enem')return errs.filter(function(e){return !e.ok&&e.nota}).slice(0,6).map(function(e){return (matLabel(e.mat)+(e.top&&TOPICS[e.top]?' · '+TOPICS[e.top].nome:'')+': '+(e.q||'')+' '+(e.nota||'')).slice(0,200)});
+  return cardsOf('dev').filter(function(c){return (c.fl||0)>0}).sort(function(a,b){return (b.fl||0)-(a.fl||0)}).slice(0,6).map(function(c){return (c.f+' → '+c.v).slice(0,200)});
+}
+function labQuestoes(k){
+  var h='',s=labSess[k];
+  if(s)h+=labQSessionHTML(k);
+  else{
+    var f=labForm[k],pts=labErrPoints(k),c=labCfgGet(),nx=labNextTopic(k);
+    h+='<form class="panel form" id="labGenQForm" data-k="'+k+'"><h3>Criar lista de questões com IA</h3><p class="hint" style="margin:0">'+(k==='enem'?'Questões inéditas no estilo do ENEM, com texto de apoio e cinco alternativas. Cada erro vira cartão e entra no caderno de erros.':'Questões de múltipla escolha sobre programação, com trechos de código. Cada erro vira um cartão de revisão.')+'</p>';
+    h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">'+(k==='dev'?'Assunto':'Matéria')+labMatSelect(k,'lm',f.qm,'Misto (vários assuntos)')+'</label><label class="f">Tópico<select name="lt">'+labTopicOptions(f.qm,f.qt)+'</select></label></div>';
+    if(nx)h+='<p class="hint" style="margin:-4px 0 0"><button type="button" class="link" data-act="lab-use-next" data-k="'+k+'" data-f="labGenQForm">usar meu próximo tópico da trilha: '+esc(nx.nome)+'</button></p>';
+    h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Dificuldade'+labDifSelect('dif',f.qdif)+'</label><label class="f">Quantidade<select name="qtd">'+[5,8,10,15].map(function(n){return '<option value="'+n+'"'+(+f.qqtd===n?' selected':'')+'>'+n+' questões</option>'}).join('')+'</select></label></div>';
+    if(k==='dev')h+='<label class="f">Linguagem dos exemplos<select name="lang">'+LAB_LANGS.map(function(l){return '<option'+(l===c.lang?' selected':'')+'>'+l+'</option>'}).join('')+'</select></label>';
+    h+='<div class="chips"><label class="chip"><input type="checkbox" name="err" value="1"'+(f.qerr&&pts.length?' checked':'')+(pts.length?'':' disabled')+'> Reforçar onde eu errei'+(pts.length?'':' (nada ainda)')+'</label></div>';
+    h+='<div><button class="btn" type="submit"'+(labBusy?' disabled':'')+'>Gerar questões</button></div>'+(labBusy==='q:'+k?labBusyHTML():'')+labErrHTML('q:'+k)+'</form>';
+  }
+  var hist=labEx.filter(function(e){return e.k===k&&e.tipo==='questoes'}).slice(-6).reverse();
+  if(hist.length&&!s)h+='<div class="panel"><h3>Últimas listas</h3><ul class="plan hist">'+hist.map(function(e){return '<li><span>'+shortDate(e.date)+' · '+esc(e.titulo)+'</span><b>'+e.ok+'/'+e.total+'</b></li>'}).join('')+'</ul></div>';
+  return h;
+}
+function labQResult(s){var ok=0,dis=0;s.res.forEach(function(r){if(r==='ok')ok++;if(r==='dis')dis++});return {ok:ok,dis:dis,total:s.itens.length-dis}}
+function labQSessionHTML(k){
+  var s=labSess[k],h='<form class="panel form" id="labQForm" data-k="'+k+'"><h3>'+esc(s.titulo)+'</h3><p class="hint" style="margin:0">'+(s.mat?esc(s.mat):'Misto')+(s.top?' · '+esc(s.top):'')+' · '+esc((LAB_DIFS.filter(function(d){return d[0]===s.dif})[0]||['','média'])[1]).toLowerCase()+'</p>';
+  s.itens.forEach(function(it,i){
+    var r=s.res[i],a=s.resp[i];
+    h+='<div class="iex'+(r&&r!=='dis'?' '+r:'')+'">';
+    if(it.texto)h+=(k==='dev'&&/[{};=()]/.test(it.texto)?'<pre class="code">'+esc(it.texto)+'</pre>':'<blockquote class="txt">'+esc(it.texto)+'</blockquote>');
+    h+='<p class="q"><b>'+(i+1)+'.</b> '+esc(it.enunciado)+'</p><div class="opts" role="radiogroup" aria-label="Alternativas da questão '+(i+1)+'">';
+    it.alternativas.forEach(function(o,j){
+      var mark=s.checked&&j===it.correta?' right':(s.checked&&a===j&&j!==it.correta?' wrong':'');
+      h+='<label class="opt'+mark+'"><input type="radio" name="lq'+i+'" value="'+j+'" data-lq="'+i+'"'+(a===j?' checked':'')+(s.checked?' disabled':'')+'><span><b>'+'ABCDE'.charAt(j)+')</b> '+esc(o)+'</span></label>';
+    });
+    h+='</div>';
+    if(s.checked){
+      h+='<p class="fb">'+(r==='ok'?'✓ Certo. ':r==='dis'?'Gabarito contestado por você: esta questão não conta. ':'✗ A resposta é <b>'+'ABCDE'.charAt(it.correta)+'</b>. ')+(it.explicacao?'<span class="why">'+esc(it.explicacao)+'</span>':'')+'</p>';
+      if(r==='no')h+='<div class="chips"><button type="button" class="btn sm ghost" data-act="lab-q-dis" data-k="'+k+'" data-i="'+i+'">Discordo do gabarito</button></div>';
+    }
+    h+='</div>';
+  });
+  if(!s.checked)h+='<div class="chips"><button class="btn" type="submit">Corrigir</button><button type="button" class="btn ghost" data-act="lab-q-drop" data-k="'+k+'">Descartar</button></div>';
+  else{
+    var R=labQResult(s),pc=R.total?Math.round(R.ok/R.total*100):0,secs=((s.t1||Date.now())-(s.t0||Date.now()))/1000;
+    h+='<div class="'+(pc>=70?'allgood':'scorebox')+'"><b>'+R.ok+' de '+R.total+' ('+pc+'%)</b>'+(pc>=70?' Bom trabalho.':' O que você errou virou cartão de revisão'+(k==='enem'?' e foi para o caderno de erros':'')+'.')+'</div>';
+    if(k==='enem'&&R.total&&secs>=15*R.total&&secs<7200){var pace=secs/60/R.total;h+='<p class="hint" style="margin:0 0 8px">Seu ritmo: cerca de '+(Math.round(pace*10)/10).toString().replace('.',',')+' min por questão. No ENEM, a média é de uns 3 minutos por questão (90 questões em 5h30 no 1º dia). O tempo conta desde a criação da lista.</p>'}
+    h+='<div class="chips" style="margin-top:10px">'+(s.res.indexOf('no')>=0?'<button type="button" class="btn sm" data-act="lab-q-redo" data-k="'+k+'">Refazer só o que errei</button>':'')+'<button type="button" class="btn sm ghost" data-act="lab-q-drop" data-k="'+k+'">Nova lista</button></div>';
+  }
+  return h+'</form>';
+}
+function labQSave(){rawSave('labSess',labSess)}
+async function labGenQ(k,o){
+  labBusy='q:'+k;labSetMsg('q:'+k,'');render();
+  try{
+    var d=await labCall({acao:'questoes',k:k,materia:o.matNome,topico:o.topNome,dif:o.dif,qtd:o.qtd,linguagem:o.lang||'',erros:o.erros||[]});
+    labSess[k]={titulo:d.titulo,mat:o.matNome,matId:o.mat,top:o.topNome,topId:o.top,dif:o.dif,itens:d.itens,resp:d.itens.map(function(){return null}),res:d.itens.map(function(){return null}),checked:false,fin:false,t0:Date.now()};
+    labQSave();
+  }catch(e){labSetMsg('q:'+k,(e&&e.message)||'Não foi possível gerar as questões.')}
+  labBusy='';render();window.scrollTo(0,0);
+}
+function labQCheck(k){
+  var s=labSess[k];if(!s||s.checked)return;
+  var miss=s.resp.filter(function(a){return a==null}).length;
+  if(miss&&!confirm('Há '+miss+(miss===1?' questão':' questões')+' sem resposta. Corrigir assim mesmo? As em branco contam como erro.'))return;
+  s.res=s.itens.map(function(it,i){return s.resp[i]===it.correta?'ok':'no'});
+  s.checked=true;s.t1=Date.now();
+  labQFinalize(k);labQSave();render();window.scrollTo(0,0);
+}
+function labQFinalize(k){
+  var s=labSess[k];if(!s||s.fin)return;s.fin=true;
+  var added=0,errN=0,toReopen={};
+  s.itens.forEach(function(it,i){
+    if(s.res[i]!=='no')return;
+    var mat=s.matId||labFindMat(k,it.materia||''),top=s.topId||'',alt=it.alternativas[it.correta]||'';
+    var c=cardAdd(k,{f:'Questão errada'+(it.categoria?' ('+it.categoria+')':'')+': '+it.enunciado,v:'Resposta: '+'ABCDE'.charAt(it.correta)+') '+alt+'. '+it.explicacao,m:mat,top:top,src:'q'});
+    s.cardAt=s.cardAt||{};s.errAt=s.errAt||{};
+    if(c){added++;s.cardAt[i]=c.i}
+    if(k==='enem'){
+      var er={id:uid(),date:tk(),mat:mat,top:top,motivo:'conteudo',q:('Questões IA · '+s.titulo).slice(0,160),nota:('Certa: '+'ABCDE'.charAt(it.correta)+'. '+it.explicacao).slice(0,400),ok:null};
+      errs.unshift(er);s.errAt[i]=er.id;
+      errN++;if(top)toReopen[top]=1;
+    }
+  });
+  if(added)cardsSave();
+  if(errN){save('errors',errs);Object.keys(toReopen).forEach(reopenTopic)}
+  var R=labQResult(s);
+  s.exId=uid();
+  labEx.push({id:s.exId,date:tk(),k:k,tipo:'questoes',titulo:String(s.titulo).slice(0,60),m:s.matId||'',ok:R.ok,total:R.total});
+  if(labEx.length>120)labEx=labEx.slice(-120);
+  save('labEx',labEx);labBump(1);
+  toast(added?added+(added===1?' cartão criado a partir dos seus erros':' cartões criados a partir dos seus erros'):'Lista concluída');
+}
+
+/* ---------- tutor ---------- */
+function labTutor(k){
+  var c=labChat[k],h='';
+  if(!c){
+    var nx=labNextTopic(k);
+    h+='<form class="panel form" id="labTutStartForm" data-k="'+k+'"><h3>Conversar com o tutor</h3><p class="hint" style="margin:0">'+(k==='enem'?'Um professor particular que explica, pergunta e resolve questões com você, no nível do ENEM.':'Uma mentora que explica, pergunta, simula entrevista técnica e ajuda a depurar sem entregar a resposta.')+'</p>';
+    h+='<label class="f">Como você quer estudar<select name="modo">'+LAB_MODOS[k].map(function(m){return '<option value="'+m[0]+'">'+m[1]+'</option>'}).join('')+'</select></label>';
+    h+='<label class="f">Assunto'+(nx?' <button type="button" class="link" data-act="lab-fill-next" data-k="'+k+'" data-f="labTutStartForm">usar meu próximo tópico da trilha</button>':'')+'<input name="tema" maxlength="160" required placeholder="'+(k==='enem'?'Ex.: estequiometria, Era Vargas, interpretação de gráficos':'Ex.: recursão, API REST, JOINs em SQL, vaga de back-end júnior')+'"></label>';
+    h+='<div><button class="btn" type="submit"'+(labBusy?' disabled':'')+'>Começar</button></div>'+(labBusy==='tut:'+k?labBusyHTML():'')+labErrHTML('tut:'+k)+'</form>';
+    return h;
+  }
+  var md=LAB_MODOS[k].filter(function(m){return m[0]===c.modo})[0];
+  h+='<div class="panel chat"><h3>'+esc(c.tema)+' <small style="font-size:14px;color:var(--ink-soft)">'+esc(md?md[1]:'')+'</small></h3><div class="bubbles" id="labChatBox" role="log" aria-live="polite">';
+  c.msgs.forEach(function(m){
+    if(m.r==='a')h+='<div class="bub ai md">'+mdLite(m.t)+'</div>';
+    else h+='<div class="bub me"><p>'+esc(m.t).replace(/\n/g,'<br>')+'</p></div>';
+  });
+  h+='</div>';
+  var last=c.msgs[c.msgs.length-1];
+  if(labBusy==='tut:'+k)h+=labBusyHTML();
+  h+=labErrHTML('tut:'+k);
+  if(last&&last.r==='a'&&c.sug&&c.sug.length&&!labBusy)h+='<div class="chips" style="margin-top:8px">'+c.sug.map(function(s,i){return '<button class="chip" data-act="lab-tut-sug" data-k="'+k+'" data-i="'+i+'">'+esc(s)+'</button>'}).join('')+'</div>';
+  h+='<form class="chatform" id="labTutForm" data-k="'+k+'"><label class="sr" for="labChatMsg">Sua mensagem</label><textarea id="labChatMsg" name="msg" maxlength="1500" rows="2" required placeholder="'+(c.modo==='questao'?'Cole a questão aqui...':c.modo==='depurar'?'Cole o código, o erro e o que você esperava...':'Escreva sua pergunta ou resposta...')+'"'+(labBusy?' disabled':'')+' style="min-height:64px"></textarea><button class="btn sm" type="submit"'+(labBusy?' disabled':'')+'>Enviar</button></form>';
+  var mins=Math.max(1,Math.min(180,Math.round((Date.now()-(c.t0||Date.now()))/60000)));
+  h+='<div class="chips" style="margin-top:10px">'+(last&&last.r==='u'&&!labBusy?'<button class="btn sm" data-act="lab-tut-retry" data-k="'+k+'">Reenviar última mensagem</button>':'')+'<button class="btn sm ghost" data-act="lab-tut-end" data-k="'+k+'">Encerrar conversa ('+mins+' min)</button><button class="btn sm danger" data-act="lab-tut-drop" data-k="'+k+'">Descartar</button></div>';
+  h+='<p class="hint" style="margin:8px 0 0">Esta conversa fica só neste aparelho. A IA pode errar: confira fatos, contas e código antes de decorar.</p>';
+  return h+'</div>';
+}
+async function labTurn(k){
+  var c=labChat[k];if(!c)return;
+  labBusy='tut:'+k;labSetMsg('tut:'+k,'');render();
+  try{
+    var d=await labCall({acao:'tutor',k:k,modo:c.modo,tema:c.tema,linguagem:labCfgGet().lang,msgs:c.msgs.slice(-12).map(function(m){return {r:m.r,t:m.t}})});
+    c.msgs.push({r:'a',t:d.resposta});c.sug=d.sugestoes||[];
+    labBusy='';rawSave('labChat',labChat);render();
+    var box=document.getElementById('labChatBox');if(box)box.scrollTop=box.scrollHeight;
+    return;
+  }catch(e){labSetMsg('tut:'+k,(e&&e.message)||'Não foi possível falar com a IA.');if(!c.msgs.length)labChat[k]=null}
+  labBusy='';rawSave('labChat',labChat);render();
+}
+
+/* ---------- desafios de código (Dev) ---------- */
+function labDesafios(k){
+  var h='',d=labDes;
+  if(!d){
+    var f=labForm.dev,c=labCfgGet();
+    h+='<form class="panel form" id="labDesForm" data-k="dev"><h3>Criar um desafio de código</h3><p class="hint" style="margin:0">A IA cria o problema, você escreve o código e ela avalia: veredito, nota, problemas encontrados e uma versão melhorada. Ela lê o código, não o executa: teste no seu computador também.</p>';
+    h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Linguagem<select name="lang">'+LAB_LANGS.map(function(l){return '<option'+(l===c.lang?' selected':'')+'>'+l+'</option>'}).join('')+'</select></label><label class="f">Tipo de desafio<select name="tipo">'+LAB_TIPOS.map(function(t){return '<option value="'+t[0]+'"'+(f.dtipo===t[0]?' selected':'')+'>'+t[1]+'</option>'}).join('')+'</select></label></div>';
+    h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Assunto'+labMatSelect('dev','lm',f.dm,'Livre (a IA escolhe)')+'</label><label class="f">Tópico<select name="lt">'+labTopicOptions(f.dm,f.dt)+'</select></label></div>';
+    h+='<label class="f">Seu nível<select name="nivel">'+LAB_NIV.map(function(n){return '<option value="'+n[0]+'"'+(n[0]===c.nivel?' selected':'')+'>'+n[1]+'</option>'}).join('')+'</select></label>';
+    h+='<div><button class="btn" type="submit"'+(labBusy?' disabled':'')+'>Gerar desafio</button></div>'+(labBusy==='des'?labBusyHTML():'')+labErrHTML('des')+'</form>';
+  }else h+=labDesHTML();
+  var hist=labEx.filter(function(e){return e.tipo==='desafio'}).slice(-6).reverse();
+  if(hist.length&&!d)h+='<div class="panel"><h3>Últimos desafios</h3><ul class="plan hist">'+hist.map(function(e){return '<li><span>'+shortDate(e.date)+' · '+esc(e.titulo)+(e.lang?' · '+esc(e.lang):'')+'</span><b>'+e.nota+'/10</b></li>'}).join('')+'</ul></div>';
+  return h;
+}
+function labTipoNome(t){var x=LAB_TIPOS.filter(function(y){return y[0]===t})[0];return x?x[1]:'Implementar do zero'}
+function labSev(g){return g==='alta'?'🔴':g==='baixa'?'💡':'⚠️'}
+function labDesHTML(){
+  var d=labDes,h='<div class="panel"><h3>'+esc(d.titulo)+'</h3><p class="hint" style="margin:0 0 8px">'+esc(d.linguagem)+' · '+esc(labTipoNome(d.tipo))+(d.categoria?' · '+esc(d.categoria):'')+'</p>';
+  h+='<div class="txt">'+esc(d.enunciado)+'</div>';
+  if(d.restricoes)h+='<p class="hint" style="margin:6px 0"><b>Restrições:</b> '+esc(d.restricoes)+'</p>';
+  if(d.exemplos&&d.exemplos.length)h+='<h4 class="sub">Exemplos</h4>'+d.exemplos.map(function(x){return '<pre class="code">Entrada: '+esc(x.entrada)+'\nSaída:   '+esc(x.saida)+'</pre>'}).join('');
+  var nd=d.dicas?d.dicas.length:0;
+  if(d.dv>0)h+='<h4 class="sub">Dicas</h4><ol class="plan">'+d.dicas.slice(0,d.dv).map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ol>';
+  if(nd&&d.dv<nd&&!d.aval)h+='<button class="btn sm ghost" data-act="lab-des-dica" style="margin-top:6px">Ver dica '+(d.dv+1)+' de '+nd+'</button>';
+  h+='</div>';
+  var saida=d.tipo==='saida';
+  h+='<form class="panel form" id="labDesCodeForm"><h3>'+(saida?'Sua resposta':'Seu código')+'</h3><label class="f">'+(saida?'O que o programa imprime (exatamente)':'Escreva ou cole o código em '+esc(d.linguagem))+'<textarea name="codigo" id="labCode" class="codein" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" maxlength="7000" required style="min-height:'+(saida?'90':'220')+'px">'+esc(d.codigo)+'</textarea></label>';
+  h+='<div class="chips"><button class="btn" type="submit"'+(labBusy?' disabled':'')+'>'+(d.aval?'Avaliar de novo':'Avaliar com IA')+'</button>'+(d.codigoInicial&&!saida?'<button type="button" class="btn ghost" data-act="lab-des-reset">Voltar ao código inicial</button>':'')+'<button type="button" class="btn ghost" data-act="lab-des-drop">Descartar</button></div>'+(labBusy==='aval'?labBusyHTML():'')+labErrHTML('aval')+'</form>';
+  if(d.aval){
+    var a=d.aval,cls=a.veredito==='correto'?'ok':'';
+    h+='<div class="panel"><h3>Avaliação</h3><p class="bignum">'+a.nota+'<small>/10 · '+(a.veredito==='correto'?'correto':a.veredito==='parcial'?'parcialmente correto':'incorreto')+'</small></p><p>'+esc(a.resumo)+'</p>';
+    if(a.problemas.length)h+='<h4 class="sub">Problemas ('+a.problemas.length+')</h4><ul class="errs">'+a.problemas.map(function(p){return '<li>'+labSev(p.gravidade)+' '+(p.trecho?'<code>'+esc(p.trecho)+'</code><br>':'')+esc(p.descricao)+'</li>'}).join('')+'</ul>';
+    else h+='<div class="allgood">Nenhum problema encontrado.</div>';
+    if(a.complexidade)h+='<h4 class="sub">Complexidade</h4><p style="margin:0">'+esc(a.complexidade)+'</p>';
+    if(a.melhorias.length)h+='<h4 class="sub">Como melhorar</h4><ul class="plan">'+a.melhorias.map(function(m){return '<li>'+esc(m)+'</li>'}).join('')+'</ul>';
+    if(a.versaoMelhorada)h+='<details style="margin-top:10px"><summary><b>Versão melhorada do seu código</b></summary><pre class="code">'+esc(a.versaoMelhorada)+'</pre></details>';
+    if(a.licao)h+='<h4 class="sub">Lição</h4><p style="margin:0">'+esc(a.licao)+'</p>';
+    if(a.cartaoCriado)h+='<p class="hint" style="margin:8px 0 0">Criei um cartão de revisão sobre o seu ponto fraco neste desafio.</p>';
+    h+='<div class="chips" style="margin-top:12px">'+(d.sol?'':'<button class="btn sm ghost" data-act="lab-des-sol">Ver solução modelo</button>')+'<button class="btn sm" data-act="lab-des-drop">Novo desafio</button></div></div>';
+  }
+  if(d.sol)h+='<div class="panel"><h3>Solução modelo</h3><pre class="code">'+esc(d.solucao)+'</pre><p>'+esc(d.explicacao)+'</p></div>';
+  return h;
+}
+function labDesSave(){rawSave('labDes',labDes)}
+async function labGenDes(o){
+  labBusy='des';labSetMsg('des','');render();
+  try{
+    var d=await labCall({acao:'desafio',k:'dev',linguagem:o.lang,tipo:o.tipo,nivel:o.nivel,materia:o.matNome,topico:o.topNome});
+    labDes={tipo:d.tipo,linguagem:d.linguagem,titulo:d.titulo,enunciado:d.enunciado,restricoes:d.restricoes,exemplos:d.exemplos,dicas:d.dicas,codigoInicial:d.codigoInicial,solucao:d.solucao,explicacao:d.explicacao,categoria:d.categoria,codigo:d.tipo==='saida'?'':d.codigoInicial,dv:0,aval:null,sol:false,logged:false,t0:Date.now()};
+    labDesSave();
+  }catch(e){labSetMsg('des',(e&&e.message)||'Não foi possível gerar o desafio.')}
+  labBusy='';render();window.scrollTo(0,0);
+}
+async function labEvalDes(){
+  var d=labDes;if(!d)return;
+  labBusy='aval';labSetMsg('aval','');render();
+  try{
+    var r=await labCall({acao:'avaliar',k:'dev',linguagem:d.linguagem,codigo:d.codigo,desafio:{titulo:d.titulo,enunciado:d.enunciado,restricoes:d.restricoes,tipo:d.tipo,solucao:d.solucao,codigoInicial:d.codigoInicial}});
+    d.aval=r;
+    if(!d.logged){
+      d.logged=true;
+      labEx.push({id:uid(),date:tk(),k:'dev',tipo:'desafio',titulo:String(d.titulo).slice(0,60),lang:d.linguagem,nota:r.nota,ok:r.nota>=8?1:0,total:1});
+      if(labEx.length>120)labEx=labEx.slice(-120);save('labEx',labEx);labBump(1);
+      if(r.cartao&&r.cartao.f&&r.cartao.v&&r.nota<9){if(cardAdd('dev',{f:r.cartao.f,v:r.cartao.v,src:'des'})){cardsSave();r.cartaoCriado=true}}
+    }
+  }catch(e){labSetMsg('aval',(e&&e.message)||'Não foi possível avaliar o código.')}
+  labBusy='';labDesSave();render();
+  if(d.aval){var p=document.getElementById('labDesCodeForm');if(p&&p.nextElementSibling)p.nextElementSibling.scrollIntoView({behavior:'smooth',block:'start'})}
+}
+
+/* ---------- revisão de código (Dev) ---------- */
+function labRevDraft(){return load('labRevDraft',null)||{code:'',ctx:''}}
+function labRevisao(k){
+  var dr=labRevDraft(),c=labCfgGet(),h='<form class="panel form" id="labRevForm" data-k="dev"><h3>Revisão de código com IA</h3><p class="hint" style="margin:0">Cole um trecho seu (até 7.000 caracteres) e receba uma revisão como a de um colega sênior: bugs, segurança, desempenho e legibilidade, em ordem de gravidade. Não cole senhas, chaves ou dados de clientes.</p>';
+  h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Linguagem<select name="lang">'+LAB_LANGS.map(function(l){return '<option'+(l===c.lang?' selected':'')+'>'+l+'</option>'}).join('')+'</select></label><label class="f">Foco da revisão<select name="foco">'+LAB_FOCOS.map(function(f){return '<option value="'+f[0]+'">'+f[1]+'</option>'}).join('')+'</select></label></div>';
+  h+='<label class="f">O que este código deveria fazer (opcional)<input name="ctx" maxlength="300" value="'+esc(dr.ctx)+'" placeholder="Ex.: validar o CPF e salvar o cliente no banco"></label>';
+  h+='<label class="f">Seu código<textarea name="codigo" id="labRevCode" class="codein" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" maxlength="7000" required style="min-height:220px" placeholder="Cole o código aqui">'+esc(dr.code)+'</textarea></label>';
+  h+='<div><button class="btn" type="submit"'+(labBusy?' disabled':'')+'>Revisar com IA</button></div>'+(labBusy==='rev'?labBusyHTML():'')+labErrHTML('rev')+'</form>';
+  var r=labTmp.rev;
+  if(r){
+    h+='<div class="panel"><h3>Revisão</h3><p class="bignum">'+r.nota+'<small>/10 · qualidade geral</small></p><p>'+esc(r.resumo)+'</p>';
+    if(r.achados.length)h+='<h4 class="sub">Achados ('+r.achados.length+')</h4><ul class="errs">'+r.achados.map(function(a){return '<li>'+labSev(a.gravidade)+' <b>'+esc(a.tipo||'ponto')+'</b> · '+(a.trecho?'<code>'+esc(a.trecho)+'</code><br>':'')+esc(a.problema)+'<br><span class="good">'+esc(a.sugestao)+'</span></li>'}).join('')+'</ul>';
+    else h+='<div class="allgood">Nenhum problema relevante encontrado.</div>';
+    if(r.pontosFortes.length)h+='<h4 class="sub">O que está bom</h4><ul class="plan">'+r.pontosFortes.map(function(p){return '<li>'+esc(p)+'</li>'}).join('')+'</ul>';
+    if(r.refatorado)h+='<details style="margin-top:10px"><summary><b>Código revisado</b></summary><pre class="code">'+esc(r.refatorado)+'</pre></details>';
+    if(r.proximoPasso)h+='<h4 class="sub">Próximo passo</h4><p style="margin:0">'+esc(r.proximoPasso)+'</p>';
+    h+='<div class="chips" style="margin-top:12px"><button class="btn sm ghost" data-act="lab-rev-clear">Fechar revisão</button></div></div>';
+  }
+  var hist=labEx.filter(function(e){return e.tipo==='revisao'}).slice(-5).reverse();
+  if(hist.length)h+='<div class="panel"><h3>Últimas revisões</h3><ul class="plan hist">'+hist.map(function(e){return '<li><span>'+shortDate(e.date)+' · '+esc(e.titulo)+'</span><b>'+e.nota+'/10</b></li>'}).join('')+'</ul></div>';
+  return h;
+}
+
+/* ---------- diário de bugs (Dev) ---------- */
+function devBugDue(){var t=tk();return devBug.filter(function(b){return (b.b||0)<5&&(b.d||t)<=t})}
+function bugGrade(b,ok){
+  b.n=(b.n||0)+1;b.l=tk();
+  if(!ok){b.b=Math.max(0,(b.b||0)-2);b.d=dkey(addDays(today(),1))}
+  else{b.b=Math.min(6,(b.b||0)+1);b.d=dkey(addDays(today(),cardDays('dev',b.b)))}
+  bumpLog('cr',1);labBump(1);
+}
+function bugTags(){var c={};devBug.forEach(function(b){if(b.tag)c[b.tag]=(c[b.tag]||0)+1});return Object.keys(c).map(function(k){return [k,c[k]]}).sort(function(a,b){return b[1]-a[1]})}
+function labBugRevPanel(){
+  var r=labBugRev,id=r.q[r.i],b=devBug.filter(function(x){return x.i===id})[0];
+  if(!b||r.i>=r.q.length)return '<div class="panel"><h3>Revisão concluída</h3><p class="bignum">'+r.ok+' <small>de '+r.done+' lembrados</small></p><button class="btn sm" data-act="lab-bug-end">Fechar</button></div>';
+  var h='<div class="panel flash"><h3>Revisão de bugs <small style="font-size:14px;color:var(--ink-soft)">'+(r.i+1)+' de '+r.q.length+'</small></h3><div class="card-front"><small>'+esc(b.tag||'bug')+'</small><b class="big" style="font-size:22px">'+esc(b.t)+'</b><span>'+esc(b.s)+'</span><p class="hint" style="margin:6px 0 0">Qual foi a causa raiz, a correção e como evitar?</p></div>';
+  if(!r.shown)h+='<div class="chips" style="justify-content:center"><button class="btn sm" data-act="lab-bug-show">Mostrar resposta</button></div>';
+  else{
+    h+='<div class="card-back" style="align-items:flex-start;text-align:left"><p style="margin:0"><b>Causa raiz:</b> '+esc(b.c)+'</p><p style="margin:0"><b>Correção:</b> '+esc(b.f)+'</p>'+(b.p?'<p style="margin:0"><b>O que permitiu o erro:</b> '+esc(b.p)+'</p>':'')+(b.l?'<p style="margin:0"><b>Lição:</b> '+esc(b.l)+'</p>':'')+'</div>';
+    h+='<div class="chips" style="justify-content:center;margin-top:10px"><button class="btn sm danger" data-act="lab-bug-grade" data-g="0">Errei</button><button class="btn sm" data-act="lab-bug-grade" data-g="1">Acertei</button></div>';
+  }
+  return h+'<div style="text-align:center;margin-top:10px"><button class="link" data-act="lab-bug-end">Encerrar revisão</button></div></div>';
+}
+function labBugs(k){
+  var h='',due=devBugDue(),open=devBug.filter(function(b){return (b.b||0)<5}).length;
+  h+='<div class="panel"><h3>Diário de bugs</h3><div class="split"><div class="row"><span>Bugs registrados</span><span>'+devBug.length+'</span></div><div class="row"><span>Bem fixados</span><span>'+(devBug.length-open)+'</span></div><div class="row"><span>Para revisar hoje</span><span>'+due.length+'</span></div></div><p class="hint" style="margin:10px 0 0">Todo bug é uma aula paga. Registre sintoma, causa raiz e o que no processo deixou o erro passar (faltou teste, validação, revisão?). Os bugs voltam para revisão em intervalos crescentes. "Distração" não é causa raiz: pergunte por que o sistema permitiu.</p></div>';
+  if(labBugRev)h+=labBugRevPanel();
+  else if(due.length)h+='<div class="panel"><h3>Revisão de hoje</h3><p style="margin:0 0 10px">'+due.length+(due.length===1?' bug espera':' bugs esperam')+' revisão.</p><button class="btn sm" data-act="lab-bug-start">Revisar bugs</button></div>';
+  var tg=bugTags();
+  if(tg.length){var mx=tg[0][1];h+='<div class="panel"><h3>Onde você mais erra</h3>'+tg.slice(0,6).map(function(c){return '<div class="mrow"><span>'+esc(c[0])+'</span><div class="meter"><i style="width:'+Math.round(c[1]/mx*100)+'%"></i></div><b>'+c[1]+'</b></div>'}).join('')+'<p class="hint" style="margin:8px 0 0">As categorias do topo apontam causas sistêmicas. Transforme-as em teste, lint ou checklist de revisão.</p></div>'}
+  h+='<form class="panel form" id="labBugForm"><h3>Registrar um bug</h3>';
+  h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Título<input name="t" maxlength="120" required placeholder="Ex.: Total do carrinho negativo"></label><label class="f">Categoria ou tecnologia<input name="tag" maxlength="40" list="labTagList" placeholder="Ex.: validação, SQL, async"></label></div><datalist id="labTagList">'+tg.map(function(c){return '<option value="'+esc(c[0])+'">'}).join('')+'</datalist>';
+  h+='<label class="f">Sintoma (o que aconteceu)<textarea name="s" maxlength="400" required style="min-height:64px" placeholder="O que você viu e em que condição"></textarea></label>';
+  h+='<label class="f">Causa raiz<textarea name="c" maxlength="400" required style="min-height:64px" placeholder="Por que realmente aconteceu"></textarea></label>';
+  h+='<label class="f">Correção<textarea name="f" maxlength="400" required style="min-height:64px" placeholder="O que você mudou"></textarea></label>';
+  h+='<label class="f">O que permitiu o erro (prevenção)<input name="p" maxlength="300" placeholder="Ex.: faltou teste com valor negativo; sem validação na entrada"></label>';
+  h+='<label class="f">Lição (opcional)<input name="l" maxlength="300" placeholder="Ex.: sempre validar limites antes de calcular"></label>';
+  h+='<div><button class="btn sm" type="submit">Salvar no diário</button></div></form>';
+  var L=devBug.filter(function(b){return labBugTag==='todas'||b.tag===labBugTag}).slice().reverse();
+  h+='<div class="panel"><h3>Todos os bugs <small style="font-size:14px;color:var(--ink-soft)">'+devBug.length+'</small></h3>';
+  if(tg.length)h+='<div class="chips" role="group" aria-label="Filtrar por categoria"><button class="chip" data-act="lab-bug-tag" data-v="todas" aria-pressed="'+(labBugTag==='todas')+'">Todas</button>'+tg.map(function(c){return '<button class="chip" data-act="lab-bug-tag" data-v="'+esc(c[0])+'" aria-pressed="'+(labBugTag===c[0])+'">'+esc(c[0])+'</button>'}).join('')+'</div>';
+  if(!L.length)h+='<p class="empty">Nenhum bug registrado ainda.</p>';
+  else h+='<ul class="errs" style="margin-top:10px">'+L.slice(0,40).map(function(b){return '<li class="'+((b.b||0)>=5?'done':'')+'"><b>'+esc(b.t)+'</b> <small>'+esc(b.tag||'')+' · '+shortDate(b.date)+((b.b||0)>=5?' · bem fixado':'')+'</small><br><span class="why"><b>Sintoma:</b> '+esc(b.s)+'<br><b>Causa:</b> '+esc(b.c)+'<br><b>Correção:</b> '+esc(b.f)+(b.p?'<br><b>Prevenção:</b> '+esc(b.p):'')+(b.l?'<br><b>Lição:</b> '+esc(b.l):'')+'</span> <button class="link no-print" data-act="lab-bug-del" data-id="'+esc(b.i)+'">Apagar</button></li>'}).join('')+'</ul>';
+  return h+'</div>';
+}
+
+/* ---------- projetos de portfólio (Dev) ---------- */
+function pjProg(p){var t=p.et.length,d=p.et.filter(function(e){return e.ok}).length;return {t:t,d:d,pc:t?Math.round(d/t*100):0}}
+function pjCard(p){
+  var g=pjProg(p),h='<div class="panel pj"><div class="area-h"><h3 style="margin:0">'+esc(p.nome)+'</h3><span class="cnt">'+(g.t?g.d+'/'+g.t+' etapas':'sem etapas')+'</span></div>';
+  if(p.desc)h+='<p style="margin:4px 0">'+esc(p.desc)+'</p>';
+  h+='<p class="hint" style="margin:0 0 6px">'+(p.stack?esc(p.stack)+' · ':'')+(p.st==='entregue'?'entregue em '+shortDate(p.e):p.a?'começou em '+shortDate(p.a):'ideia')+(p.link?' · <a href="'+esc(p.link)+'" target="_blank" rel="noopener noreferrer">abrir link</a>':'')+'</p>';
+  if(g.t)h+='<div class="progress thin"><i style="width:'+g.pc+'%;background:var(--a-tec)"></i></div>';
+  h+='<ul class="plan pjet">'+p.et.map(function(e){return '<li class="'+(e.ok?'done':'')+'"><button class="link" data-act="lab-pj-et" data-p="'+esc(p.i)+'" data-e="'+esc(e.i)+'" aria-pressed="'+(!!e.ok)+'">'+(e.ok?'✓':'○')+' '+esc(e.t)+'</button> <button class="del" data-act="lab-pj-et-del" data-p="'+esc(p.i)+'" data-e="'+esc(e.i)+'" aria-label="Remover etapa">×</button></li>'}).join('')+'</ul>';
+  h+='<form class="addrow" data-lab="pjet" data-p="'+esc(p.i)+'" id="labPjEt-'+esc(p.i)+'"><label class="sr" for="pjet-'+esc(p.i)+'">Nova etapa</label><input id="pjet-'+esc(p.i)+'" name="t" maxlength="140" required placeholder="Nova etapa"><button class="btn sm ghost" type="submit">Adicionar etapa</button></form>';
+  h+='<div class="chips" style="margin-top:8px">';
+  if(p.st==='ideia')h+='<button class="btn sm" data-act="lab-pj-st" data-p="'+esc(p.i)+'" data-v="fazendo">Começar</button>';
+  if(p.st==='fazendo')h+='<button class="btn sm" data-act="lab-pj-st" data-p="'+esc(p.i)+'" data-v="entregue">Marcar como entregue</button>';
+  if(p.st==='entregue')h+='<button class="btn sm ghost" data-act="lab-pj-st" data-p="'+esc(p.i)+'" data-v="fazendo">Voltar para Fazendo</button>';
+  h+='<button class="btn sm ghost" data-act="lab-pj-link" data-p="'+esc(p.i)+'">'+(p.link?'Trocar link':'Adicionar link')+'</button><button class="btn sm danger" data-act="lab-pj-del" data-p="'+esc(p.i)+'">Apagar</button></div></div>';
+  return h;
+}
+function labProjetos(k){
+  var h='',c=labCfgGet();
+  var groups=[['fazendo','Em andamento'],['ideia','Ideias'],['entregue','Entregues']];
+  if(!devProj.length)h+='<div class="panel"><h3>Seus projetos</h3><p class="empty">Nenhum projeto ainda. Projetos entregues são o que mais pesa num portfólio: comece por uma ideia da IA ou crie a sua.</p></div>';
+  groups.forEach(function(g){
+    var L=devProj.filter(function(p){return p.st===g[0]});
+    if(L.length)h+='<h3 class="areahead">'+g[1]+' <small>'+L.length+'</small></h3>'+L.map(pjCard).join('');
+  });
+  if(devProj.some(function(p){return p.st==='fazendo'})&&devProj.filter(function(p){return p.st==='fazendo'}).length>2)h+='<div class="alerts"><ul class="alerts"><li class="high">⚠️ Você tem mais de 2 projetos em andamento. Projetos pela metade não entram no portfólio: termine um antes de abrir outro.</li></ul></div>';
+  h+='<form class="panel form" id="labPjIdeasForm"><h3>Ideias de projeto com IA</h3><p class="hint" style="margin:0">Projetos de portfólio com etapas pequenas e verificáveis, no seu nível.</p>';
+  h+='<div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Seu nível<select name="nivel">'+LAB_NIV.map(function(n){return '<option value="'+n[0]+'"'+(n[0]===c.nivel?' selected':'')+'>'+n[1]+'</option>'}).join('')+'</select></label><label class="f">Linguagem<select name="lang">'+LAB_LANGS.map(function(l){return '<option'+(l===c.lang?' selected':'')+'>'+l+'</option>'}).join('')+'</select></label></div>';
+  h+='<label class="f">Interesse (opcional)<input name="tema" maxlength="120" placeholder="Ex.: saúde, finanças, jogos, automação da indústria"></label>';
+  h+='<div><button class="btn" type="submit"'+(labBusy?' disabled':'')+'>Sugerir projetos</button></div>'+(labBusy==='proj'?labBusyHTML():'')+labErrHTML('proj')+'</form>';
+  if(labTmp.ideias.length){
+    h+='<div class="panel"><h3>Ideias sugeridas</h3><ul class="sug">'+labTmp.ideias.map(function(x,i){
+      return '<li><div class="sw2"><b>'+esc(x.nome)+'</b> <small>'+esc(x.dificuldade||'')+(x.stack?' · '+esc(x.stack):'')+'</small><br><span>'+esc(x.descricao)+'</span><br><em>'+x.etapas.map(esc).join(' → ')+'</em></div><div class="chips"><button class="chip" data-act="lab-pj-idea" data-i="'+i+'">Adicionar aos meus projetos</button><button class="chip" data-act="lab-pj-idea-skip" data-i="'+i+'">Descartar</button></div></li>';
+    }).join('')+'</ul></div>';
+  }
+  h+='<form class="panel form" id="labPjForm"><h3>Novo projeto</h3><div class="row2" style="grid-template-columns:1fr 1fr"><label class="f">Nome<input name="nome" maxlength="80" required placeholder="Ex.: API de controle de estoque"></label><label class="f">Stack<input name="stack" maxlength="100" placeholder="Ex.: Python, FastAPI, PostgreSQL"></label></div><label class="f">Descrição<input name="desc" maxlength="300" placeholder="Que problema resolve?"></label><label class="f">Link do repositório ou da demo (opcional)<input name="link" type="url" maxlength="300" placeholder="https://github.com/..."></label><div><button class="btn sm" type="submit">Criar projeto</button></div></form>';
+  return h;
+}
+
+/* ---------- redação: correção por competência (ENEM) ---------- */
+function labRedDraft(){return load('labRedDraft',null)||{tema:'',txt:''}}
+function labRedPanel(){
+  var dr=labRedDraft(),h='<form class="panel form" id="labRedForm"><h3>Corrigir redação com IA</h3><p class="hint" style="margin:0">Cole a sua redação e receba uma estimativa de nota nas 5 competências, os trechos que mais pesaram e o que subir primeiro. É uma estimativa de estudo: a banca real pode divergir, e a IA pode errar.</p>';
+  h+='<label class="f">Tema <button type="button" class="link" data-act="lab-red-tema"'+(labBusy?' disabled':'')+'>gerar um tema inédito</button><input name="tema" maxlength="200" value="'+esc(dr.tema)+'" placeholder="Ex.: Desafios para valorizar o trabalho do cuidador no Brasil"></label>';
+  h+='<label class="f">Sua redação<textarea name="texto" id="labRedText" maxlength="5000" required style="min-height:220px" placeholder="Escreva com 4 parágrafos: introdução, dois de desenvolvimento e conclusão com proposta de intervenção...">'+esc(dr.txt)+'</textarea></label>';
+  h+='<div class="chips"><button class="btn" type="submit"'+(labBusy?' disabled':'')+'>Corrigir com IA</button></div>'+(labBusy==='red'||labBusy==='tema'?labBusyHTML():'')+labErrHTML('red')+'</form>';
+  var t=labTmp.tema;
+  if(t){
+    h+='<div class="panel"><h3>Tema sugerido</h3><p style="margin:0"><b>'+esc(t.tema)+'</b>'+(t.eixo?' <small>'+esc(t.eixo)+'</small>':'')+'</p>';
+    t.motivadores.forEach(function(m,i){h+='<blockquote class="txt"><b>Texto '+(i+1)+'</b><br>'+esc(m.texto)+(m.fonte?'<br><small>'+esc(m.fonte)+'</small>':'')+'</blockquote>'});
+    h+='<p style="margin:0">'+esc(t.proposta)+'</p><div class="chips" style="margin-top:10px"><button class="btn sm" data-act="lab-red-use-tema">Usar este tema</button><button class="btn sm ghost" data-act="lab-red-tema-clear">Fechar</button></div></div>';
+  }
+  var r=labTmp.red;
+  if(r){
+    h+='<div class="panel"><h3>Correção estimada</h3><p class="bignum">'+r.total+' <small>de 1000 pontos</small></p>';
+    if(r.alerta)h+='<div class="alerts"><ul class="alerts"><li class="crit" role="alert">🔴 '+esc(r.alerta)+'</li></ul></div>';
+    h+='<p>'+esc(r.resumo)+'</p><div class="comp">';
+    var wi=-1,mn=201;r.competencias.forEach(function(c,i){if(c.nota<mn){mn=c.nota;wi=i}});
+    r.competencias.forEach(function(c,i){
+      h+='<div class="r"><span>C'+c.n+'</span><div><small>'+esc((COMP[i]||['',''])[1])+'</small><div class="meter'+(i===wi&&mn<200?' low':'')+'"><i style="width:'+(c.nota/2)+'%"></i></div><small>'+esc(c.comentario)+'</small>'+(c.melhoria&&c.nota<200?'<small><b>Para subir:</b> '+esc(c.melhoria)+'</small>':'')+'</div><span style="text-align:right">'+c.nota+'</span></div>';
+    });
+    h+='</div>';
+    if(r.trechos.length)h+='<h4 class="sub">Trechos para reescrever</h4><ul class="errs">'+r.trechos.map(function(t){return '<li><span class="bad">'+esc(t.trecho)+'</span>'+(t.competencia?' <small>C'+t.competencia+'</small>':'')+'<br><span class="why">'+esc(t.problema)+'</span><br><span class="good">'+esc(t.sugestao)+'</span></li>'}).join('')+'</ul>';
+    if(r.intervencao.length)h+='<h4 class="sub">Proposta de intervenção: os 5 elementos</h4><ul class="plan">'+r.intervencao.map(function(x){return '<li>'+(x.presente?'✓':'✗')+' <b>'+esc(x.elemento)+'</b>'+(x.comentario?': '+esc(x.comentario):'')+'</li>'}).join('')+'</ul>';
+    if(r.repertorios.length)h+='<h4 class="sub">Repertórios que combinam com o tema</h4><ul class="sug">'+r.repertorios.map(function(x,i){return '<li><div class="sw2"><b>'+esc(x.texto)+'</b>'+(x.tipo?'<br><small>'+esc(x.tipo)+'</small>':'')+'</div><div class="chips"><button class="chip" data-act="lab-red-rep" data-i="'+i+'">Guardar no banco</button></div></li>'}).join('')+'</ul><p class="hint" style="margin:6px 0 0">Confira a referência antes de usar na prova: a IA pode errar autores, datas e números.</p>';
+    if(r.proximoPasso)h+='<h4 class="sub">Próximo passo</h4><p style="margin:0">'+esc(r.proximoPasso)+'</p>';
+    h+='<div class="chips" style="margin-top:12px">'+(r.saved?'<small class="okmsg">✓ Salva no histórico</small>':'<button class="btn sm" data-act="lab-red-save">Salvar no meu histórico</button>')+'<button class="btn sm ghost" data-act="lab-red-clear">Fechar correção</button></div></div>';
+  }
+  return h;
+}
+async function labRedRun(o){
+  labBusy='red';labSetMsg('red','');render();
+  try{
+    var d=await labCall({acao:'redacao',k:'enem',tema:o.tema,texto:o.texto});
+    d.tema=o.tema;d.saved=false;labTmp.red=d;labBump(1);
+  }catch(e){labSetMsg('red',(e&&e.message)||'Não foi possível corrigir a redação.')}
+  labBusy='';render();
+  if(labTmp.red){var f=document.getElementById('labRedForm');if(f&&f.nextElementSibling)f.nextElementSibling.scrollIntoView({behavior:'smooth',block:'start'})}
+}
+async function labRedTema(hint){
+  labBusy='tema';labSetMsg('red','');render();
+  try{labTmp.tema=await labCall({acao:'tema',k:'enem',tema:hint})}
+  catch(e){labSetMsg('red',(e&&e.message)||'Não foi possível gerar o tema.')}
+  labBusy='';render();
+}
+
+/* ---------- painel pequeno na tela Hoje ---------- */
+function labTodayPanel(){
+  var e=cardStats('enem'),d=cardStats('dev'),bd=devBugDue().length;
+  if(!e.total&&!d.total&&!devBug.length&&!labEx.length)return '';
+  var h='<div class="panel"><h3>Prática de hoje</h3><div class="split">';
+  if(e.total)h+='<div class="row"><span>Cartões ENEM para revisar</span><span>'+e.due+'</span></div>';
+  if(d.total)h+='<div class="row"><span>Cartões Dev para revisar</span><span>'+d.due+'</span></div>';
+  if(devBug.length)h+='<div class="row"><span>Bugs para revisar</span><span>'+bd+'</span></div>';
+  h+='<div class="row"><span>Dias seguidos de prática</span><span>'+labStreak()+'</span></div></div><div class="chips no-print" style="margin-top:10px">';
+  if(e.due)h+='<button class="btn sm" data-act="lab-open" data-view="conteudo" data-k="enem" data-v="cartoes">Revisar cartões ENEM</button>';
+  if(d.due)h+='<button class="btn sm" data-act="lab-open" data-view="dev" data-k="dev" data-v="cartoes">Revisar cartões Dev</button>';
+  if(bd)h+='<button class="btn sm ghost" data-act="lab-open" data-view="dev" data-k="dev" data-v="bugs">Revisar bugs</button>';
+  if(!e.due&&!d.due&&!bd)h+='<button class="btn sm ghost" data-act="lab-open" data-view="conteudo" data-k="enem" data-v="missao">Ver a missão de hoje</button>';
+  return h+'</div></div>';
+}
+
+/* ---------- conquistas ---------- */
+function labBadgeCtx(){
+  var q=0,des=0,desOk=0,rev=0,cr=0;
+  labEx.forEach(function(e){if(e.tipo==='questoes')q+=e.total||0;if(e.tipo==='desafio'){des++;if(e.nota>=8)desOk++}if(e.tipo==='revisao')rev++});
+  Object.keys(daylog).forEach(function(d){cr+=(daylog[d]&&daylog[d].cr)||0});
+  return {cards:cards.length,cr:cr,q:q,des:des,desOk:desOk,rev:rev,bugs:devBug.length,pj:devProj.filter(function(p){return p.st==='entregue'}).length,red:essays.filter(function(e){return e.ia}).length,tut:labCfgGet().tut,streak:Math.max(labStreak(),labBestStreak())};
+}
+BADGES.push(
+ {id:'cd1',n:'Primeiro cartão',d:'Criar o primeiro cartão de revisão',f:function(c){return c.lab.cards>=1}},
+ {id:'cd50',n:'50 cartões',d:'Ter 50 cartões de revisão',f:function(c){return c.lab.cards>=50}},
+ {id:'cr100',n:'100 revisões de cartões',d:'Revisar cartões e bugs 100 vezes',f:function(c){return c.lab.cr>=100}},
+ {id:'cr500',n:'500 revisões de cartões',d:'Revisar cartões e bugs 500 vezes',f:function(c){return c.lab.cr>=500}},
+ {id:'qz1',n:'Primeira lista de questões',d:'Resolver uma lista de questões com IA',f:function(c){return c.lab.q>=1}},
+ {id:'qz100',n:'100 questões com IA',d:'Responder 100 questões geradas pela IA',f:function(c){return c.lab.q>=100}},
+ {id:'rd1',n:'Redação corrigida por IA',d:'Salvar uma redação corrigida pela IA',f:function(c){return c.lab.red>=1}},
+ {id:'ds1',n:'Primeiro desafio de código',d:'Resolver um desafio de código com avaliação da IA',f:function(c){return c.lab.des>=1}},
+ {id:'ds5',n:'5 desafios com nota 8+',d:'Tirar 8 ou mais em 5 desafios de código',f:function(c){return c.lab.desOk>=5}},
+ {id:'rv1',n:'Primeira revisão de código',d:'Pedir uma revisão de código à IA',f:function(c){return c.lab.rev>=1}},
+ {id:'bg1',n:'Primeiro bug documentado',d:'Registrar um bug no diário',f:function(c){return c.lab.bugs>=1}},
+ {id:'bg10',n:'10 bugs documentados',d:'Registrar 10 bugs com causa raiz',f:function(c){return c.lab.bugs>=10}},
+ {id:'pj1',n:'Projeto entregue',d:'Marcar um projeto de portfólio como entregue',f:function(c){return c.lab.pj>=1}},
+ {id:'tu1',n:'Conversa com o tutor',d:'Encerrar uma conversa com o tutor',f:function(c){return c.lab.tut>=1}},
+ {id:'ls7',n:'7 dias de prática',d:'Praticar 7 dias seguidos nas trilhas',f:function(c){return c.lab.streak>=7}}
+);
+
+/* ---------- ações ---------- */
+function labGoTopic(k,form,name){
+  var t=labNextTopic(k),f=document.getElementById(form);
+  if(!t||!f)return;
+  if(name==='tema'){if(f.elements.tema)f.elements.tema.value=t.nome;return}
+  if(f.elements.lm){f.elements.lm.value=t.materia;if(f.elements.lt){f.elements.lt.innerHTML=labTopicOptions(t.materia,t.id)}}
+}
+function labPj(id){return devProj.filter(function(p){return p.i===id})[0]}
+function labAction(a,b){
+  if(!/^lab-/.test(a))return false;
+  var k=b.dataset.k==='dev'?'dev':'enem',id=b.dataset.id;
+  if(a==='lab-tab'){labTab[k]=b.dataset.v;rawSave('labTab',labTab);labSetMsg('','');trailEdit=false;render();window.scrollTo(0,0);return true}
+  if(a==='lab-open'){labTab[k]=b.dataset.v;rawSave('labTab',labTab);go(b.dataset.view);return true}
+  if(a==='lab-open-topic'){
+    var tp=TOPICS[b.dataset.v];
+    if(tp){setSel(tp.trilha,tp.materia);labTab[k]='trilha';rawSave('labTab',labTab);trailEdit=false;contentFilter='todos';render();window.scrollTo(0,0)}
+    return true;
+  }
+  if(a==='lab-use-next'){labGoTopic(k,b.dataset.f,'sel');return true}
+  if(a==='lab-fill-next'){labGoTopic(k,b.dataset.f,'tema');return true}
+
+  /* cartões */
+  if(a==='lab-card-start'){
+    var q=cardDue(k).slice(0,20).map(function(c){return c.i});
+    if(q.length){labRev={k:k,q:q,i:0,shown:false,done:0,ok:0,req:{}};render()}
+    return true;
+  }
+  if(a==='lab-card-show'){if(labRev){labRev.shown=true;render()}return true}
+  if(a==='lab-card-grade'){
+    if(!labRev)return true;
+    var cid=labRev.q[labRev.i],cx=cards.filter(function(c){return c.i===cid})[0],g=+b.dataset.g;
+    if(cx){
+      cardGrade(cx,g);cardsSave();labRev.done++;if(g>0)labRev.ok++;
+      if(g===0&&!labRev.req[cid]){labRev.req[cid]=1;labRev.q.push(cid)}
+    }
+    labRev.i++;labRev.shown=false;render();return true;
+  }
+  if(a==='lab-card-end'){labRev=null;render();return true}
+  if(a==='lab-card-more'){labLimit+=40;render();return true}
+  if(a==='lab-card-del'){
+    var dc=cards.filter(function(c){return c.i===id})[0];if(!dc)return true;
+    if(!confirm('Apagar este cartão?'))return true;
+    cards=cards.filter(function(c){return c.i!==id});cardsSave();render();return true;
+  }
+  if(a==='lab-sug-add'){
+    var s1=labSug[k][+b.dataset.i];
+    if(s1){if(cardAdd(k,{f:s1.f,v:s1.v,x:s1.x,m:s1.m,top:s1.top,src:'ia'}))cardsSave();labSug[k].splice(+b.dataset.i,1);render()}
+    return true;
+  }
+  if(a==='lab-sug-skip'){labSug[k].splice(+b.dataset.i,1);render();return true}
+  if(a==='lab-sug-all'){
+    var n=0;labSug[k].forEach(function(c){if(cardAdd(k,{f:c.f,v:c.v,x:c.x,m:c.m,top:c.top,src:'ia'}))n++});
+    labSug[k]=[];if(n)cardsSave();labBump(1);render();toast(n+(n===1?' cartão adicionado':' cartões adicionados'));return true;
+  }
+  if(a==='lab-sug-clear'){labSug[k]=[];render();return true}
+
+  /* questões */
+  if(a==='lab-q-drop'){labSess[k]=null;labQSave();labSetMsg('','');render();return true}
+  if(a==='lab-q-dis'){
+    var s=labSess[k],i=+b.dataset.i;if(!s||s.res[i]!=='no')return true;
+    s.res[i]='dis';
+    if(s.cardAt&&s.cardAt[i]){cards=cards.filter(function(c){return c.i!==s.cardAt[i]});cardsSave()}
+    if(s.errAt&&s.errAt[i]){errs=errs.filter(function(e){return e.id!==s.errAt[i]});save('errors',errs)}
+    var R=labQResult(s);
+    labEx.forEach(function(e){if(e.id===s.exId){e.ok=R.ok;e.total=R.total}});save('labEx',labEx);
+    labQSave();render();toast('Questão descartada: o cartão e o erro foram removidos');return true;
+  }
+  if(a==='lab-q-redo'){
+    var s0=labSess[k];if(!s0)return true;
+    var keep=s0.itens.filter(function(it,j){return s0.res[j]==='no'});
+    if(!keep.length)return true;
+    labSess[k]={titulo:'Refazendo: '+s0.titulo,mat:s0.mat,matId:s0.matId,top:s0.top,topId:s0.topId,dif:s0.dif,itens:keep,resp:keep.map(function(){return null}),res:keep.map(function(){return null}),checked:false,fin:false,t0:Date.now()};
+    labQSave();render();window.scrollTo(0,0);return true;
+  }
+
+  /* tutor */
+  if(a==='lab-tut-sug'){
+    var c0=labChat[k];if(!c0||labBusy)return true;
+    var sg=c0.sug&&c0.sug[+b.dataset.i];if(!sg)return true;
+    c0.msgs.push({r:'u',t:sg});c0.sug=[];labTurn(k);return true;
+  }
+  if(a==='lab-tut-retry'){if(labChat[k]&&!labBusy)labTurn(k);return true}
+  if(a==='lab-tut-drop'){if(confirm('Descartar esta conversa?')){labChat[k]=null;rawSave('labChat',labChat);labSetMsg('','');render()}return true}
+  if(a==='lab-tut-end'){
+    if(!labChat[k])return true;
+    labBump(1);labCfgSave({tut:labCfgGet().tut+1});
+    labChat[k]=null;rawSave('labChat',labChat);labSetMsg('','');render();toast('Conversa encerrada');return true;
+  }
+
+  /* desafios */
+  if(a==='lab-des-dica'){if(labDes&&labDes.dv<labDes.dicas.length){labDes.dv++;labDesSave();render()}return true}
+  if(a==='lab-des-sol'){
+    if(!labDes)return true;
+    if(!labDes.aval&&!confirm('Ver a solução antes de enviar a sua? Tente primeiro: é assim que se aprende.'))return true;
+    labDes.sol=true;labDesSave();render();return true;
+  }
+  if(a==='lab-des-reset'){
+    if(!labDes)return true;
+    if(labDes.codigo!==labDes.codigoInicial&&!confirm('Voltar ao código inicial? O que você escreveu será perdido.'))return true;
+    labDes.codigo=labDes.codigoInicial;labDesSave();render();return true;
+  }
+  if(a==='lab-des-drop'){
+    if(!labDes)return true;
+    if(!labDes.aval&&labDes.codigo&&labDes.codigo!==labDes.codigoInicial&&!confirm('Descartar este desafio sem avaliar?'))return true;
+    labDes=null;rawSave('labDes',null);labSetMsg('','');render();return true;
+  }
+  if(a==='lab-rev-clear'){labTmp.rev=null;render();return true}
+
+  /* diário de bugs */
+  if(a==='lab-bug-start'){
+    var bq=devBugDue().sort(function(x,y){return (x.b||0)-(y.b||0)}).slice(0,15).map(function(x){return x.i});
+    if(bq.length){labBugRev={q:bq,i:0,shown:false,done:0,ok:0,req:{}};render()}
+    return true;
+  }
+  if(a==='lab-bug-show'){if(labBugRev){labBugRev.shown=true;render()}return true}
+  if(a==='lab-bug-grade'){
+    if(!labBugRev)return true;
+    var bid=labBugRev.q[labBugRev.i],bx=devBug.filter(function(x){return x.i===bid})[0],ok=b.dataset.g==='1';
+    if(bx){
+      bugGrade(bx,ok);save('devBug',devBug);labBugRev.done++;if(ok)labBugRev.ok++;
+      if(!ok&&!labBugRev.req[bid]){labBugRev.req[bid]=1;labBugRev.q.push(bid)}
+    }
+    labBugRev.i++;labBugRev.shown=false;render();return true;
+  }
+  if(a==='lab-bug-end'){labBugRev=null;render();return true}
+  if(a==='lab-bug-tag'){labBugTag=b.dataset.v;render();return true}
+  if(a==='lab-bug-del'){if(!confirm('Apagar este bug do diário?'))return true;devBug=devBug.filter(function(x){return x.i!==id});save('devBug',devBug);render();return true}
+
+  /* projetos */
+  if(a==='lab-pj-et'){
+    var p=labPj(b.dataset.p);if(!p)return true;
+    p.et.forEach(function(e){if(e.i===b.dataset.e)e.ok=!e.ok});save('devProj',devProj);labBump(1);render();return true;
+  }
+  if(a==='lab-pj-et-del'){
+    var p2=labPj(b.dataset.p);if(!p2)return true;
+    p2.et=p2.et.filter(function(e){return e.i!==b.dataset.e});save('devProj',devProj);render();return true;
+  }
+  if(a==='lab-pj-st'){
+    var p3=labPj(b.dataset.p);if(!p3)return true;
+    var v=b.dataset.v;
+    if(v==='entregue'){
+      var pend=p3.et.filter(function(e){return !e.ok}).length;
+      if(pend&&!confirm('Ainda há '+pend+(pend===1?' etapa':' etapas')+' sem marcar. Entregue significa publicado, com README e funcionando. Marcar como entregue mesmo assim?'))return true;
+      p3.e=tk();
+    }
+    if(v==='fazendo'&&!p3.a)p3.a=tk();
+    p3.st=v;save('devProj',devProj);labBump(1);render();
+    if(v==='entregue')toast('Projeto entregue. Bom trabalho!');
+    return true;
+  }
+  if(a==='lab-pj-link'){
+    var p4=labPj(b.dataset.p);if(!p4)return true;
+    var l=prompt('Link do repositório ou da demo (deixe vazio para remover):',p4.link||'');
+    if(l===null)return true;
+    l=String(l).trim().slice(0,300);
+    if(l&&!/^https?:\/\//i.test(l)){toast('O link precisa começar com http:// ou https://');return true}
+    p4.link=l;save('devProj',devProj);render();return true;
+  }
+  if(a==='lab-pj-del'){
+    var p5=labPj(b.dataset.p);if(!p5)return true;
+    if(!confirm('Apagar o projeto "'+p5.nome+'"?'))return true;
+    devProj=devProj.filter(function(x){return x.i!==p5.i});save('devProj',devProj);render();return true;
+  }
+  if(a==='lab-pj-idea'){
+    var ix=labTmp.ideias[+b.dataset.i];
+    if(ix){
+      devProj.push({i:labId(),nome:ix.nome,desc:ix.descricao,stack:ix.stack,link:'',st:'ideia',et:ix.etapas.map(function(t){return {i:labId(),t:t,ok:false}}),a:'',e:''});
+      save('devProj',devProj);labTmp.ideias.splice(+b.dataset.i,1);render();toast('Projeto adicionado em Ideias');
+    }
+    return true;
+  }
+  if(a==='lab-pj-idea-skip'){labTmp.ideias.splice(+b.dataset.i,1);render();return true}
+
+  /* redação */
+  if(a==='lab-red-tema'){
+    if(labBusy)return true;
+    var f=document.querySelector('#labRedForm [name="tema"]'),hint=f?String(f.value).trim().slice(0,80):'';
+    labRedTema(hint);return true;
+  }
+  if(a==='lab-red-use-tema'){
+    if(labTmp.tema){var dr=labRedDraft();dr.tema=labTmp.tema.tema;rawSave('labRedDraft',dr);labTmp.tema=null;render();toast('Tema aplicado')}
+    return true;
+  }
+  if(a==='lab-red-tema-clear'){labTmp.tema=null;render();return true}
+  if(a==='lab-red-clear'){labTmp.red=null;render();return true}
+  if(a==='lab-red-save'){
+    var r=labTmp.red;if(!r||r.saved)return true;
+    essays.push({id:uid(),date:tk(),tema:String(r.tema||'Tema livre').slice(0,160),c:r.competencias.map(function(c){return c.nota}),ia:1});
+    save('essays',essays);r.saved=true;render();toast('Redação salva no histórico (marcada como IA)');return true;
+  }
+  if(a==='lab-red-rep'){
+    var rp=labTmp.red&&labTmp.red.repertorios[+b.dataset.i];
+    if(rp){
+      var TIPOS=['Filosofia','Sociologia','História','Dado ou pesquisa','Lei ou Constituição','Literatura','Filme ou série','Atualidade','Outro'];
+      var tp2=TIPOS.filter(function(t){return labNorm(rp.tipo).indexOf(labNorm(t))>=0})[0]||'Outro';
+      reps.unshift({id:uid(),txt:rp.texto,tipo:tp2,eixos:String((labTmp.red.tema||'')).slice(0,80)});
+      save('reps',reps);toast('Repertório guardado no banco (confira a referência)');
+    }
+    return true;
+  }
+  return true;
+}
+
+/* ---------- formulários ---------- */
+function labMatTop(fd,k){
+  var mat=String(fd.get('lm')||''),top=String(fd.get('lt')||'');
+  if(top&&(!TOPICS[top]||TOPICS[top].materia!==mat))top='';
+  return {mat:mat,top:top,matNome:labMatName(mat),topNome:labTopName(top)};
+}
+async function labGenCards(k,o){
+  labBusy='cards:'+k;labSetMsg('cards:'+k,'');render();
+  try{
+    var d=await labCall({acao:'cartoes',k:k,materia:o.matNome,topico:o.topNome,tema:o.tema,notas:o.notas,qtd:o.qtd});
+    labSug[k]=d.cartoes.filter(function(c){return !cardFind(k,c.f)}).map(function(c){return {f:c.f,v:c.v,x:c.x,m:o.mat,top:o.top}});
+    if(!labSug[k].length)labSetMsg('cards:'+k,'Todos os cartões sugeridos já existem. Tente outro assunto.');
+  }catch(e){labSetMsg('cards:'+k,(e&&e.message)||'Não foi possível gerar os cartões.')}
+  labBusy='';render();
+}
+function labSubmit(f,fd){
+  var id=f.id,k=f.dataset&&f.dataset.k==='dev'?'dev':'enem';
+  if(f.dataset&&f.dataset.lab==='pjet'){
+    var p=labPj(f.dataset.p),t=labTrim(fd.get('t'),140);
+    if(p&&t){p.et.push({i:labId(),t:t,ok:false});save('devProj',devProj);render();keepFocus('#pjet-'+p.i)}
+    return true;
+  }
+  if(id==='labGenCardsForm'){
+    if(labBusy)return true;
+    var mt=labMatTop(fd,k),tema=labTrim(fd.get('tema'),160),notas=labTrim(fd.get('notas'),3500);
+    var fm=labForm[k];fm.cm=mt.mat;fm.ct=mt.top;fm.ctema=tema;fm.cnotas=notas;fm.cqtd=+fd.get('qtd')||12;
+    if(!mt.mat&&!tema&&!notas){toast('Escolha um assunto ou cole suas anotações');return true}
+    labGenCards(k,{mat:mt.mat,top:mt.top,matNome:mt.matNome,topNome:mt.topNome,tema:tema,notas:notas,qtd:fm.cqtd});return true;
+  }
+  if(id==='labCardForm'){
+    var mt2=labMatTop(fd,k),c=cardAdd(k,{f:fd.get('f'),v:fd.get('v'),m:mt2.mat,top:mt2.top,src:'manual'});
+    if(!c){toast(String(fd.get('f')||'').trim()?'Já existe um cartão com essa frente':'Escreva a frente e o verso');return true}
+    cardsSave();render();toast('Cartão salvo');keepFocus('#labCardForm input[name="f"]');return true;
+  }
+  if(id==='labCardBulkForm'){
+    var rows=labParse(fd.get('lista')),m3=String(fd.get('lm')||''),n=0,dup=0;
+    rows.forEach(function(r){if(cardAdd(k,{f:r.f,v:r.v,m:m3,src:'lista'}))n++;else dup++});
+    if(n)cardsSave();
+    render();toast(rows.length?n+(n===1?' cartão adicionado':' cartões adicionados')+(dup?' · '+dup+' já existiam':''):'Nenhuma linha no formato pergunta - resposta');return true;
+  }
+  if(id==='labGenQForm'){
+    if(labBusy)return true;
+    var mq=labMatTop(fd,k),fq=labForm[k];
+    fq.qm=mq.mat;fq.qt=mq.top;fq.qdif=fd.get('dif');fq.qqtd=+fd.get('qtd')||8;fq.qerr=!!fd.get('err');
+    var lang=fd.get('lang');if(lang&&LAB_LANGS.indexOf(lang)>=0)labCfgSave({lang:lang});
+    labGenQ(k,{mat:mq.mat,top:mq.top,matNome:mq.matNome,topNome:mq.topNome,dif:fq.qdif,qtd:fq.qqtd,lang:k==='dev'?labCfgGet().lang:'',erros:fq.qerr?labErrPoints(k):[]});return true;
+  }
+  if(id==='labQForm'){labQCheck(k);return true}
+  if(id==='labTutStartForm'){
+    if(labBusy)return true;
+    var tm=labTrim(fd.get('tema'),160);if(!tm){toast('Informe o assunto');return true}
+    labChat[k]={modo:String(fd.get('modo')||'explicar'),tema:tm,msgs:[],sug:[],t0:Date.now()};
+    rawSave('labChat',labChat);labTurn(k);return true;
+  }
+  if(id==='labTutForm'){
+    if(labBusy||!labChat[k])return true;
+    var msg=labTrim(fd.get('msg'),1500);if(!msg)return true;
+    labChat[k].msgs.push({r:'u',t:msg});labChat[k].sug=[];labTurn(k);return true;
+  }
+  if(id==='labDesForm'){
+    if(labBusy)return true;
+    var md=labMatTop(fd,'dev'),fv=labForm.dev;
+    fv.dm=md.mat;fv.dt=md.top;fv.dtipo=String(fd.get('tipo'));
+    var lg=String(fd.get('lang')),nv=String(fd.get('nivel'));
+    labCfgSave({lang:lg,nivel:nv});
+    labGenDes({lang:lg,tipo:fv.dtipo,nivel:nv,mat:md.mat,top:md.top,matNome:md.matNome,topNome:md.topNome});return true;
+  }
+  if(id==='labDesCodeForm'){
+    if(labBusy||!labDes)return true;
+    var cod=String(fd.get('codigo')||'');
+    labDes.codigo=cod;labDesSave();
+    if(cod.trim().length<2){toast('Escreva a sua resposta antes de avaliar');return true}
+    if(labDes.tipo!=='saida'&&labDes.codigoInicial&&cod.trim()===labDes.codigoInicial.trim()&&!confirm('O código é igual ao inicial. Avaliar assim mesmo?'))return true;
+    labEvalDes();return true;
+  }
+  if(id==='labRevForm'){
+    if(labBusy)return true;
+    var code=String(fd.get('codigo')||''),ctx=labTrim(fd.get('ctx'),300),lang2=String(fd.get('lang')),foco=String(fd.get('foco'));
+    rawSave('labRevDraft',{code:code,ctx:ctx});labCfgSave({lang:lang2});
+    labRevRun({codigo:code,ctx:ctx,lang:lang2,foco:foco});return true;
+  }
+  if(id==='labBugForm'){
+    var b={i:labId(),date:tk(),t:labTrim(fd.get('t'),120),tag:labTrim(fd.get('tag'),40),s:labTrim(fd.get('s'),400),c:labTrim(fd.get('c'),400),f:labTrim(fd.get('f'),400),p:labTrim(fd.get('p'),300),l:labTrim(fd.get('l'),300),b:0,d:tk(),n:0};
+    if(!b.t||!b.s||!b.c||!b.f){toast('Preencha título, sintoma, causa raiz e correção');return true}
+    if(/falha humana|desaten|descuido|distra[çc]|erro meu|esquec|n[ãa]o sei/i.test(b.c)&&!b.p&&confirm('A causa parece genérica ("distração", "descuido", "falha humana"). Um bom registro diz o que no processo permitiu o erro: faltou teste, validação, revisão?\n\nOK: voltar e detalhar o campo "O que permitiu o erro".\nCancelar: salvar assim mesmo.'))return true;
+    devBug.push(b);save('devBug',devBug);labBump(1);render();toast('Bug registrado. Ele volta para revisão amanhã');return true;
+  }
+  if(id==='labPjIdeasForm'){
+    if(labBusy)return true;
+    var nvl=String(fd.get('nivel')),lg2=String(fd.get('lang'));labCfgSave({nivel:nvl,lang:lg2});
+    labBusy='proj';labSetMsg('proj','');render();
+    labCall({acao:'projeto',k:'dev',nivel:nvl,linguagem:lg2,tema:labTrim(fd.get('tema'),120)}).then(function(d){labTmp.ideias=d.ideias}).catch(function(e){labSetMsg('proj',(e&&e.message)||'Não foi possível sugerir projetos.')}).then(function(){labBusy='';render()});
+    return true;
+  }
+  if(id==='labPjForm'){
+    var nome=labTrim(fd.get('nome'),80);if(!nome){toast('Dê um nome ao projeto');return true}
+    var lk=labTrim(fd.get('link'),300);if(lk&&!/^https?:\/\//i.test(lk)){toast('O link precisa começar com http:// ou https://');return true}
+    devProj.push({i:labId(),nome:nome,desc:labTrim(fd.get('desc'),300),stack:labTrim(fd.get('stack'),100),link:lk,st:'ideia',et:[],a:'',e:''});
+    save('devProj',devProj);render();toast('Projeto criado em Ideias');return true;
+  }
+  if(id==='labRedForm'){
+    if(labBusy)return true;
+    var texto=labTrim(fd.get('texto'),5000),tema2=labTrim(fd.get('tema'),200);
+    rawSave('labRedDraft',{tema:tema2,txt:texto});
+    if(texto.length<300){toast('A redação está curta demais para a correção');return true}
+    labRedRun({tema:tema2,texto:texto});return true;
+  }
+  return false;
+}
+async function labRevRun(o){
+  labBusy='rev';labSetMsg('rev','');render();
+  try{
+    var d=await labCall({acao:'revisao',k:'dev',linguagem:o.lang,foco:o.foco,contexto:o.ctx,codigo:o.codigo});
+    labTmp.rev=d;
+    labEx.push({id:uid(),date:tk(),k:'dev',tipo:'revisao',titulo:(o.lang+' · '+(o.ctx||'revisão de código')).slice(0,60),lang:o.lang,nota:d.nota,ok:0,total:0});
+    if(labEx.length>120)labEx=labEx.slice(-120);save('labEx',labEx);labBump(1);
+  }catch(e){labSetMsg('rev',(e&&e.message)||'Não foi possível revisar o código.')}
+  labBusy='';render();
+  if(labTmp.rev){var p=document.getElementById('labRevForm');if(p&&p.nextElementSibling)p.nextElementSibling.scrollIntoView({behavior:'smooth',block:'start'})}
+}
+function labChange(el,type){
+  var form=el.form,k=form&&form.dataset&&form.dataset.k==='dev'?'dev':'enem';
+  if(el.dataset&&el.dataset.lm!==undefined){
+    var lt=form&&form.elements.lt;
+    if(lt)lt.innerHTML=labTopicOptions(el.value,'',form.id==='labCardForm'||form.id==='labCardBulkForm'?'Sem tópico':'Qualquer tópico');
+    return true;
+  }
+  if(el.dataset&&el.dataset.lq!==undefined){
+    var s=labSess[k];if(s&&!s.checked){s.resp[+el.dataset.lq]=+el.value;labQSave()}
+    return true;
+  }
+  if(el.id==='labCode'){if(labDes){labDes.codigo=el.value;labDesSave()}return true}
+  if(el.id==='labRevCode'||(form&&form.id==='labRevForm'&&el.name==='ctx')){
+    var rf=document.getElementById('labRevForm');
+    if(rf)rawSave('labRevDraft',{code:rf.elements.codigo.value,ctx:rf.elements.ctx.value});
+    return true;
+  }
+  if(form&&form.id==='labRedForm'&&(el.name==='texto'||el.name==='tema')){
+    rawSave('labRedDraft',{tema:form.elements.tema.value,txt:form.elements.texto.value});return true;
+  }
+  if(el.dataset&&el.dataset.lf){
+    labFilter[el.dataset.k==='dev'?'dev':'enem'][el.dataset.lf]=el.value;labLimit=40;render();return true;
+  }
+  if(el.id==='labSearch'){
+    if(type==='input'){
+      labFilter[el.dataset.k==='dev'?'dev':'enem'].q=el.value;labLimit=40;var pos=el.selectionStart;render();
+      var s2=document.getElementById('labSearch');if(s2){s2.focus();try{s2.setSelectionRange(pos,pos)}catch(e){}}
+    }
+    return true;
+  }
+  return false;
+}
+
+/* =========================================================
    EVENTOS
    ========================================================= */
 document.querySelector('.nav').addEventListener('click',function(e){var t=e.target.closest('.tab,[data-view-go]');if(t)go(t.dataset.view||t.dataset.viewGo)});
@@ -3877,6 +4957,7 @@ main.addEventListener('click',function(e){
   else if(habAction(a,b)){}
   else if(trAction(a,b)){}
   else if(ingAction(a,b)){}
+  else if(labAction(a,b)){}
   else if(a==='wk'){weekOffset=b.dataset.d==='0'?0:weekOffset+(+b.dataset.d);render()}
   else if(a==='print'){document.querySelectorAll('details').forEach(function(x){x.open=true});window.print()}
   else if(a==='resetweek'){
@@ -3911,6 +4992,7 @@ main.addEventListener('input',function(e){
   var el=e.target;
   if(trChange(el))return;          // guarda o rascunho do treino a cada tecla
   if(ingChange(el,'input'))return; // respostas dos exercícios, rascunho de texto e busca de palavras
+  if(labChange(el,'input'))return; // rascunhos de código e redação, respostas das questões e busca de cartões
   if(el.id==='note'){var k=el.dataset.date;if(el.value.trim())notes[k]=el.value;else delete notes[k];save('notes',notes);return}
   if(el.id==='repSearch'){repSearch=el.value;var pos=el.selectionStart;render();var s=document.getElementById('repSearch');if(s){s.focus();s.setSelectionRange(pos,pos)}return}
   if(!el.dataset.f||el.tagName==='SELECT')return;
@@ -3924,6 +5006,7 @@ main.addEventListener('change',function(e){
   if(praticaChange(el))return;
   if(trChange(el))return;
   if(ingChange(el,'change'))return;
+  if(labChange(el,'change'))return;
   if(el.dataset.pick&&el.value==='__new'){addTopicFromToday(el.dataset.pick,el.dataset.date);return}
   if(el.dataset.pick){var k=el.dataset.date;picks[k]=picks[k]||{};picks[k][el.dataset.pick]={t:el.value,auto:false};save('picks',picks);render();keepFocus('[data-pick="'+el.dataset.pick+'"]');return}
   if(el.id==='examDate'){exam=el.value;save('exam',exam);renderStats();return}
@@ -3938,6 +5021,7 @@ main.addEventListener('submit',function(e){
   if(habSubmit(f,fd))return;
   if(trSubmit(f,fd))return;
   if(ingSubmit(f,fd))return;
+  if(labSubmit(f,fd))return;
   if(f.id==='essayForm'){
     essays.push({id:uid(),date:fd.get('date'),tema:String(fd.get('tema')).trim(),c:[0,1,2,3,4].map(function(i){return +fd.get('c'+i)})});
     save('essays',essays);render();toast('Redação salva');
@@ -4056,7 +5140,7 @@ function hasLocalData(){
 }
 // Chaves que versões antigas do site não conhecem. Um aparelho com o site desatualizado envia a nuvem sem elas;
 // se a nuvem não tem a chave mas este aparelho tem dados, os dados são mantidos e reenviados (nunca apagados em silêncio).
-var ADITIVAS=['water','waterGoal','workouts','wlog','ingCfg','vocab','ingEx','ingErr','ingLog','ingWr'];
+var ADITIVAS=['water','waterGoal','workouts','wlog','ingCfg','vocab','ingEx','ingErr','ingLog','ingWr','cards','labEx','labCfg','devBug','devProj'];
 function adopt(r,keepLocal){
   var d=r.dados||{},kept=false;
   rawSave('habitSync',d.habitSync===true);syncHabitKey();     // a nuvem decide se o registro do hábito acompanha a conta
