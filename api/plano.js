@@ -144,8 +144,10 @@ function montarCorpo(prompt, schema, modelo, fmt, temp, pensar) {
 function msgGemini(txt) {
   try { return String(JSON.parse(txt).error.message || '').replace(/\s+/g, ' ').slice(0, 160); } catch (e) { return String(txt || '').replace(/\s+/g, ' ').slice(0, 120); }
 }
-// Devolve { texto } com o JSON bruto da IA ou { falha: { status, msg, limite } }
+const LIMITE_MS = 50000; // abaixo do maxDuration (60 s): assim a pessoa recebe uma mensagem legível, e não a página de erro do Vercel
+// Devolve { texto } com o JSON bruto da IA ou { falha: { status, msg, limite, tempo } }
 async function chamarGemini(chave, prompt, schema, temp, pensar) {
+  const inicio = Date.now();
   const ordem = lembrado ? [lembrado.modelo, ...MODELOS.filter(m => m !== lembrado.modelo)] : MODELOS;
   let ultimo = null, limite = false;
   for (const modelo of ordem) {
@@ -153,11 +155,20 @@ async function chamarGemini(chave, prompt, schema, temp, pensar) {
     let fmts = antigo ? ['antigo'] : ['novo', 'antigo'];
     if (!antigo && lembrado && lembrado.modelo === modelo) fmts = [lembrado.fmt, ...fmts.filter(f => f !== lembrado.fmt)];
     for (const fmt of fmts) {
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': chave },
-        body: JSON.stringify(montarCorpo(prompt, schema, modelo, fmt, temp, pensar))
-      });
+      const resta = LIMITE_MS - (Date.now() - inicio);
+      if (resta < 4000) return { falha: { status: 504, msg: '', limite: false, tempo: true } };
+      let r;
+      try {
+        r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': chave },
+          body: JSON.stringify(montarCorpo(prompt, schema, modelo, fmt, temp, pensar)),
+          signal: AbortSignal.timeout(resta)
+        });
+      } catch (e) {
+        console.error('Gemini', modelo, fmt, 'tempo esgotado ou falha de rede', e && e.name);
+        return { falha: { status: 504, msg: '', limite: false, tempo: true } };
+      }
       if (r.ok) {
         const data = await r.json();
         lembrado = { modelo, fmt };
@@ -176,6 +187,7 @@ async function chamarGemini(chave, prompt, schema, temp, pensar) {
 }
 function erroGemini(f) {
   const det = f.msg ? ` (Gemini: ${f.msg})` : '';
+  if (f.tempo) return { s: 504, erro: 'A IA demorou mais do que o servidor permite. Tente de novo com menos itens (por exemplo, 5 questões) ou um texto menor.' };
   if (f.limite) return { s: 429, erro: 'Limite gratuito da IA atingido. Tente de novo em alguns minutos.' };
   if (f.status === 404) return { s: 502, erro: `Nenhum modelo do Gemini está disponível para a sua chave. Em GEMINI_MODEL, no Vercel, informe um modelo que apareça no Google AI Studio.${det}` };
   if (f.status === 400 || f.status === 403) return { s: 502, erro: `O Gemini recusou a chamada. Confira a GEMINI_API_KEY no Vercel e se a chave tem acesso aos modelos.${det}` };

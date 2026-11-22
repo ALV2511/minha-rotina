@@ -110,7 +110,9 @@ function limpar(b) {
     topico: str(b.topico, 140),
     tema: str(b.tema, 200),
     dif: DIFS.includes(b.dif) ? b.dif : 'media',
-    qtd: num(b.qtd, 3, 20) || 8,
+    qtd: num(b.qtd, 1, 20) || 8,
+    lote: num(b.lote, 0, 4),
+    lotes: num(b.lotes, 0, 4),
     erros: arr(b.erros, 10).map(x => str(x, 200)).filter(Boolean),
     notas: str(b.notas, 3500),
     texto: str(b.texto, 5000),
@@ -152,10 +154,11 @@ Cada cartão: "f" é a frente, uma pergunta ou comando curto e específico (até
 
 function promptQuestoes(e) {
   const mist = !e.materia;
+  const parte = e.lotes > 1 ? `\nEsta é a parte ${e.lote} de ${e.lotes} de uma lista maior: cubra subtemas diferentes dos que as outras partes cobririam (na parte 1, comece pelo básico do assunto; nas seguintes, avance para aplicações e situações mais elaboradas).` : '';
   const erros = e.erros.length ? `Inclua itens que treinem estes pontos em que o estudante errou (sem repetir os mesmos enunciados): ${e.erros.join(' | ')}.` : '';
   if (e.k === 'dev') {
     return `${REGRAS_DEV}
-Crie ${e.qtd} questões de múltipla escolha sobre programação. Assunto: ${mist ? 'variado, dentro do básico ao intermediário do desenvolvimento de software' : assunto(e)}. Dificuldade: ${DIF_TXT[e.dif]}. Linguagem dos exemplos de código: ${e.linguagem}.
+Crie ${e.qtd} questões de múltipla escolha sobre programação. Assunto: ${mist ? 'variado, dentro do básico ao intermediário do desenvolvimento de software' : assunto(e)}. Dificuldade: ${DIF_TXT[e.dif]}. Linguagem dos exemplos de código: ${e.linguagem}.${parte}
 - Cada questão tem 4 "alternativas" (sem letras no começo), só uma correta, e "resposta" é a letra certa (A, B, C ou D).
 - Misture conceito, "o que este código imprime ou retorna", achar o erro e escolher a melhor abordagem. Quando houver código, coloque-o no campo "texto" (com quebras de linha) e deixe o "enunciado" como a pergunta.
 - Execute o código mentalmente passo a passo antes de decidir o gabarito. Se houver dúvida, troque a questão.
@@ -164,10 +167,10 @@ ${erros}
 "titulo": nome curto da lista.`;
   }
   return `${REGRAS_ENEM}
-Crie ${e.qtd} questões inéditas no padrão do ENEM. Matéria: ${mist ? 'variada, cobrindo as quatro áreas (Linguagens, Humanas, Natureza e Matemática)' : e.materia}${e.topico ? `, tópico: ${e.topico}` : ''}. Dificuldade: ${DIF_TXT[e.dif]}.
+Crie ${e.qtd} questões inéditas no padrão do ENEM. Matéria: ${mist ? 'variada, cobrindo as quatro áreas (Linguagens, Humanas, Natureza e Matemática)' : e.materia}${e.topico ? `, tópico: ${e.topico}` : ''}. Dificuldade: ${DIF_TXT[e.dif]}.${parte}
 - Estilo ENEM: situação-problema contextualizada, com "texto" de apoio (trecho, dado, gráfico descrito em palavras, tabela em texto, situação do cotidiano) e "enunciado" com o comando. Cobre competências e habilidades, não decoreba pura.
 - Cada questão tem exatamente 5 "alternativas" (sem letras no começo), só uma correta, com distratores plausíveis baseados em erros comuns. "resposta" é a letra certa (A, B, C, D ou E); distribua as letras certas de forma variada.
-- NUNCA reproduza questões reais nem cite ano de prova. Resolva cada questão passo a passo antes de fixar o gabarito, sobretudo em Matemática, Física e Química; se houver dúvida sobre a resposta, descarte e crie outra.
+- NUNCA reproduza questões reais nem cite ano de prova. Confira cada gabarito resolvendo a questão antes de fixá-lo, sobretudo em Matemática, Física e Química; se houver dúvida sobre a resposta, troque a questão. Explicações objetivas.
 - "explicacao": o raciocínio que leva à resposta certa (com as contas, se houver) e uma frase sobre o erro que atrai a alternativa errada mais tentadora (3 a 5 frases). "categoria": etiqueta curta do assunto. "topico": o tópico trabalhado. "materia": o nome da matéria escolar da questão (Matemática, Física, Química, Biologia, História, Geografia, Filosofia, Sociologia, Língua Portuguesa, Literatura, Artes e Educação Física ou Inglês).
 ${erros}
 "titulo": nome curto da lista.`;
@@ -417,8 +420,10 @@ function montarCorpo(prompt, schema, modelo, fmt, temp, pensar) {
 function msgGemini(txt) {
   try { return String(JSON.parse(txt).error.message || '').replace(/\s+/g, ' ').slice(0, 160); } catch (e) { return String(txt || '').replace(/\s+/g, ' ').slice(0, 120); }
 }
-// Devolve { texto } com o JSON bruto da IA ou { falha: { status, msg, limite } }
+const LIMITE_MS = 50000; // abaixo do maxDuration (60 s): assim a pessoa recebe uma mensagem legível, e não a página de erro do Vercel
+// Devolve { texto } com o JSON bruto da IA ou { falha: { status, msg, limite, tempo } }
 async function chamarGemini(chave, prompt, schema, temp, pensar) {
+  const inicio = Date.now();
   const ordem = lembrado ? [lembrado.modelo, ...MODELOS.filter(m => m !== lembrado.modelo)] : MODELOS;
   let ultimo = null, limite = false;
   for (const modelo of ordem) {
@@ -426,11 +431,20 @@ async function chamarGemini(chave, prompt, schema, temp, pensar) {
     let fmts = antigo ? ['antigo'] : ['novo', 'antigo'];
     if (!antigo && lembrado && lembrado.modelo === modelo) fmts = [lembrado.fmt, ...fmts.filter(f => f !== lembrado.fmt)];
     for (const fmt of fmts) {
-      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': chave },
-        body: JSON.stringify(montarCorpo(prompt, schema, modelo, fmt, temp, pensar))
-      });
+      const resta = LIMITE_MS - (Date.now() - inicio);
+      if (resta < 4000) return { falha: { status: 504, msg: '', limite: false, tempo: true } };
+      let r;
+      try {
+        r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': chave },
+          body: JSON.stringify(montarCorpo(prompt, schema, modelo, fmt, temp, pensar)),
+          signal: AbortSignal.timeout(resta)
+        });
+      } catch (e) {
+        console.error('Gemini', modelo, fmt, 'tempo esgotado ou falha de rede', e && e.name);
+        return { falha: { status: 504, msg: '', limite: false, tempo: true } };
+      }
       if (r.ok) {
         const data = await r.json();
         lembrado = { modelo, fmt };
@@ -449,6 +463,7 @@ async function chamarGemini(chave, prompt, schema, temp, pensar) {
 }
 function erroGemini(f) {
   const det = f.msg ? ` (Gemini: ${f.msg})` : '';
+  if (f.tempo) return { s: 504, erro: 'A IA demorou mais do que o servidor permite. Tente de novo com menos itens (por exemplo, 5 questões) ou um texto menor.' };
   if (f.limite) return { s: 429, erro: 'Limite gratuito da IA atingido. Tente de novo em alguns minutos.' };
   if (f.status === 404) return { s: 502, erro: `Nenhum modelo do Gemini está disponível para a sua chave. Em GEMINI_MODEL, no Vercel, informe um modelo que apareça no Google AI Studio.${det}` };
   if (f.status === 400 || f.status === 403) return { s: 502, erro: `O Gemini recusou a chamada. Confira a GEMINI_API_KEY no Vercel e se a chave tem acesso aos modelos.${det}` };
@@ -488,12 +503,12 @@ module.exports = async (req, res) => {
 
   const cfg = {
     cartoes: { prompt: promptCartoes, schema: SCHEMA_CARTOES, temp: 0.5, pensar: 'low', ok: limparCartoes },
-    questoes: { prompt: promptQuestoes, schema: SCHEMA_Q, temp: 0.7, pensar: 'medium', ok: p => limparQuestoes(p, e) },
-    redacao: { prompt: promptRedacao, schema: SCHEMA_RED, temp: 0.2, pensar: 'high', ok: limparRedacao },
+    questoes: { prompt: promptQuestoes, schema: SCHEMA_Q, temp: 0.7, pensar: 'low', ok: p => limparQuestoes(p, e) },
+    redacao: { prompt: promptRedacao, schema: SCHEMA_RED, temp: 0.2, pensar: 'medium', ok: limparRedacao },
     tema: { prompt: promptTema, schema: SCHEMA_TEMA, temp: 0.9, pensar: 'low', ok: limparTema },
     tutor: { prompt: promptTutor, schema: SCHEMA_TUTOR, temp: 0.6, pensar: 'low', ok: limparTutor },
-    desafio: { prompt: promptDesafio, schema: SCHEMA_DESAFIO, temp: 0.8, pensar: 'medium', ok: p => limparDesafio(p, e) },
-    avaliar: { prompt: promptAvaliar, schema: SCHEMA_AVAL, temp: 0.1, pensar: 'high', ok: limparAval },
+    desafio: { prompt: promptDesafio, schema: SCHEMA_DESAFIO, temp: 0.8, pensar: 'low', ok: p => limparDesafio(p, e) },
+    avaliar: { prompt: promptAvaliar, schema: SCHEMA_AVAL, temp: 0.1, pensar: 'medium', ok: limparAval },
     revisao: { prompt: promptRevisao, schema: SCHEMA_REV, temp: 0.2, pensar: 'medium', ok: limparRevisao },
     projeto: { prompt: promptProjeto, schema: SCHEMA_PROJ, temp: 0.9, pensar: 'low', ok: limparProjeto }
   }[e.acao];
