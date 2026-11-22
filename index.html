@@ -417,6 +417,21 @@ label.opt span{line-height:1.4}
 .pjet li button.link{text-align:left}
 .pjet li.done button.link{text-decoration:line-through;color:var(--ink-soft)}
 .pj{margin-top:10px}
+/* Prática diária de inglês e revisões de inglês na aba inicial */
+.pdck{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);cursor:pointer;font-weight:600;line-height:1.4}
+.pdck input{width:auto;flex:none;margin:3px 0 0;padding:0;accent-color:var(--ok);transform:scale(1.25)}
+.pdck:has(input:checked){background:var(--ok-bg);border-color:var(--ok)}
+.pdsteps{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:14px}
+.pdsteps li{display:flex;flex-direction:column;gap:8px}
+.pdfix{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.pdfix input{flex:1 1 180px;width:auto;min-width:0}
+.tag.trl{background:transparent;border:1.5px solid currentColor;padding:0 8px;margin-right:2px;vertical-align:1px}
+.tag.trl.ing{color:var(--a-ling)}
+.tag.trl.dev{color:var(--a-tec)}
+.tag.trl.enem{color:var(--a-mat)}
+.revans summary{cursor:pointer;font-weight:700;color:var(--est);font-size:14px;padding:2px 0}
+.revans div{display:flex;flex-direction:column;gap:2px;padding:4px 0 2px;line-height:1.4}
+.revans em{color:var(--ink-soft)}
 /* Inglês */
 ul.plan.mission,ul.plan.hist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 ul.plan.hist{margin-top:8px;gap:6px}
@@ -1151,14 +1166,14 @@ var DEFAULT=[
    ========================================================= */
 var PREFIX='minha-rotina:';
 // Dados que vão para a nuvem e para o backup
-var KEYS=['routine.v2','progress','notes','focus','topics','picks','essays','reps','sims','exam','best','trailMode','custom','errors','hours','goals','badges','daylog','water','waterGoal','habitSync','workouts','wlog','ingCfg','vocab','ingEx','ingErr','ingLog','ingWr','cards','labEx','labCfg','devBug','devProj'];
+var KEYS=['routine.v2','progress','notes','focus','topics','picks','essays','reps','sims','exam','best','trailMode','custom','errors','hours','goals','badges','daylog','water','waterGoal','habitSync','workouts','wlog','ingCfg','vocab','ingEx','ingErr','ingLog','ingWr','cards','labEx','labCfg','devBug','devProj','ingDia'];
 // O registro do hábito (chave 'habit') só entra aqui quando a pessoa ativa a sincronização, veja syncHabitKey()
 function load(k,d){try{var v=localStorage.getItem(PREFIX+k);return v?JSON.parse(v):d}catch(e){return d}}
 function rawSave(k,v){try{localStorage.setItem(PREFIX+k,JSON.stringify(v))}catch(e){}}
 function save(k,v){rawSave(k,v);if(KEYS.indexOf(k)>=0&&typeof markDirty==='function')markDirty()}
 function clone(o){return JSON.parse(JSON.stringify(o))}
 
-var routine,progress,notes,focus,topics,picks,essays,reps,sims,exam,errs,hoursBy,goals,badges,daylog,water,waterGoal,habit,workouts,wlog,ingCfg,vocab,ingEx,ingErr,ingLog,ingWr,cards,labEx,labCfg,devBug,devProj;
+var routine,progress,notes,focus,topics,picks,essays,reps,sims,exam,errs,hoursBy,goals,badges,daylog,water,waterGoal,habit,workouts,wlog,ingCfg,vocab,ingEx,ingErr,ingLog,ingWr,cards,labEx,labCfg,devBug,devProj,ingDia;
 function reloadState(){
   routine=load('routine.v2',clone(DEFAULT));
   progress=load('progress',{});  // {data:{bloco:true}}
@@ -1190,6 +1205,7 @@ function reloadState(){
   labCfg=load('labCfg',null);    // linguagem, nível e conversas com o tutor
   devBug=load('devBug',[]);      // diário de bugs
   devProj=load('devProj',[]);    // projetos de portfólio
+  ingDia=load('ingDia',{});      // prática diária de inglês (3 pilares e imersão passiva) por dia
   habit=load('habit',null);      // hábito a largar: fica só neste aparelho, salvo se a pessoa ativar a sincronização
   custom=normCustom(load('custom',null));
   if(migrateCustomTec(custom))save('custom',custom);
@@ -1376,7 +1392,7 @@ function blockHTML(b,date,opts){
   if(opts.full&&!done){
     h+='<div class="extra">';
     if(b.type==='estudo')h+='<button class="link" data-act="focus" data-label="'+esc(focusLabel)+'" data-subj="'+esc(focusSubj)+'">Iniciar foco de 25 min</button>';
-    if(b.subject==='rev'){var n=dueReviews().length;h+='<span class="pick">'+(n?n+' revisão'+(n>1?'ões':'')+' pendente'+(n>1?'s':'')+' no painel ao lado':'Nenhuma revisão pendente hoje')+'</span>'}
+    if(b.subject==='rev'){var n=dueReviews().length+ingRevItems().length;h+='<span class="pick">'+(n?n+' revisão'+(n>1?'ões':'')+' pendente'+(n>1?'s':'')+' no painel ao lado':'Nenhuma revisão pendente hoje')+'</span>'}
     if(b.subject==='rep')h+='<button class="link" data-act="go" data-v="redacao">Adicionar repertório ('+reps.length+' no banco)</button>';
     if(b.subject==='redsim')h+='<button class="link" data-act="go" data-v="redacao">Registrar nota da redação</button>';
     if(b.type==='treino')h+='<button class="link" data-act="tr-open">Abrir treino de hoje</button>';
@@ -1389,18 +1405,27 @@ function blockHTML(b,date,opts){
 /* =========================================================
    TELA: HOJE
    ========================================================= */
+function trailTag(t){var k=t&&t.trilha==='ing'?'ing':t&&t.trilha==='dev'?'dev':'enem';return '<span class="tag trl '+k+'">'+(k==='ing'?'Inglês':k==='dev'?'Dev':'ENEM')+'</span>'}
 function reviewsPanel(){
-  var due=dueReviews();
-  var h='<div class="panel"><h3>Revisões de hoje'+(due.length?' ('+due.length+')':'')+'</h3>';
-  if(!due.length)return h+'<p class="empty">Nada para revisar hoje. Cada tópico estudado volta aqui depois de 1, 7 e 30 dias.</p></div>';
+  var due=dueReviews(),en=ingRevItems(),total=due.length+en.length;
+  var h='<div class="panel"><h3>Revisões de hoje'+(total?' ('+total+')':'')+'</h3>';
+  if(!total)return h+'<p class="empty">Nada para revisar hoje. Cada tópico estudado volta aqui depois de 1, 7 e 30 dias. Palavras, chunks e erros de inglês voltam em intervalos crescentes.</p></div>';
+  var SLOTS=8,nEn=Math.min(en.length,3),nTop=Math.min(due.length,SLOTS-nEn);nEn=Math.min(en.length,SLOTS-nTop);
   h+='<div class="rev">';
-  due.slice(0,8).forEach(function(id){
+  due.slice(0,nTop).forEach(function(id){
     var t=TOPICS[id],s=topics[id],late=daysBetween(pk(s.next),today());
-    h+='<div class="revrow"><b>'+esc(t.nome)+'</b><span class="meta">'+esc(t.areaNome)+' · '+(s.n||0)+'ª revisão'+(late>0?' · atrasada '+late+' dia'+(late>1?'s':''):'')+'</span>';
+    h+='<div class="revrow"><b>'+esc(t.nome)+'</b><span class="meta">'+trailTag(t)+' '+esc(t.areaNome)+' · '+(s.n||0)+'ª revisão'+(late>0?' · atrasada '+late+' dia'+(late>1?'s':''):'')+'</span>';
     h+='<div class="acts"><button class="btn sm" data-act="rev-ok" data-t="'+id+'">Revisei, lembrei bem</button><button class="btn sm ghost" data-act="rev-no" data-t="'+id+'">Preciso rever</button></div></div>';
   });
-  if(due.length>8)h+='<button class="link" data-act="go" data-v="conteudo">Ver todas as '+due.length+' revisões</button>';
-  return h+'</div></div>';
+  en.slice(0,nEn).forEach(function(it){h+=ingRevRow(it)});
+  if(due.length>nTop)h+='<button class="link" data-act="go" data-v="conteudo">Ver todas as '+due.length+' revisões de tópicos</button>';
+  if(en.length>nEn)h+='<p class="hint" style="margin:0">Mais '+(en.length-nEn)+' de inglês aguardam. Revise em cartões, logo abaixo.</p>';
+  h+='</div>';
+  if(en.length){
+    var nv=en.filter(function(x){return x.k==='v'}).length,ne=en.length-nv;
+    h+='<div class="chips no-print" style="margin-top:10px">'+(nv?'<button class="btn sm ghost" data-act="ing-rev-go" data-k="v">Revisar palavras e chunks em cartões ('+nv+')</button>':'')+(ne?'<button class="btn sm ghost" data-act="ing-rev-go" data-k="e">Revisar erros em cartões ('+ne+')</button>':'')+'</div>';
+  }
+  return h+'</div>';
 }
 function renderHoje(){
   var d=today(),i=dayIdx(d),s=dayScore(d),p=pct(s),blocks=routine[i];
@@ -2047,7 +2072,7 @@ async function generatePlan(f){
     if(!s)throw new Error('Sua sessão expirou. Entre de novo na sua conta.');
     var r=await fetch('/api/plano',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.access_token},body:JSON.stringify(payload)});
     var data=await r.json().catch(function(){return {}});
-    if(!r.ok)throw new Error(data.erro||(r.status===404?'A função /api/plano não foi encontrada. Confira se a pasta api foi enviada ao GitHub.':'Erro '+r.status+' ao gerar o plano.'));
+    if(!r.ok)throw new Error(data.erro||(r.status===404?'A função /api/plano não foi encontrada. Confira se a pasta api foi enviada ao GitHub.':iaHttpErro(r,data,'plano')));
     var week=[[],[],[],[],[],[],[]];
     (data.dias||[]).forEach(function(d){
       if(d.dia<0||d.dia>6)return;
@@ -2066,7 +2091,7 @@ async function generatePlan(f){
 }
 
 function renderStats(){
-  var mon=mondayOf(new Date()),ws=rangeScore(mon,dayIdx(today())+1),s=dayScore(today()),due=dueReviews().length;
+  var mon=mondayOf(new Date()),ws=rangeScore(mon,dayIdx(today())+1),s=dayScore(today()),due=dueReviews().length+ingRevItems().length;
   var h='<div class="stat"><b>'+s.done+'/'+s.total+'</b><span>hoje</span></div>'+
     '<div class="stat"><b>'+pct(ws)+'%</b><span>da semana</span></div>'+
     '<div class="stat"><b>'+streakNow()+'</b><span>dias seguidos</span></div>'+
@@ -2420,7 +2445,9 @@ var BADGES=[
  {id:'ens7',n:'Inglês toda semana',d:'7 dias seguidos com 10 min de inglês',f:function(c){return c.ing.ingS>=7}},
  {id:'ens30',n:'Imersão de verdade',d:'30 dias seguidos com 10 min de inglês',f:function(c){return c.ing.ingS>=30}},
  {id:'enh10',n:'10 horas de inglês',d:'Registrar 10 horas de imersão',f:function(c){return c.ing.ingH>=10}},
- {id:'enh100',n:'100 horas de inglês',d:'Registrar 100 horas de imersão',f:function(c){return c.ing.ingH>=100}}
+ {id:'enh100',n:'100 horas de inglês',d:'Registrar 100 horas de imersão',f:function(c){return c.ing.ingH>=100}},
+ {id:'enpd1',n:'Prática completa',d:'Fechar os 3 pilares da prática diária de inglês em um dia',f:function(c){return c.ing.pdN>=1}},
+ {id:'enpd7',n:'Semana de imersão',d:'7 dias seguidos com os 3 pilares da prática diária',f:function(c){return c.ing.pdS>=7}}
 ];
 function badgeCtx(){
   var cov=areaCoverage(),revs=0,fm=0;
@@ -3061,7 +3088,7 @@ var ING_HORAS={A2:[180,200],B1:[350,400],B2:[500,600],C1:[700,800],C2:[1000,1200
 var ING_SK=[['o','Ouvir'],['f','Falar'],['l','Ler'],['e','Escrever'],['v','Vocabulário e gramática']];
 var ING_BOX=[1,2,4,8,16,35,70];
 var ING_MARCOS=[100,500,1000,2000,3000,5000,8000];
-var ING_TABS=[['painel','Painel'],['trilha','Trilha'],['palavras','Palavras'],['exercicios','Exercícios'],['escrita','Escrita'],['conversa','Conversa'],['erros','Erros'],['imersao','Imersão']];
+var ING_TABS=[['painel','Painel'],['dia','Prática diária'],['trilha','Trilha'],['palavras','Palavras'],['exercicios','Exercícios'],['escrita','Escrita'],['conversa','Conversa'],['erros','Erros'],['imersao','Imersão']];
 var ING_FOCOS=[['misto','Misto'],['vocabulario','Vocabulário'],['gramatica','Gramática'],['lacunas','Completar lacunas'],['compreensao','Compreensão de texto'],['listening','Compreensão auditiva (listening)'],['traducao','Tradução do português para o inglês'],['ordem','Ordenar palavras'],['erros','Corrigir frases com erro']];
 var ING_OBJ=['Diário','E-mail formal','Mensagem informal','Texto de opinião','Currículo ou LinkedIn','Livre'];
 var ING_CEN=['Conversa livre','Pedir comida em um restaurante','Entrevista de emprego','Aeroporto e viagem','Small talk com um colega novo','Consulta médica','Reunião de trabalho','Hotel e check-in','Comprar roupas'];
@@ -3094,13 +3121,20 @@ function ingSay(txt,slow){
 function sayBtn(txt,label,slow){return '<button type="button" class="link no-print" data-act="ing-say" data-say="'+esc(txt)+'"'+(slow?' data-slow="1"':'')+'>'+(label||'Ouvir')+'</button>'}
 
 /* ---------- chamada à IA ---------- */
+function iaHttpErro(r,data,nome){
+  if(data&&data.erro)return data.erro;
+  if(r.status===404)return 'A função /api/'+nome+' não foi encontrada. Envie o arquivo api/'+nome+'.js ao GitHub e espere o deploy terminar.';
+  if(r.status===504||r.status===502||r.status===503)return 'A IA demorou demais e o servidor encerrou a chamada. Tente de novo; se repetir, peça menos itens (por exemplo, 5 questões).';
+  if(r.status===413)return 'O texto enviado é grande demais. Reduza e tente de novo.';
+  return 'Erro '+r.status+' na IA.';
+}
 async function ingCall(payload){
   if(!sb||!user)throw new Error('Entre na sua conta (botão no menu) para usar a IA.');
   var s=(await sb.auth.getSession()).data.session;
   if(!s)throw new Error('Sua sessão expirou. Entre de novo na sua conta.');
   var r=await fetch('/api/ingles',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.access_token},body:JSON.stringify(payload)});
   var data=await r.json().catch(function(){return {}});
-  if(!r.ok)throw new Error(data.erro||(r.status===404?'A função /api/ingles não foi encontrada. Envie o arquivo api/ingles.js ao GitHub e espere o deploy terminar.':'Erro '+r.status+' na IA.'));
+  if(!r.ok)throw new Error(iaHttpErro(r,data,'ingles'));
   return data;
 }
 
@@ -3217,6 +3251,7 @@ function ingNextTopic(){
 function ingStudiedToday(){var t=tk(),n=0;TOPIC_LIST.forEach(function(x){if(x.trilha==='ing'&&topics[x.id]&&topics[x.id].at===t)n++});return n}
 function ingMission(){
   var t=tk(),vs=vocStats(),dayMin=ingDayMap()[t]||0,out=[],nx=ingNextTopic();
+  out.push(pdMission());
   if(vs.due>0||vs.revToday>0)out.push({done:vs.due===0,txt:vs.due>0?'Revisar '+vs.due+(vs.due===1?' palavra':' palavras'):'Palavras revisadas hoje: '+vs.revToday,act:'ing-go',v:'palavras'});
   var er=ierDue().length;
   if(er>0)out.push({done:false,txt:'Revisar '+er+(er===1?' erro':' erros')+' do seu caderno',act:'ing-go',v:'erros'});
@@ -3243,7 +3278,7 @@ function renderIngles(){
     if(t[0]==='erros'){var e=ierDue().length;if(e)badge=' <small>'+e+'</small>'}
     return '<button class="chip" data-act="ing-tab" data-v="'+t[0]+'" aria-pressed="'+(ingTab===t[0])+'">'+t[1]+badge+'</button>';
   }).join('')+'</div>';
-  var f={painel:ingPainel,trilha:function(){return renderTrail('ing')},palavras:ingPalavras,exercicios:ingExercicios,escrita:ingEscrita,conversa:ingConversa,erros:ingErros,imersao:ingImersao}[ingTab];
+  var f={painel:ingPainel,dia:ingDiaTab,trilha:function(){return renderTrail('ing')},palavras:ingPalavras,exercicios:ingExercicios,escrita:ingEscrita,conversa:ingConversa,erros:ingErros,imersao:ingImersao}[ingTab];
   return h+f()+'</div>';
 }
 
@@ -3277,7 +3312,7 @@ function ingPainel(){
   h+='</div><div class="panel"><h3>Esta semana</h3><p class="bignum">'+Math.round(wk.tot)+' <small>de '+c.meta+' min · '+Math.min(100,Math.round(wk.tot/c.meta*100))+'%</small></p>';
   h+='<div class="progress" role="progressbar" aria-label="Meta semanal de imersão" aria-valuenow="'+Math.min(100,Math.round(wk.tot/c.meta*100))+'" aria-valuemin="0" aria-valuemax="100" style="margin-bottom:10px"><i style="width:'+Math.min(100,Math.round(wk.tot/c.meta*100))+'%;background:var(--est)"></i></div>';
   h+='<div class="split"><div class="row"><span>Dias seguidos (10 min ou mais)</span><span>'+ingStreak()+'</span></div><div class="row"><span>Palavras que você conhece</span><span>'+vs.size+'</span></div><div class="row"><span>Tópicos da trilha estudados</span><span>'+cov.studied+'/'+cov.total+'</span></div><div class="row"><span>Erros no caderno</span><span>'+ingErr.filter(function(e){return (e.b||0)<5}).length+'</span></div></div></div></div>';
-  h+='<div class="panel"><h3>Como usar esta área</h3><ol class="plan"><li><b>Trilha:</b> o currículo completo, de A1 a C2. Marque o que você já domina para pular direto ao que falta.</li><li><b>Palavras:</b> registre o que você já conhece e o que está aprendendo. As palavras novas voltam para revisão no momento certo.</li><li><b>Exercícios:</b> a IA cria listas sob medida, com as suas palavras e os seus erros.</li><li><b>Escrita e Conversa:</b> a IA corrige o que você escreve e conversa com você em inglês.</li><li><b>Erros:</b> tudo que você erra vira cartão de revisão, sem esforço.</li><li><b>Imersão:</b> registre o tempo que você ouve, fala, lê e escreve. Fluência vem de volume e constância.</li></ol>';
+  h+='<div class="panel"><h3>Como usar esta área</h3><ol class="plan"><li><b>Prática diária:</b> 30, 45 ou 60 minutos em 3 pilares (escutar, usar chunks em contexto e falar), com checklist de imersão passiva.</li><li><b>Trilha:</b> o currículo completo, de A1 a C2. Marque o que você já domina para pular direto ao que falta.</li><li><b>Palavras:</b> registre o que você já conhece e o que está aprendendo. As palavras novas voltam para revisão no momento certo.</li><li><b>Exercícios:</b> a IA cria listas sob medida, com as suas palavras e os seus erros.</li><li><b>Escrita e Conversa:</b> a IA corrige o que você escreve e conversa com você em inglês.</li><li><b>Erros:</b> tudo que você erra vira cartão de revisão, sem esforço.</li><li><b>Imersão:</b> registre o tempo que você ouve, fala, lê e escreve. Fluência vem de volume e constância.</li></ol>';
   h+='<p class="hint" style="margin:8px 0 0">As funções com IA precisam de login. O banco de palavras, a trilha, os erros e a imersão funcionam sem internet.</p></div>';
   if(ingCfg)h+=ingCfgForm(false);
   return h;
@@ -3567,9 +3602,9 @@ function ingImersao(){
 
 /* Painel pequeno na tela Hoje */
 function ingTodayPanel(){
-  var vs=vocStats(),t=tk(),m=ingDayMap()[t]||0,c=ingC(),wk=ingWeek(0);
-  var h='<div class="panel"><h3>Inglês hoje</h3><div class="split"><div class="row"><span>Palavras para revisar</span><span>'+vs.due+'</span></div><div class="row"><span>Imersão de hoje</span><span>'+m+' min</span></div><div class="row"><span>Meta da semana</span><span>'+Math.min(100,Math.round(wk.tot/c.meta*100))+'%</span></div></div>';
-  return h+'<button class="link no-print" data-act="go" data-v="ingles" style="margin-top:10px">Abrir a Trilha Inglês</button></div>';
+  var vs=vocStats(),t=tk(),m=ingDayMap()[t]||0,c=ingC(),wk=ingWeek(0),ps=pdState(t),ne=ierDue().length;
+  var h='<div class="panel"><h3>Inglês hoje</h3><div class="split"><div class="row"><span>Prática diária</span><span>'+ps.done+' de 3 pilares</span></div><div class="row"><span>Palavras e chunks para revisar</span><span>'+vs.due+'</span></div>'+(ne?'<div class="row"><span>Erros para revisar</span><span>'+ne+'</span></div>':'')+'<div class="row"><span>Imersão de hoje</span><span>'+m+' min</span></div><div class="row"><span>Meta da semana</span><span>'+Math.min(100,Math.round(wk.tot/c.meta*100))+'%</span></div></div>';
+  return h+'<div class="chips no-print" style="margin-top:10px"><button class="btn sm" data-act="ing-pd-open">'+(ps.done?'Continuar a prática':'Começar a prática')+'</button><button class="link" data-act="go" data-v="ingles">Abrir a Trilha Inglês</button></div></div>';
 }
 
 /* ---------- correção automática dos exercícios ---------- */
@@ -3661,10 +3696,345 @@ function ingMic(){
   }catch(e){toast('Não foi possível usar o microfone.')}
 }
 
+/* =========================================================
+   PRÁTICA DIÁRIA DE INGLÊS: 3 pilares + imersão passiva
+   1/3 escuta ativa e connected speech · 1/3 vocabulário em contexto (chunks) · 1/3 fala ativa e shadowing.
+   Os chunks viram palavras do Banco (aba Palavras) e as travas viram erros do Caderno (aba Erros): os dois usam o mesmo
+   motor de revisão espaçada e aparecem em "Revisões de hoje" na aba inicial, com a tag Inglês.
+   Guarda na nuvem: ingDia ({data:{dur,o,v,f,tr,pas,lg}}). Os minutos de cada pilar entram em ingLog (aba Imersão).
+   ========================================================= */
+var ING_DURS=[30,45,60];
+var ING_TIPOS=['chunk','phrasal verb','expressão','collocation'];
+var ING_MONO=[
+ 'Describe your day so far, step by step.',
+ 'Summarize the audio you listened to today, in your own words.',
+ 'Explain your job to someone who has never heard of it.',
+ 'Tell me about a problem you solved this week and how you did it.',
+ 'Explain how to prepare your favorite dish.',
+ 'Describe a place you would love to visit and why.',
+ 'Give your opinion: is remote work better than working in an office?',
+ 'Retell the last movie or episode you watched, without spoilers.',
+ 'Teach me something you learned recently.',
+ 'Describe your ideal weekend, hour by hour.',
+ 'Explain a process from your work to a new colleague who just arrived.',
+ 'What would you do if you won a trip to anywhere in the world?'
+];
+var pdDraft={c:'chunk',w:'',t:'',e:'',tp:'',ta:''};   // rascunhos dos formulários: só na memória, sobrevivem enquanto a tela é redesenhada
+var pdMonoSeq=0;
+
+function pdRec(k,create){
+  k=k||tk();var r=ingDia[k];
+  if(!r&&create){
+    r=ingDia[k]={dur:pdLastDur(),o:{},v:{},f:{},tr:[],pas:{},lg:{}};
+    var ks=Object.keys(ingDia);
+    if(ks.length>150){ks.sort();ks.slice(0,ks.length-150).forEach(function(x){delete ingDia[x]})}
+  }
+  if(r){r.o=r.o||{};r.v=r.v||{};r.f=r.f||{};r.tr=r.tr||[];r.pas=r.pas||{};r.lg=r.lg||{}}
+  return r;
+}
+function pdSave(){save('ingDia',ingDia)}
+function pdLastDur(){
+  var ks=Object.keys(ingDia).sort().reverse();
+  for(var i=0;i<ks.length;i++)if(ING_DURS.indexOf(ingDia[ks[i]].dur)>=0)return ingDia[ks[i]].dur;
+  return 30;
+}
+function pdDur(k){var r=ingDia[k||tk()];return r&&ING_DURS.indexOf(r.dur)>=0?r.dur:pdLastDur()}
+function pdSplit(d){var t=d/3;return {o:t,v:t,f:t,sh:d/6,mo:d/6}}
+function pdFmt(n){return (n%1?String(n).replace('.',','):String(n))+' min'}
+function pdChunks(k){return vocab.filter(function(x){return x.src==='dia'&&x.a===k})}
+function pdState(k){
+  var r=ingDia[k]||{},o=r.o||{},f=r.f||{},n=k===tk()?pdChunks(k).length:((r.v&&r.v.n)||0);
+  var s={o:!!(o.p1&&o.p2),v:n>=3,sh:!!f.sh,mo:!!f.mo,n:n};
+  s.f=s.sh&&s.mo;s.done=(s.o?1:0)+(s.v?1:0)+(s.f?1:0);
+  return s;
+}
+function pdFullDays(){return Object.keys(ingDia).filter(function(k){return pdState(k).done===3}).sort()}
+function pdStreak(){
+  var d=today(),n=0;
+  if(pdState(dkey(d)).done<3)d=addDays(d,-1);
+  while(pdState(dkey(d)).done===3){n++;d=addDays(d,-1)}
+  return n;
+}
+function pdBest(){
+  var ks=pdFullDays(),best=0,run=0,prev=null;
+  ks.forEach(function(k){run=prev&&daysBetween(pk(prev),pk(k))===1?run+1:1;if(run>best)best=run;prev=k});
+  return best;
+}
+
+/* minutos de cada pilar entram na imersão (ingLog), sem duplicar e com desfazer */
+function pdLogged(r,key){var id=r.lg[key];return !!id&&ingLog.some(function(e){return e.id===id})}
+function pdLog(k,key,sk,min,nota){
+  var r=pdRec(k,true);
+  if(pdLogged(r,key))return;
+  if(ingLogAdd(sk,min,nota,k))r.lg[key]=ingLog[ingLog.length-1].id;
+}
+function pdUnlog(k,key){
+  var r=ingDia[k];if(!r||!r.lg||!r.lg[key])return;
+  var id=r.lg[key];
+  ingLog=ingLog.filter(function(e){return e.id!==id});save('ingLog',ingLog);delete r.lg[key];
+}
+function pdApply(k){
+  var r=pdRec(k,true),s=pdState(k),sp=pdSplit(pdDur(k)),f=Math.round(sp.f),sh=Math.round(f/2),pas=r.pas||{},mm=+pas.mm||0;
+  if(s.o)pdLog(k,'o','o',Math.round(sp.o),'Prática diária · escuta ativa');else pdUnlog(k,'o');
+  if(s.v)pdLog(k,'v','v',Math.round(sp.v),'Prática diária · chunks');else pdUnlog(k,'v');
+  if(s.sh)pdLog(k,'sh','f',sh,'Prática diária · shadowing');else pdUnlog(k,'sh');
+  if(s.mo)pdLog(k,'mo','f',Math.max(1,f-sh),'Prática diária · monólogo');else pdUnlog(k,'mo');
+  if(pas.mid&&mm>0){
+    var e=r.lg.pm&&ingLog.filter(function(x){return x.id===r.lg.pm})[0];
+    if(!e||e.min!==clamp(mm,1,600)){pdUnlog(k,'pm');pdLog(k,'pm','o',mm,'Imersão passiva · mídia em inglês')}
+  }else pdUnlog(k,'pm');
+}
+function pdSyncV(k){
+  var r=ingDia[k];if(!r)return;
+  r.v=r.v||{};r.v.n=pdChunks(k).length;pdApply(k);pdSave();
+}
+function pdToggle(path){
+  var k=tk(),r=pdRec(k,true),p=path.split('.');
+  r[p[0]][p[1]]=!r[p[0]][p[1]];
+  pdApply(k);pdSave();
+}
+function pdSetField(path,val){
+  var k=tk(),r=pdRec(k,true),p=path.split('.');
+  r[p[0]][p[1]]=p[1]==='mm'?(String(val).trim()===''?0:(clamp(val,0,600)||0)):String(val).slice(0,200);
+  pdApply(k);pdSave();
+}
+function pdAddChunk(o){
+  var x=vocAdd({w:o.w,t:o.t,e:o.e,c:o.c},false);if(!x)return null;
+  var k=tk(),r=pdRec(k,true);
+  x.src='dia';x.d=dkey(addDays(today(),1));          // 1ª revisão amanhã; depois segue o motor das palavras (1, 2, 4, 8, 16, 35 e 70 dias)
+  if(r.o.src)x.ctx=String(r.o.src).slice(0,120);
+  vocSave();pdSyncV(k);
+  return x;
+}
+function pdTravaToErro(tv){
+  if(!tv.a||tv.e)return false;
+  if(ierAdd({cat:'fala',p:'Diga em inglês: '+tv.p,a:tv.a,y:'Trava na prática de fala',src:'fala'})){
+    var er=ingErr[ingErr.length-1];er.d=dkey(addDays(today(),1));tv.e=er.i;save('ingErr',ingErr);return true;
+  }
+  tv.e='dup';return false;
+}
+function pdTravas(){
+  var out=[];
+  for(var i=0;i<7;i++){
+    var k=dkey(addDays(today(),-i)),r=ingDia[k];
+    if(r&&r.tr)r.tr.slice().reverse().forEach(function(tv){out.push({k:k,tv:tv})});
+  }
+  return out;
+}
+function pdWeek(){
+  var o={amb:0,mid:0,nt:0,all:0,min:0};
+  for(var i=0;i<7;i++){
+    var r=ingDia[dkey(addDays(today(),-i))];if(!r||!r.pas)continue;
+    var p=r.pas;if(p.amb)o.amb++;if(p.mid)o.mid++;if(p.nt)o.nt++;if(p.amb&&p.mid&&p.nt)o.all++;o.min+=+p.mm||0;
+  }
+  return o;
+}
+function pdMono(r){
+  var d=today(),doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);
+  return ING_MONO[(doy+((r&&r.f&&r.f.ti)||0))%ING_MONO.length];
+}
+function pdMission(){
+  var s=pdState(tk());
+  return {done:s.done===3,txt:'Prática diária de inglês: '+s.done+' de 3 pilares',act:'ing-go',v:'dia'};
+}
+
+/* revisões de inglês que aparecem em "Revisões de hoje" (aba inicial): palavras, chunks e erros vencidos */
+function ingRevItems(){
+  var t=tk(),out=[];
+  vocDue().forEach(function(x){out.push({k:'v',id:x.i,due:x.d||t})});
+  ierDue().forEach(function(e){out.push({k:'e',id:e.i,due:e.d||t})});
+  out.sort(function(a,b){return a.due<b.due?-1:a.due>b.due?1:0});
+  return out;
+}
+function ingRevRow(it){
+  var t=tk(),h,late,x,e;
+  if(it.k==='v'){
+    x=vocab.filter(function(v){return v.i===it.id})[0];if(!x)return '';
+    late=daysBetween(pk(x.d||t),today());
+    h='<div class="revrow"><b>'+esc(x.w)+'</b><span class="meta"><span class="tag trl ing">Inglês</span> '+esc(x.c||'palavra')+' · nível '+((x.b||0)+1)+' de 7'+(late>0?' · atrasada '+late+' dia'+(late>1?'s':''):'')+'</span>';
+    h+='<details class="revans"><summary>Ver resposta</summary><div><span>'+esc(x.t||'(sem tradução)')+'</span>'+(x.e?'<em>'+esc(x.e)+'</em>':'')+'</div></details>';
+  }else{
+    e=ingErr.filter(function(v){return v.i===it.id})[0];if(!e)return '';
+    late=daysBetween(pk(e.d||t),today());
+    h='<div class="revrow"><b>'+esc(e.p)+'</b><span class="meta"><span class="tag trl ing">Inglês</span> erro · '+esc(e.cat)+(late>0?' · atrasado '+late+' dia'+(late>1?'s':''):'')+'</span>';
+    h+='<details class="revans"><summary>Ver resposta</summary><div><span class="good">'+esc(e.a)+'</span>'+(e.y?'<em>'+esc(e.y)+'</em>':'')+'</div></details>';
+  }
+  h+='<div class="acts"><button class="btn sm" data-act="ing-rev-ok" data-k="'+it.k+'" data-id="'+esc(it.id)+'">Lembrei bem</button><button class="btn sm ghost" data-act="ing-rev-no" data-k="'+it.k+'" data-id="'+esc(it.id)+'">Preciso rever</button></div></div>';
+  return h;
+}
+function ingVocStart(dir,n){
+  var q=vocDue().slice(0,n||20).map(function(v){return v.i});
+  if(!q.length)return false;
+  vocRev={q:q,i:0,shown:false,dir:dir==='pt'?'pt':'en',done:0,ok:0,req:{}};return true;
+}
+function ingErrStart(n){
+  var q=ierDue().sort(function(x,y){return (x.b||0)-(y.b||0)}).slice(0,n||15).map(function(e){return e.i});
+  if(!q.length)return false;
+  ierRev={q:q,i:0,shown:false,done:0,ok:0,req:{}};return true;
+}
+
+/* ---------- tela ---------- */
+function pdCk(path,r,html){
+  var p=path.split('.');
+  return '<label class="pdck"><input type="checkbox" data-pdck="'+path+'"'+(r&&r[p[0]]&&r[p[0]][p[1]]?' checked':'')+'><span>'+html+'</span></label>';
+}
+function pdField(path,r,label,ph,max){
+  var p=path.split('.'),v=(r&&r[p[0]]&&r[p[0]][p[1]])||'';
+  return '<label class="f">'+label+'<input data-pd="'+path+'" maxlength="'+(max||160)+'" value="'+esc(v)+'" placeholder="'+esc(ph||'')+'" autocomplete="off"></label>';
+}
+function pdHead(k,r,dur,sp,s){
+  var pc=Math.round(s.done/3*100),str=pdStreak();
+  var h='<div class="panel"><h3>Prática diária de inglês</h3><p class="hint">Imersão diária em 3 pilares: ouvir, usar palavras em contexto e falar. Escolha quanto tempo você tem hoje.</p>';
+  h+='<div class="chips" role="group" aria-label="Duração da prática">'+ING_DURS.map(function(d){return '<button class="chip" data-act="ing-pd-dur" data-v="'+d+'" aria-pressed="'+(d===dur)+'">'+d+' min</button>'}).join('')+'</div>';
+  h+='<div class="progress" role="progressbar" aria-label="Pilares concluídos hoje" aria-valuenow="'+pc+'" aria-valuemin="0" aria-valuemax="100" style="margin:12px 0 10px"><i style="width:'+pc+'%;background:var(--a-ling)"></i></div>';
+  h+='<ul class="plan mission">';
+  [['pd-o',s.o,'1. Escuta ativa e connected speech',sp.o],['pd-v',s.v,'2. Vocabulário em contexto (chunks)',sp.v],['pd-f',s.f,'3. Fala ativa e shadowing',sp.f]].forEach(function(p){
+    h+='<li class="'+(p[1]?'done':'')+'"><span class="mk" aria-hidden="true">'+(p[1]?'✓':'')+'</span><span class="mt">'+p[2]+' <small style="color:var(--ink-soft)">'+pdFmt(p[3])+'</small></span>'+(p[1]?'<span class="sr">feito</span>':'<button class="btn sm ghost" data-act="ing-pd-jump" data-v="'+p[0]+'" aria-label="Ir para: '+esc(p[2])+'">Ir</button>')+'</li>';
+  });
+  h+='</ul><div class="split" style="margin-top:12px"><div class="row"><span>Dias seguidos com os 3 pilares</span><span>'+str+'</span></div><div class="row"><span>Dias com os 3 pilares nos últimos 7 dias</span><span>'+pdLast7Full()+'</span></div></div>';
+  return h+'</div>';
+}
+function pdLast7Full(){
+  var n=0;for(var i=0;i<7;i++)if(pdState(dkey(addDays(today(),-i))).done===3)n++;return n;
+}
+function pdPillarO(r,sp,dur){
+  var a={30:'2 a 3',45:'3 a 4',60:'4 a 5'}[dur];
+  var h='<div class="panel" id="pd-o"><h3>1. Escuta ativa e connected speech <small style="font-size:14px;color:var(--ink-soft)">'+pdFmt(sp.o)+'</small></h3>';
+  h+='<p class="hint">Escolha um áudio nativo curto (podcast, entrevista, vídeo técnico ou narrativo) de cerca de '+a+' minutos: cabe nas duas passadas e na anotação. Sem legenda em português.</p>';
+  h+=pdField('o.src',r,'Áudio de hoje (nome, canal ou link)','Ex.: episódio do podcast X, entrevista com Y',120);
+  h+='<ol class="pdsteps">';
+  h+='<li>'+pdCk('o.p1',r,'<b>1ª passada: ideia geral.</b> Ouça sem pausar. O objetivo é só entender o assunto e a ideia principal.')+pdField('o.idea',r,'A ideia geral em uma frase (em inglês, se conseguir)','Ex.: They talk about how remote work changed hiring.',200)+'</li>';
+  h+='<li>'+pdCk('o.p2',r,'<b>2ª passada: conexões e expressões.</b> Ouça de novo, agora atenta a como as palavras se ligam e a quais expressões aparecem.')+pdField('o.con',r,'Conexões ou reduções que você percebeu (opcional)','Ex.: gonna, wanna, "whaddya", "kinda"',200)+'</li></ol>';
+  return h+'<p class="hint" style="margin:10px 0 0">Se houver transcrição em inglês, use só depois da 2ª passada, para conferir o que você não pegou. As expressões que chamaram sua atenção vão para o pilar 2.</p></div>';
+}
+function pdPillarV(r,sp,dur){
+  var k=tk(),list=pdChunks(k),n=list.length,nv=vocDue().length,ne=ierDue().length,nrev=Math.max(5,Math.round(dur/4));
+  var h='<div class="panel" id="pd-v"><h3>2. Vocabulário em contexto <small style="font-size:14px;color:var(--ink-soft)">'+pdFmt(sp.v)+'</small></h3>';
+  h+='<p class="hint">Registre de 3 a 5 chunks, expressões ou phrasal verbs do conteúdo de hoje: <b>'+n+'</b> de 3 a 5'+(n>=3?' · pilar concluído':'')+'. Eles entram nas revisões e voltam amanhã, depois em intervalos cada vez maiores.</p>';
+  h+='<form class="form" id="ingPdChunkForm"><div class="row2" style="grid-template-columns:2fr 1fr"><label class="f">Expressão, chunk ou phrasal verb<input name="w" data-pdd="w" maxlength="60" required autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ex.: end up" value="'+esc(pdDraft.w)+'"></label>';
+  h+='<label class="f">Tipo<select name="c" data-pdd="c">'+ING_TIPOS.map(function(t){return '<option value="'+t+'"'+(pdDraft.c===t?' selected':'')+'>'+t+'</option>'}).join('')+'</select></label></div>';
+  h+='<label class="f">Significado no contexto<input name="t" data-pdd="t" maxlength="120" required autocomplete="off" placeholder="Ex.: acabar em, chegar a determinado resultado" value="'+esc(pdDraft.t)+'"></label>';
+  h+='<label class="f">Sua própria frase<input name="e" data-pdd="e" maxlength="200" required autocomplete="off" placeholder="Ex.: If we skip the tests, we will end up fixing bugs in production." value="'+esc(pdDraft.e)+'"></label>';
+  h+='<div><button class="btn sm" type="submit"'+(n>=5?' disabled':'')+'>Adicionar à revisão</button></div></form>';
+  if(n)h+='<ul class="words">'+list.slice().reverse().map(function(x){
+    return '<li><div class="wmain"><b>'+esc(x.w)+'</b> <small>'+esc(x.c)+'</small><span class="wt">'+esc(x.t)+'</span><em>'+esc(x.e)+'</em></div><div class="chips">'+sayBtn(x.e,'Ouvir frase')+'<button class="link no-print" data-act="ing-pd-chunk-del" data-id="'+esc(x.i)+'">Apagar</button></div></li>';
+  }).join('')+'</ul>';
+  h+='<h4 class="sub">Revisão rápida dos itens vencidos</h4>';
+  if(vocRev||ierRev)h+='<p class="hint" style="margin:0">Revisão em andamento logo abaixo.</p>';
+  else if(!nv&&!ne)h+='<p class="empty">Nenhum item vencido hoje.</p>';
+  else{
+    h+='<p class="hint" style="margin:0 0 8px">Vencidos: '+nv+(nv===1?' palavra ou chunk':' palavras e chunks')+' · '+ne+(ne===1?' erro':' erros')+'. Em '+pdFmt(Math.round(sp.v/2))+' dá para revisar cerca de '+nrev+' itens.</p><div class="chips">';
+    if(nv)h+='<button class="btn sm" data-act="ing-voc-start" data-dir="en" data-n="'+nrev+'">Revisar palavras e chunks ('+Math.min(nv,nrev)+')</button>';
+    if(ne)h+='<button class="btn sm ghost" data-act="ing-err-start" data-n="'+nrev+'">Revisar erros ('+Math.min(ne,nrev)+')</button>';
+    h+='</div>';
+  }
+  return h+'</div>'+(vocRev?vocRevPanel():'')+(ierRev?ierRevPanel():'');
+}
+function pdPillarF(r,sp){
+  var f=Math.round(sp.f),sh=Math.round(f/2),mo=f-sh,tr=pdTravas();
+  var h='<div class="panel" id="pd-f"><h3>3. Fala ativa e shadowing <small style="font-size:14px;color:var(--ink-soft)">'+pdFmt(sp.f)+'</small></h3>';
+  h+='<h4 class="sub" style="margin-top:4px">Shadowing · '+pdFmt(sp.sh)+'</h4>';
+  h+='<ol class="plan"><li>Escolha um trecho de 20 a 40 segundos do áudio de hoje.</li><li>Ouça uma vez. Depois repita junto com o áudio, quase ao mesmo tempo, imitando ritmo, entonação e pausas.</li><li>Repita até acompanhar sem tropeçar. Se puder, grave e compare com o original.</li></ol>';
+  h+='<div style="margin-top:10px">'+pdCk('f.sh',r,'Fiz o shadowing de hoje')+'</div>';
+  h+='<h4 class="sub">Monólogo em voz alta · '+pdFmt(sp.mo)+'</h4>';
+  h+='<p style="margin:0 0 6px;font-weight:700;line-height:1.4">Tema: "'+esc(pdMono(r))+'" <button class="link no-print" data-act="ing-pd-tema">Outro tema</button> '+sayBtn(pdMono(r),'Ouvir o tema')+'</p>';
+  h+='<p class="hint">Fale em voz alta, sem traduzir mentalmente e sem parar para consultar. Se faltar uma palavra, explique com outras e siga em frente: é nesse momento que você acha o que precisa estudar.</p>';
+  h+=pdCk('f.mo',r,'Fiz o monólogo de hoje');
+  h+='<h4 class="sub">Pontos de trava e erros recorrentes (opcional)</h4>';
+  h+='<form class="form" id="ingPdTravaForm"><label class="f">Onde você travou ou errou (pode ser em português)<input name="p" data-pdd="tp" maxlength="200" autocomplete="off" placeholder="Ex.: dizer que o prazo foi adiado" value="'+esc(pdDraft.tp)+'"></label>';
+  h+='<label class="f">Como se diz em inglês (se já souber)<input name="a" data-pdd="ta" maxlength="200" autocomplete="off" autocapitalize="off" placeholder="Ex.: The deadline has been pushed back." value="'+esc(pdDraft.ta)+'"></label>';
+  h+='<div><button class="btn sm" type="submit">Anotar</button></div></form>';
+  if(tr.length){
+    h+='<ul class="errs">'+tr.slice(0,12).map(function(o){
+      var tv=o.tv,li='<li><small>'+shortDate(o.k)+'</small> <b>'+esc(tv.p)+'</b>';
+      if(tv.a)li+=' → <span class="good">'+esc(tv.a)+'</span> <small>'+(tv.e==='dup'?'já estava no caderno de erros':'no caderno de erros')+'</small>';
+      else li+='<form class="pdfix" data-pdfix="'+esc(tv.i)+'"><input name="a" maxlength="200" required autocomplete="off" autocapitalize="off" aria-label="Como se diz em inglês" placeholder="Como se diz em inglês?"><button class="btn sm" type="submit">Enviar ao caderno</button></form>';
+      return li+'</li>';
+    }).join('')+'</ul><p class="hint" style="margin:8px 0 0">Cada trava com resposta vira um cartão no caderno de erros e volta para revisão amanhã.</p>';
+  }
+  return h+'</div>';
+}
+function pdPassive(r){
+  var wk=pdWeek(),p=(r&&r.pas)||{};
+  var h='<div class="panel" id="pd-p"><h3>Imersão passiva de hoje</h3><p class="hint">O que acontece fora do horário de estudo também treina o ouvido e o vocabulário. Marque o que você fez hoje.</p>';
+  h+='<div class="opts">'+pdCk('pas.amb',r,'<b>Ambiente digital em inglês.</b> Celular, redes sociais, apps ou streaming no idioma.')+pdCk('pas.mid',r,'<b>Consumo de mídia em inglês.</b> Série, filme, vídeo, música ou podcast fora do estudo.')+pdCk('pas.nt',r,'<b>Notas no idioma.</b> Lista, agenda, anotação ou pensamentos escritos em inglês.')+'</div>';
+  if(p.mid)h+='<label class="f" style="margin-top:10px">Minutos de mídia em inglês (opcional, entram na sua imersão)<input type="number" data-pd="pas.mm" min="0" max="600" inputmode="numeric" value="'+(p.mm||'')+'" placeholder="Ex.: 40"></label>';
+  h+='<h4 class="sub">Últimos 7 dias</h4>';
+  [['Ambiente em inglês',wk.amb],['Mídia em inglês',wk.mid],['Notas em inglês',wk.nt]].forEach(function(x){
+    h+='<div class="mrow"><span>'+x[0]+'</span><div class="meter"><i style="width:'+Math.round(x[1]/7*100)+'%"></i></div><b>'+x[1]+'/7</b></div>';
+  });
+  return h+'<p class="hint" style="margin:8px 0 0">Dias com os três itens: '+wk.all+' de 7'+(wk.min?' · '+wk.min+' min de mídia registrados':'')+'.</p></div>';
+}
+function ingDiaTab(){
+  var k=tk(),r=pdRec(k,false)||{o:{},v:{},f:{},tr:[],pas:{},lg:{}},dur=pdDur(k),sp=pdSplit(dur),s=pdState(k);
+  return pdHead(k,r,dur,sp,s)+pdPillarO(r,sp,dur)+pdPillarV(r,sp,dur)+pdPillarF(r,sp)+pdPassive(r);
+}
+
+/* ---------- ações da prática diária ---------- */
+function ingPdAction(a,b){
+  if(a==='ing-pd-dur'){
+    var d=+b.dataset.v;if(ING_DURS.indexOf(d)<0)return true;
+    var k=tk(),r=pdRec(k,true);r.dur=d;
+    ['o','v','sh','mo'].forEach(function(x){pdUnlog(k,x)});   // refaz os minutos com a nova duração
+    pdApply(k);pdSave();render();return true;
+  }
+  if(a==='ing-pd-jump'){var el=document.getElementById(b.dataset.v);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return true}
+  if(a==='ing-pd-tema'){var r2=pdRec(tk(),true);r2.f.ti=(r2.f.ti||0)+1;pdSave();render();return true}
+  if(a==='ing-pd-chunk-del'){
+    var x=vocab.filter(function(v){return v.i===b.dataset.id})[0];if(!x)return true;
+    if(!confirm('Apagar "'+x.w+'" do banco de palavras?'))return true;
+    vocab=vocab.filter(function(v){return v!==x});vocSave();pdSyncV(x.a);render();return true;
+  }
+  if(a==='ing-pd-open'){ingTab='dia';rawSave('ingTab',ingTab);go('ingles');return true}
+  return false;
+}
+function ingPdSubmit(f,fd){
+  if(f.dataset&&f.dataset.pdfix){
+    var a0=String(fd.get('a')||'').trim();if(!a0)return true;
+    var found=null;pdTravas().forEach(function(o){if(o.tv.i===f.dataset.pdfix)found=o});
+    if(!found)return true;
+    found.tv.a=a0.slice(0,200);
+    var added=pdTravaToErro(found.tv);pdSave();render();
+    toast(added?'Enviado ao caderno de erros':'Esse erro já estava no caderno');return true;
+  }
+  if(f.id==='ingPdChunkForm'){
+    var w=String(fd.get('w')||'').trim(),t=String(fd.get('t')||'').trim(),e=String(fd.get('e')||'').trim(),tp=ING_TIPOS.indexOf(fd.get('c'))>=0?fd.get('c'):'chunk';
+    if(!w||!t||!e){toast('Preencha a expressão, o significado no contexto e a sua própria frase');return true}
+    if(pdChunks(tk()).length>=5){toast('Já são 5 chunks hoje. Poucos itens bem fixados rendem mais; use a aba Palavras para adicionar outros.');return true}
+    var x=pdAddChunk({w:w,t:t,e:e,c:tp});
+    if(!x){toast('Esse item já está no seu banco de palavras');return true}
+    pdDraft.w=pdDraft.t=pdDraft.e='';pdDraft.c=tp;
+    var n=pdChunks(tk()).length;
+    render();toast(n===3?'3 chunks registrados: pilar 2 concluído':n+' de 3 a 5 chunks registrados · volta para revisão amanhã');
+    keepFocus('#ingPdChunkForm input[name="w"]');return true;
+  }
+  if(f.id==='ingPdTravaForm'){
+    var p=String(fd.get('p')||'').trim(),a=String(fd.get('a')||'').trim();
+    if(!p){toast('Escreva onde você travou ou errou');return true}
+    var r=pdRec(tk(),true),tv={i:uid(),p:p.slice(0,200),a:a.slice(0,200),e:''};
+    r.tr.push(tv);
+    var ok=a?pdTravaToErro(tv):false;
+    pdSave();pdDraft.tp=pdDraft.ta='';render();
+    toast(a?(ok?'Anotado e enviado ao caderno de erros':'Anotado. Esse erro já estava no caderno'):'Anotado. Descubra como se diz e complete depois');
+    return true;
+  }
+  return false;
+}
+function ingPdChange(el,type){
+  if(el.dataset&&el.dataset.pdd!==undefined){pdDraft[el.dataset.pdd]=el.value;return true}
+  if(el.dataset&&el.dataset.pdck){
+    if(type==='change'){var path=el.dataset.pdck;pdToggle(path);render();keepFocus('[data-pdck="'+path+'"]')}
+    return true;
+  }
+  if(el.dataset&&el.dataset.pd){if(type==='change')pdSetField(el.dataset.pd,el.value);return true}
+  return false;
+}
+
 /* ---------- ações ---------- */
 function ingAction(a,b){
   if(!/^ing-/.test(a))return false;
   var id=b.dataset.id;
+  if(/^ing-pd-/.test(a))return ingPdAction(a,b);
   if(a==='ing-tab'||a==='ing-go'){ingTab=b.dataset.v;rawSave('ingTab',ingTab);ingMsg='';trailEdit=false;render();window.scrollTo(0,0);return true}
   if(a==='ing-open-topic'){var t=TOPICS[b.dataset.v];if(t){setSel('ing',t.materia);ingTab='trilha';rawSave('ingTab',ingTab);trailEdit=false;contentFilter='todos';render();window.scrollTo(0,0)}return true}
   if(a==='ing-say'){if(!ingSay(b.dataset.say,!!b.dataset.slow))toast('Seu aparelho não tem voz em inglês disponível.');return true}
@@ -3680,12 +4050,11 @@ function ingAction(a,b){
   if(a==='ing-voc-del'){
     var y=vocab.filter(function(v){return v.i===id})[0];if(!y)return true;
     if(!confirm('Apagar a palavra "'+y.w+'" do banco?'))return true;
-    vocab=vocab.filter(function(v){return v.i!==id});vocSave();render();return true;
+    vocab=vocab.filter(function(v){return v.i!==id});vocSave();if(y.src==='dia')pdSyncV(y.a);render();return true;
   }
   if(a==='ing-voc-start'){
-    var q=vocDue().slice(0,20).map(function(v){return v.i});
-    if(!q.length)return true;
-    vocRev={q:q,i:0,shown:false,dir:b.dataset.dir==='pt'?'pt':'en',done:0,ok:0,req:{}};render();return true;
+    if(ingVocStart(b.dataset.dir,+b.dataset.n||20))render();
+    return true;
   }
   if(a==='ing-voc-show'){if(vocRev){vocRev.shown=true;render()}return true}
   if(a==='ing-voc-grade'){
@@ -3751,10 +4120,27 @@ function ingAction(a,b){
   }
   if(a==='ing-mic'){ingMic();return true}
 
+  /* revisões de inglês na aba inicial */
+  if(a==='ing-rev-ok'||a==='ing-rev-no'){
+    var okr=a==='ing-rev-ok',msg='';
+    if(b.dataset.k==='v'){
+      var vv=vocab.filter(function(v){return v.i===id})[0];
+      if(vv){vocGrade(vv,okr?1:0);vocSave();msg=okr?'Próxima revisão em '+shortDate(vv.d):'Volta amanhã'}
+    }else{
+      var ee=ingErr.filter(function(e){return e.i===id})[0];
+      if(ee){ierGrade(ee,okr);save('ingErr',ingErr);msg=okr?((ee.b||0)>=5?'Erro dominado!':'Próxima revisão em '+shortDate(ee.d)):'Volta amanhã'}
+    }
+    render();if(msg)toast(msg);return true;
+  }
+  if(a==='ing-rev-go'){
+    var kk=b.dataset.k==='e';
+    if(kk)ingErrStart(15);else ingVocStart('en',20);
+    ingTab=kk?'erros':'palavras';rawSave('ingTab',ingTab);ingMsg='';go('ingles');return true;
+  }
+
   /* erros */
   if(a==='ing-err-start'){
-    var q2=ierDue().sort(function(x,y){return (x.b||0)-(y.b||0)}).slice(0,15).map(function(e){return e.i});
-    if(q2.length){ierRev={q:q2,i:0,shown:false,done:0,ok:0,req:{}};render()}
+    if(ingErrStart(+b.dataset.n||15))render();
     return true;
   }
   if(a==='ing-err-show'){if(ierRev){ierRev.shown=true;render()}return true}
@@ -3779,6 +4165,7 @@ function ingAction(a,b){
 /* ---------- formulários ---------- */
 function ingSubmit(f,fd){
   var id=f.id;
+  if(ingPdSubmit(f,fd))return true;
   if(id==='ingCfgForm'){
     var meta=clamp(fd.get('meta'),30,3000);if(!meta){toast('Informe a meta semanal em minutos');return true}
     ingCfgSave({nivel:fd.get('nivel'),alvo:fd.get('alvo'),meta:meta,sotaque:fd.get('sotaque')});
@@ -3860,6 +4247,7 @@ function ingSubmit(f,fd){
   return false;
 }
 function ingChange(el,type){
+  if(ingPdChange(el,type))return true;
   if(el.dataset&&el.dataset.iex!==undefined&&iexSess){iexSess.resp[+el.dataset.iex]=el.value;rawSave('ingSess',iexSess);return true}
   if(el.id==='iwrText'){rawSave('ingdraft',el.value);return true}
   if(el.id==='vocSearch'){
@@ -3871,7 +4259,7 @@ function ingChange(el,type){
 
 /* ---------- conquistas e Hoje ---------- */
 function ingBadgeCtx(){
-  return {vocN:vocStats().size,ingH:ingTotalH(),ingS:Math.max(ingBestStreak(),ingStreak()),exN:ingEx.length,wrN:ingWr.length,chatN:ingC().chats,top:areaCoverage(null,'ing').studied,teste:!!ingC().teste};
+  return {pdN:pdFullDays().length,pdS:Math.max(pdBest(),pdStreak()),vocN:vocStats().size,ingH:ingTotalH(),ingS:Math.max(ingBestStreak(),ingStreak()),exN:ingEx.length,wrN:ingWr.length,chatN:ingC().chats,top:areaCoverage(null,'ing').studied,teste:!!ingC().teste};
 }
 
 /* =========================================================
@@ -3976,7 +4364,7 @@ async function labCall(payload){
   if(!s)throw new Error('Sua sessão expirou. Entre de novo na sua conta.');
   var r=await fetch('/api/estudo',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.access_token},body:JSON.stringify(payload)});
   var data=await r.json().catch(function(){return {}});
-  if(!r.ok)throw new Error(data.erro||(r.status===404?'A função /api/estudo não foi encontrada. Envie o arquivo api/estudo.js ao GitHub e espere o deploy terminar.':'Erro '+r.status+' na IA.'));
+  if(!r.ok)throw new Error(iaHttpErro(r,data,'estudo'));
   return data;
 }
 
@@ -4227,12 +4615,26 @@ function labQSessionHTML(k){
   return h+'</form>';
 }
 function labQSave(){rawSave('labSess',labSess)}
+function labNormQ(t){return String(t||'').toLowerCase().replace(/\s+/g,' ').trim().slice(0,90)}
 async function labGenQ(k,o){
   labBusy='q:'+k;labSetMsg('q:'+k,'');render();
   try{
-    var d=await labCall({acao:'questoes',k:k,materia:o.matNome,topico:o.topNome,dif:o.dif,qtd:o.qtd,linguagem:o.lang||'',erros:o.erros||[]});
-    labSess[k]={titulo:d.titulo,mat:o.matNome,matId:o.mat,top:o.topNome,topId:o.top,dif:o.dif,itens:d.itens,resp:d.itens.map(function(){return null}),res:d.itens.map(function(){return null}),checked:false,fin:false,t0:Date.now()};
+    var total=Math.max(1,Math.min(20,+o.qtd||8)),nl=Math.ceil(total/5),base=Math.floor(total/nl),sobra=total%nl,tam=[];
+    for(var i=0;i<nl;i++)tam.push(base+(i<sobra?1:0));
+    var calls=tam.map(function(n,i){
+      return labCall({acao:'questoes',k:k,materia:o.matNome,topico:o.topNome,dif:o.dif,qtd:n,lote:i+1,lotes:nl,linguagem:o.lang||'',erros:o.erros||[]}).then(function(d){return {d:d}},function(e){return {e:e}});
+    });
+    var rs=await Promise.all(calls),itens=[],vistos={},titulo='',erro=null,falhas=0;
+    rs.forEach(function(r){
+      if(r.e){falhas++;if(!erro)erro=r.e;return}
+      if(!titulo&&r.d.titulo)titulo=r.d.titulo;
+      (r.d.itens||[]).forEach(function(it){var n=labNormQ(it.enunciado);if(vistos[n])return;vistos[n]=1;itens.push(it)});
+    });
+    if(!itens.length)throw erro||new Error('Não foi possível gerar as questões.');
+    itens=itens.slice(0,total);
+    labSess[k]={titulo:titulo||o.topNome||o.matNome||'Lista de questões',mat:o.matNome,matId:o.mat,top:o.topNome,topId:o.top,dif:o.dif,itens:itens,resp:itens.map(function(){return null}),res:itens.map(function(){return null}),checked:false,fin:false,t0:Date.now()};
     labQSave();
+    if(falhas||itens.length<total)toast('Gerei '+itens.length+' de '+total+' questões. Você pode criar outra lista para completar.');
   }catch(e){labSetMsg('q:'+k,(e&&e.message)||'Não foi possível gerar as questões.')}
   labBusy='';render();window.scrollTo(0,0);
 }
@@ -5140,7 +5542,7 @@ function hasLocalData(){
 }
 // Chaves que versões antigas do site não conhecem. Um aparelho com o site desatualizado envia a nuvem sem elas;
 // se a nuvem não tem a chave mas este aparelho tem dados, os dados são mantidos e reenviados (nunca apagados em silêncio).
-var ADITIVAS=['water','waterGoal','workouts','wlog','ingCfg','vocab','ingEx','ingErr','ingLog','ingWr','cards','labEx','labCfg','devBug','devProj'];
+var ADITIVAS=['water','waterGoal','workouts','wlog','ingCfg','vocab','ingEx','ingErr','ingLog','ingWr','cards','labEx','labCfg','devBug','devProj','ingDia'];
 function adopt(r,keepLocal){
   var d=r.dados||{},kept=false;
   rawSave('habitSync',d.habitSync===true);syncHabitKey();     // a nuvem decide se o registro do hábito acompanha a conta
